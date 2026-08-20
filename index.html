@@ -15,24 +15,33 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
   <script> 
-    // 🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴
-    // GANTI STRING DI BAWAH INI DENGAN URL DEPLOY APLIKASI WEB GAS ANDA
-    // PASTIKAN AKSES: "ANYONE / SIAPA SAJA"
-    // 🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴
+    // 🔴 GANTI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA 🔴
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzDoS-WcWDyoMW_JC0WgDk5fboMdqaOb9NqbqiVAoIgaUbF_0AkFXSgmVCqWXfns0-T0w/exec";
     
-    // Deteksi Parameter URL
     const urlParams = new URLSearchParams(window.location.search);
     var globalPortalCode = urlParams.get('code') || '';
     var globalMraDataRaw = [];
 
-    // Wrapper Komunikasi Fetch API ke GAS
+    // Mapping Benefit
+    const bMap = {
+      "8": { basic: "Diskon Jasa 15%", ontime: "FREE Wiper Fluid + Diskon Part 5.5%" },
+      "9": { basic: "Diskon Jasa 20%", ontime: "FREE Brake Cleaner + Diskon Part 6.0%" },
+      "10": { basic: "Diskon Jasa 25%", ontime: "FREE Dashboard Clean + Diskon Part 6.5%" },
+      "11": { basic: "Diskon Jasa 30%", ontime: "FREE Injector Clean + Diskon Part 7.0%" }
+    };
+
+    // Date Formatter ID (dd MMM yyyy)
+    function formatDateID(dateObj) {
+        const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+        let d = dateObj.getDate().toString().padStart(2, '0');
+        let m = months[dateObj.getMonth()];
+        let y = dateObj.getFullYear();
+        return `${d} ${m} ${y}`;
+    }
+
     async function fetchAPI(action, payload = {}) {
       try {
-        const response = await fetch(GAS_API_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action: action, payload: payload })
-        });
+        const response = await fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: action, payload: payload }) });
         return await response.json();
       } catch (error) {
         console.error("API Error:", error);
@@ -97,7 +106,7 @@
   </div>
 
   <!-- ========================================== -->
-  <!-- 2. LOGIN PANEL (KARYAWAN)                  -->
+  <!-- 2. LOGIN PANEL                             -->
   <!-- ========================================== -->
   <div id="view-login" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-95 p-4">
     <div class="bg-white p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-md mx-4 relative">
@@ -170,12 +179,8 @@
         <div id="panduan-cabang" class="hidden bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-200">
           <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">Role: Cabang & SA</span> SOP Operasional</h3>
           <ul class="space-y-4 text-gray-600 text-sm">
-            <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">1</span><div><strong class="text-gray-900">Aturan Gamifikasi Terkunci:</strong> 
-              <br>a. Pelanggan <b>wajib</b> memulai dari Servis 8. Pengecualian: Jika No. Rangka ada di database *ShortTerm* untuk target Servis 9, sistem akan otomatis melakukan By-pass Servis 8.
-              <br>b. Anda tidak bisa mendaftarkan <i>Double Claim</i> pada tahapan servis yang sama untuk VIN yang sama, meskipun dilakukan di cabang lain.
-            </div></li>
-            <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">2</span><div><strong class="text-gray-900">Smart Reminder WA:</strong> Jangan biarkan tiket hangus. Buka menu <i>Data MRA (CRM)</i> dan klik tombol hijau "Kirim WA" pada kolom Aksi tiket yang ACTIVE. Teks terbuat otomatis.</div></li>
-            <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">3</span><div><strong class="text-gray-900">Prosedur Klaim Max 6 vs Max 7:</strong> Sistem memberikan toleransi ganda. Jika pelanggan datang di bulan ke-7 (lewat dari batas 6 bulan), maka Benefit Item & Part akan <b>hangus</b>. Pelanggan hanya menerima Basic Benefit (Diskon Jasa). Jika lewat 7 Bulan, voucher 100% Expired.</div></li>
+            <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">1</span><div><strong class="text-gray-900">Aturan Gamifikasi Terkunci:</strong> <br>a. Pelanggan <b>wajib</b> memulai dari Servis 8. (Otomatis By-pass jika VIN terdaftar di ShortTerm target S-9).<br>b. Tidak bisa mendaftarkan <i>Double Claim</i> pada tahapan servis yang sama.</div></li>
+            <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">2</span><div><strong class="text-gray-900">Prosedur Klaim Max 6 vs Max 7:</strong> Sistem memberikan toleransi ganda. Jika pelanggan datang di bulan ke-7, maka Benefit Item & Part <b>hangus</b>, hanya menerima Diskon Jasa Basic. Lewat 7 Bulan = Voucher Expired.</div></li>
           </ul>
         </div>
       </div>
@@ -218,13 +223,13 @@
                 <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Target Servis Ke-</label>
                 <select id="servisKe" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm md:text-base" onchange="updateBenefitPreview()">
                   <option value="" disabled selected>Pilih Skema...</option>
-                  <option value="Servis 8 (70.000 KM)" data-bonus="FREE Wiper Fluid + Diskon Part 5.5%">Servis 8 (70.000 KM) - Jasa 15%</option>
-                  <option value="Servis 9 (80.000 KM)" data-bonus="FREE Brake Cleaner + Diskon Part 6.0%">Servis 9 (80.000 KM) - Jasa 20%</option>
-                  <option value="Servis 10 (90.000 KM)" data-bonus="FREE Dashboard Clean + Diskon Part 6.5%">Servis 10 (90.000 KM) - Jasa 25%</option>
-                  <option value="Servis 11 (100.000 KM)" data-bonus="FREE Injector Clean + Diskon Part 7.0%">Servis 11 (100.000 KM) - Jasa 30%</option>
+                  <option value="Servis 8 (70.000 KM)">Servis 8 (70.000 KM) - Jasa 15%</option>
+                  <option value="Servis 9 (80.000 KM)">Servis 9 (80.000 KM) - Jasa 20%</option>
+                  <option value="Servis 10 (90.000 KM)">Servis 10 (90.000 KM) - Jasa 25%</option>
+                  <option value="Servis 11 (100.000 KM)">Servis 11 (100.000 KM) - Jasa 30%</option>
                 </select>
               </div>
-              <div class="col-span-1 md:col-span-2"><label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Estimasi Target Kedatangan (Max 6 Bln)</label><input type="date" id="bookingDate" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm md:text-base"></div>
+              <div class="col-span-1 md:col-span-2"><label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Estimasi Target Kedatangan (Batas Max 6 Bln)</label><input type="date" id="bookingDate" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm md:text-base"></div>
             </div>
             <div class="mt-8 flex justify-end"><button type="submit" id="submitBtn" class="w-full md:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 px-10 rounded-lg shadow-md transition text-base">Generate Tiket QR</button></div>
           </form>
@@ -242,11 +247,25 @@
                   <h1 class="text-[44px] md:text-[48px] font-black leading-[0.95] text-white tracking-tight">GRADUAL<br><span class="text-red-500">LOYALTY</span><br>VOUCHER</h1>
                   <p class="text-sm md:text-md text-gray-300 font-semibold mt-2 tracking-widest uppercase">MODEL: <span id="cardModel" class="text-yellow-400 font-black">-</span></p>
                   
-                  <div class="mt-4 glass-panel p-4 rounded-xl border-l-4 border-l-red-500 shadow-md">
-                    <p class="text-[10px] text-gray-300 uppercase font-bold tracking-wider mb-0.5">Target Servis Berkala:</p>
-                    <p class="text-xl font-black text-white" id="cardServisKe">-</p>
-                    <p class="text-[10px] text-yellow-400 font-bold uppercase tracking-wide mt-2">Bonus Ketepatan Jadwal (Max 6 Bln):</p>
-                    <p class="text-xs font-bold text-gray-100" id="cardBonusInfo">-</p>
+                  <div class="mt-4 glass-panel p-4 rounded-xl border-l-4 border-l-red-500 shadow-md flex justify-between items-center gap-3">
+                    <div class="w-[55%]">
+                      <p class="text-[10px] text-gray-300 uppercase font-bold tracking-wider mb-0.5">Target Servis Berkala:</p>
+                      <p class="text-xl font-black text-white" id="cardServisKe">-</p>
+                      <p class="text-[9px] text-yellow-400 font-bold uppercase tracking-wide mt-2">Full Benefit (Jasa, Part & Bonus):</p>
+                      <p class="text-[11px] font-bold text-gray-100 leading-tight mt-0.5" id="cardBonusInfo">-</p>
+                      <p class="text-[9px] text-blue-300 font-bold uppercase tracking-wide mt-1.5">Basic Benefit (Diskon Jasa Saja):</p>
+                      <p class="text-[11px] font-bold text-gray-100 leading-tight mt-0.5" id="cardBasicInfo">-</p>
+                    </div>
+                    <div class="w-[45%] flex flex-col gap-2 border-l border-white/20 pl-3">
+                       <div class="bg-blue-900/60 p-2 rounded border border-blue-400/30">
+                          <p class="text-[8px] text-blue-200 font-bold uppercase tracking-wide">Batas Max 6 Bulan (Full Benefit):</p>
+                          <p class="text-sm font-black text-white mt-0.5" id="cardMax6">-</p>
+                       </div>
+                       <div class="bg-red-900/60 p-2 rounded border border-red-400/30">
+                          <p class="text-[8px] text-red-200 font-bold uppercase tracking-wide">Batas Max 7 Bulan (Basic Saja):</p>
+                          <p class="text-sm font-black text-white mt-0.5" id="cardMax7">-</p>
+                       </div>
+                    </div>
                   </div>
                   
                   <div class="mt-3 bg-black/30 p-2 rounded-lg border border-white/5">
@@ -258,10 +277,6 @@
                     <div class="glass-panel px-3 py-1.5 rounded-lg flex-1">
                       <p class="text-[9px] text-gray-400 font-bold uppercase">No. Polisi & Rangka</p>
                       <p class="font-bold text-xs uppercase tracking-wide text-white" id="cardNopolNoka">-</p>
-                    </div>
-                    <div class="glass-panel px-3 py-1.5 rounded-lg bg-red-950/40 border-red-500/30">
-                      <p class="text-[9px] text-red-400 font-black uppercase">🔥 LIMIT MAX 7 BLN</p>
-                      <p class="font-mono font-black text-red-400 text-xs" id="cardValidUntil">-</p>
                     </div>
                   </div>
                 </div>
@@ -315,14 +330,20 @@
               <p id="resNopolNoka" class="text-sm font-mono text-gray-600 mt-1 uppercase">-</p>
             </div>
             <div class="md:border-l md:border-gray-200 md:pl-6">
-              <p class="text-xs font-bold text-gray-500 uppercase tracking-wide border-b pb-1 mb-2">Validasi Benefit</p>
+              <p class="text-xs font-bold text-gray-500 uppercase tracking-wide border-b pb-1 mb-2">Validasi Status Voucher</p>
               <p id="resServisKe" class="text-lg font-black text-blue-700">-</p>
+              
               <div class="mt-3 flex flex-col gap-2">
                  <p class="text-xs text-gray-700 font-bold">Max 6 Bln (Full Benefit): <span id="resBatasTepatWaktu" class="font-mono bg-gray-100 px-1.5 py-0.5 rounded border border-gray-300"></span></p>
                  <p class="text-xs text-red-600 font-bold">Max 7 Bln (Hangus Basic): <span id="resBatasBasic" class="font-mono bg-red-50 text-red-700 px-1.5 py-0.5 rounded border border-red-200"></span></p>
               </div>
+
               <div class="mt-4"><span id="resStatus" class="inline-block px-5 py-2 text-sm font-black rounded-lg shadow-sm border">-</span></div>
-              <p id="resWarning" class="text-[10px] text-orange-600 font-bold mt-2 hidden bg-orange-50 border border-orange-200 p-2 rounded">⚠️ Pelanggan datang lebih dari 6 Bulan. Free Item & Diskon Part Hangus, Hanya Berlaku Diskon Jasa Basic.</p>
+              
+              <div class="mt-4 bg-gray-50 border border-gray-200 p-3 rounded-lg hidden" id="resBenefitBox">
+                 <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Benefit Yang Bisa Diklaim SA:</p>
+                 <p class="text-sm font-bold text-gray-900 leading-relaxed" id="resBenefitText">-</p>
+              </div>
             </div>
           </div>
           <input type="hidden" id="currentRow">
@@ -402,7 +423,6 @@
           </div>
         </div>
       </div>
-
     </main>
 
     <!-- MOBILE NAVIGATION -->
@@ -540,7 +560,25 @@
     }
 
     function formatWAPhone(number) { var str = number.toString().replace(/[^0-9]/g, ''); if (str.startsWith('0')) return '62' + str.substring(1); if (str.startsWith('8')) return '62' + str; return str; }
-    function updateBenefitPreview() { var select = document.getElementById('servisKe'); var selectedOption = select.options[select.selectedIndex]; var bonusText = selectedOption.getAttribute('data-bonus'); if(selectedOption.value) { document.getElementById('cardServisKe').innerText = selectedOption.value.split(' - ')[0]; document.getElementById('cardBonusInfo').innerText = bonusText || '-'; } }
+    
+    // PEMBARUAN: Update teks bonus dan basic di tiket langsung berdasarkan pilihan opsi servis
+    function updateBenefitPreview() { 
+      var select = document.getElementById('servisKe'); 
+      var selectedOption = select.options[select.selectedIndex]; 
+      
+      if(selectedOption.value) { 
+        var svcName = selectedOption.value.split(' - ')[0]; // Ambil nama servis, e.g. "Servis 8 (70.000 KM)"
+        document.getElementById('cardServisKe').innerText = svcName; 
+        
+        var svcLevel = svcName.match(/\d+/)[0]; // Ambil angka level servis (8, 9, 10, 11)
+        var benefits = bMap[svcLevel]; // Cari di Map
+        
+        if(benefits) {
+           document.getElementById('cardBonusInfo').innerText = benefits.ontime;
+           document.getElementById('cardBasicInfo').innerText = benefits.basic;
+        }
+      } 
+    }
     
     function loadHistory(noka) { 
       fetchAPI('getHistoryData', { noka: noka }).then(function(res) { 
@@ -559,6 +597,18 @@
     function handleFormSubmit(event) { 
         event.preventDefault(); var btn = document.getElementById('submitBtn'); btn.innerHTML = 'Memvalidasi...'; btn.disabled = true; 
         var nokaRaw = document.getElementById('noka').value.trim().toUpperCase(); var targetSvc = document.getElementById('servisKe').value;
+        
+        // PEMBARUAN: Kalkulasi tanggal Max 6 Bulan & Max 7 Bulan secara instan di JS untuk ditampilkan di Voucher
+        var bDate = document.getElementById('bookingDate').value; 
+        if(bDate) {
+            var bParts = bDate.split('-');
+            var d6 = new Date(bParts[0], bParts[1], 0); // EOM of current month
+            var d7 = new Date(bParts[0], parseInt(bParts[1]), 0); // EOM of next month
+            
+            document.getElementById('cardMax6').innerText = formatDateID(d6);
+            document.getElementById('cardMax7').innerText = formatDateID(d7);
+        }
+
         fetchAPI('getHistoryData', { noka: nokaRaw }).then(function(histRes) {
             if (histRes.success) {
                 var history = histRes.data; 
@@ -574,12 +624,13 @@
                 if (errorMsg) { Swal.fire('Registrasi Ditolak (Gamifikasi)', errorMsg, 'error'); btn.innerHTML = 'Generate Tiket QR'; btn.disabled = false; return; }
 
                 btn.innerHTML = 'Menerbitkan Tiket...';
-                var data = { cabang: sessionUser.cabang, namaSA: document.getElementById('namaSA').value, kodeSA: document.getElementById('kodeSA').value, nama: document.getElementById('nama').value, nohp: document.getElementById('nohp').value, model: document.getElementById('model').value, nopol: document.getElementById('nopol').value.toUpperCase(), noka: nokaRaw, servisKe: targetSvc, booking: document.getElementById('bookingDate').value }; 
+                var data = { cabang: sessionUser.cabang, namaSA: document.getElementById('namaSA').value, kodeSA: document.getElementById('kodeSA').value, nama: document.getElementById('nama').value, nohp: document.getElementById('nohp').value, model: document.getElementById('model').value, nopol: document.getElementById('nopol').value.toUpperCase(), noka: nokaRaw, servisKe: targetSvc, booking: bDate }; 
+                
                 fetchAPI('submitData', { customerData: data }).then(function(res) { 
                     if(res.success) { 
                         document.getElementById('formSection').classList.add('hidden'); document.getElementById('resultSection').classList.remove('hidden'); document.getElementById('resultSection').classList.add('flex'); 
                         document.getElementById('cardModel').innerText = res.model; document.getElementById('cardNopolNoka').innerText = res.nopol.toUpperCase() + ' / ' + res.noka.toUpperCase(); 
-                        document.getElementById('cardCode').innerText = res.code; document.getElementById('cardValidUntil').innerText = res.validUntil; 
+                        document.getElementById('cardCode').innerText = res.code; 
                         document.getElementById('qrCodeImg').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + res.code + '&bgcolor=ffffff'; 
                         updateBenefitPreview(); loadHistory(res.noka); window.scrollTo({top: 0, behavior: 'smooth'}); 
                     } else { Swal.fire('Ditolak', res.message, 'warning'); } 
@@ -610,17 +661,59 @@
     function startLiveScanner() { document.getElementById('live-reader').classList.remove('hidden'); document.getElementById('btnLiveScan').classList.add('hidden'); document.getElementById('scanFeedback').innerText = "MENYALAKAN KAMERA..."; if (!html5QrCode) { html5QrCode = new Html5Qrcode("live-reader"); } html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, function(decodedText) { document.getElementById('uniqueCode').value = decodedText; document.getElementById('scanFeedback').innerText = "QR CODE TERBACA!"; html5QrCode.stop().then(function() { document.getElementById('live-reader').classList.add('hidden'); document.getElementById('btnLiveScan').classList.remove('hidden'); handleCheck(); }); }, function(err) { }).catch(function(err) { document.getElementById('live-reader').classList.add('hidden'); document.getElementById('btnLiveScan').classList.remove('hidden'); Swal.fire('Kamera Terblokir', 'Gunakan opsi Buka Foto/Kamera HP.', 'warning'); }); }
     function scanNativeImage(input) { if (!input.files || !input.files[0]) return; var reader = new FileReader(); document.getElementById('scanFeedback').innerText = "MEMPROSES GAMBAR..."; reader.onload = function(e) { var img = new Image(); img.onload = function() { var canvas = document.createElement("canvas"); var context = canvas.getContext("2d", { willReadFrequently: true }); var scale = img.width > 800 ? 800 / img.width : 1; canvas.width = img.width * scale; canvas.height = img.height * scale; context.drawImage(img, 0, 0, canvas.width, canvas.height); var imageData = context.getImageData(0, 0, canvas.width, canvas.height); var code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" }); if (code && code.data) { document.getElementById('uniqueCode').value = code.data; handleCheck(); } else { Swal.fire('Gagal', 'QR tidak terbaca.', 'warning'); } input.value = ""; }; img.src = e.target.result; }; reader.readAsDataURL(input.files[0]); }
     
+    // PEMBARUAN: Penjelasan detail terkait Benefit yang diterima oleh SA ketika klaim
     function handleCheck() { 
       var code = document.getElementById('uniqueCode').value.trim().toUpperCase(); var btn = document.getElementById('checkBtn'); 
       if (!code) return; btn.innerText = 'Cek...'; btn.disabled = true; document.getElementById('validateResultSection').classList.add('hidden'); 
+      
       fetchAPI('checkCode', { code: code }).then(function(res) { 
         btn.innerText = 'Cek Status Voucher'; btn.disabled = false; 
+        
         if (res.found) { 
           document.getElementById('validateResultSection').classList.remove('hidden'); 
-          document.getElementById('resNama').innerText = res.nama; document.getElementById('resModel').innerText = res.model; document.getElementById('resNopolNoka').innerText = res.nopol + ' | ' + res.noka; document.getElementById('resServisKe').innerText = res.servisKe; document.getElementById('resBatasTepatWaktu').innerText = res.batasTepatWaktu; document.getElementById('resBatasBasic').innerText = res.batasBasic; document.getElementById('currentRow').value = res.row; 
-          var statusEl = document.getElementById('resStatus'); var redeemBtn = document.getElementById('redeemBtn'); var warningEl = document.getElementById('resWarning'); warningEl.classList.add('hidden');
-          if (res.status === 'ACTIVE') { if (res.claimType === 'BASIC_ONLY') { statusEl.innerText = '✔ TIKET VALID (BASIC ONLY)'; statusEl.className = 'inline-block px-4 py-2 text-sm font-black rounded-lg bg-yellow-100 text-yellow-800 border border-yellow-300'; warningEl.classList.remove('hidden'); } else { statusEl.innerText = '✔ TIKET VALID (FULL BENEFIT)'; statusEl.className = 'inline-block px-4 py-2 text-sm font-black rounded-lg bg-green-100 text-green-800 border border-green-300'; } redeemBtn.classList.remove('hidden'); } 
-          else { statusEl.innerText = (res.status === 'EXPIRED') ? '✖ REJECTED (EXPIRED > 7 BLN)' : '✖ SUDAH TERPAKAI'; statusEl.className = 'inline-block px-4 py-2 text-sm font-black rounded-lg bg-gray-100 text-gray-700 border border-gray-300'; redeemBtn.classList.add('hidden'); } 
+          document.getElementById('resNama').innerText = res.nama; document.getElementById('resModel').innerText = res.model; 
+          document.getElementById('resNopolNoka').innerText = res.nopol + ' | ' + res.noka; document.getElementById('resServisKe').innerText = res.servisKe; 
+          document.getElementById('resBatasTepatWaktu').innerText = res.batasTepatWaktu; document.getElementById('resBatasBasic').innerText = res.batasBasic; 
+          document.getElementById('currentRow').value = res.row; 
+          
+          var statusEl = document.getElementById('resStatus'); 
+          var redeemBtn = document.getElementById('redeemBtn'); 
+          
+          var benefitBox = document.getElementById('resBenefitBox');
+          var benefitText = document.getElementById('resBenefitText');
+          benefitBox.classList.remove('hidden'); // Selalu tampilkan box ini
+
+          // Ambil mapping benefit sesuai tingkatan (8,9,10,11)
+          var svcLevel = res.servisKe.match(/\d+/)[0];
+          var bDetail = bMap[svcLevel] || { basic: 'Diskon Jasa Basic', ontime: 'Free Item & Part' };
+
+          if (res.status === 'ACTIVE') { 
+              if (res.claimType === 'BASIC_ONLY') { 
+                  statusEl.innerText = '✔ TIKET VALID (BASIC ONLY)'; 
+                  statusEl.className = 'inline-block px-4 py-2 text-sm font-black rounded-lg bg-yellow-100 text-yellow-800 border border-yellow-300'; 
+                  
+                  // Text benefit (Lebih dari 6 bulan, di bawah 7 bulan)
+                  benefitText.innerHTML = `<span class="text-yellow-700">✅ Berhak Atas: <b>${bDetail.basic}</b></span><br><span class="text-red-500 line-through text-xs">❌ Hangus: ${bDetail.ontime}</span>`;
+              } else { 
+                  statusEl.innerText = '✔ TIKET VALID (FULL BENEFIT)'; 
+                  statusEl.className = 'inline-block px-4 py-2 text-sm font-black rounded-lg bg-green-100 text-green-800 border border-green-300'; 
+                  
+                  // Text benefit (Di bawah 6 bulan)
+                  benefitText.innerHTML = `<span class="text-green-700">✅ Berhak Atas: <b>${bDetail.basic}</b></span><br><span class="text-green-700">✅ Berhak Atas: <b>${bDetail.ontime}</b></span>`;
+              } 
+              redeemBtn.classList.remove('hidden'); 
+          } 
+          else { 
+              statusEl.innerText = (res.status === 'EXPIRED') ? '✖ REJECTED (EXPIRED > 7 BLN)' : '✖ SUDAH TERPAKAI'; 
+              statusEl.className = 'inline-block px-4 py-2 text-sm font-black rounded-lg bg-gray-100 text-gray-700 border border-gray-300'; 
+              redeemBtn.classList.add('hidden'); 
+
+              if (res.status === 'EXPIRED') {
+                  benefitText.innerHTML = `<span class="text-gray-500">❌ Hangus total. Tidak ada benefit yang dapat diberikan karena melebihi batas 7 bulan.</span>`;
+              } else {
+                  benefitText.innerHTML = `<span class="text-gray-500">✔ Benefit tiket ini sudah pernah diklaim.</span>`;
+              }
+          } 
         } else { Swal.fire('Gagal', res.message, 'error'); } 
       }); 
     }
