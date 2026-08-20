@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gradual Loyalty System</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
+  <script> 
+    // 🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴
+    // GANTI STRING DI BAWAH INI DENGAN URL DEPLOY APLIKASI WEB GAS ANDA
+    // PASTIKAN AKSES: "ANYONE / SIAPA SAJA"
+    // 🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzDoS-WcWDyoMW_JC0WgDk5fboMdqaOb9NqbqiVAoIgaUbF_0AkFXSgmVCqWXfns0-T0w/exec";
+    
+    // Deteksi Parameter URL
+    const urlParams = new URLSearchParams(window.location.search);
+    var globalPortalCode = urlParams.get('code') || '';
+    var globalMraDataRaw = [];
+
+    // Wrapper Komunikasi Fetch API ke GAS
+    async function fetchAPI(action, payload = {}) {
+      try {
+        const response = await fetch(GAS_API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: action, payload: payload })
+        });
+        return await response.json();
+      } catch (error) {
+        console.error("API Error:", error);
+        return { success: false, message: "Gagal terhubung ke Database. Cek koneksi Anda." };
+      }
+    }
+  </script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; -webkit-tap-highlight-color: transparent; }
+    .fade-in { animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .nav-item.active { background-color: #1f2937; color: white; border-left: 4px solid #dc2626; }
+    .nav-item { border-left: 4px solid transparent; transition: all 0.2s; }
+    .mobile-nav-item.active { color: #ef4444; }
+    .mobile-nav-item { color: #9ca3af; transition: color 0.2s; }
+    .pdf-card { width: 800px; height: 450px; flex-shrink: 0; background-color: #0b0f19 !important; background-image: linear-gradient(135deg, #0b0f19 0%, #1e1b4b 60%, #450a0a 100%) !important; color: #ffffff !important; }
+    .bg-tech-lines { background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 15px); }
+    .glass-panel { background: rgba(255, 255, 255, 0.08) !important; border: 1px solid rgba(255, 255, 255, 0.15) !important; }
+    input.auto-upper { text-transform: uppercase; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="flex flex-col md:flex-row h-screen overflow-hidden text-gray-800 relative">
+
+  <!-- ========================================== -->
+  <!-- 1. CUSTOMER PORTAL UI (MINI WEBSITE)       -->
+  <!-- ========================================== -->
+  <div id="view-portal" class="fixed inset-0 z-[9999] bg-gray-900 overflow-y-auto" style="display: none;">
+    <div id="portal-loading" class="min-h-screen flex flex-col items-center justify-center text-white">
+      <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600 mb-4"></div>
+      <p class="text-sm font-bold tracking-widest uppercase animate-pulse">Menyiapkan Data...</p>
+    </div>
+    
+    <div id="portal-content" class="max-w-md mx-auto min-h-screen bg-gray-50 flex flex-col relative shadow-2xl hidden fade-in">
+      <div class="h-48 bg-gray-900 bg-tech-lines relative flex items-center justify-center p-6 text-center border-b-4 border-red-600">
+         <div class="absolute top-4 left-4 bg-white px-3 py-1 rounded shadow text-[10px] font-black italic tracking-tighter text-gray-900">NASMOCO <span class="text-red-600 ml-1 border-l-2 border-red-600 pl-1">REWARD</span></div>
+         <div><h1 class="text-2xl font-black text-white uppercase tracking-tight mt-4">Loyalty<br><span class="text-red-500">Progress</span></h1></div>
+      </div>
+      
+      <div class="px-6 py-6 bg-white shadow-sm -mt-4 rounded-t-2xl relative z-10 mx-4 border border-gray-100">
+        <p class="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">Halo,</p>
+        <h2 class="text-xl font-black text-gray-900 uppercase" id="cpNama">-</h2>
+        <p class="text-sm font-bold text-red-600 mt-1" id="cpMobil">-</p>
+        <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+           <p class="text-[10px] font-bold text-red-700 uppercase">🔥 Batas Akhir Penukaran Basic:</p>
+           <p class="text-sm font-black text-gray-900" id="cpValid">-</p>
+        </div>
+      </div>
+
+      <div class="p-4 md:p-6 flex-1 bg-gray-50">
+        <h3 class="text-sm font-bold text-gray-800 uppercase tracking-widest mb-6 text-center border-b pb-2">Roadmap Servis & Benefit</h3>
+        <div class="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-300 before:to-transparent" id="cpTimeline">
+        </div>
+      </div>
+      <div class="p-6 bg-gray-50 text-center text-[10px] text-gray-400 font-bold uppercase pb-10">
+        Tunjukkan halaman ini kepada SA kami saat kedatangan di Nasmoco <span id="cpCabang"></span>.
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 2. LOGIN PANEL (KARYAWAN)                  -->
+  <!-- ========================================== -->
+  <div id="view-login" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-95 p-4">
+    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-md mx-4 relative">
+      <div id="loginLoading" class="absolute inset-0 bg-white bg-opacity-95 z-10 flex flex-col items-center justify-center rounded-2xl">
+        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-red-600 mb-3"></div><p class="text-sm font-semibold text-gray-600">Menyambungkan ke Server...</p>
+      </div>
+      <div class="text-center mb-6">
+        <h1 class="text-2xl font-black text-gray-900 uppercase tracking-wide">Gradual <span class="text-red-600">Loyalty</span></h1>
+        <p class="text-gray-500 text-sm mt-1">Sistem Otentikasi Terpusat</p>
+      </div>
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">ID Cabang / Username</label>
+            <select id="username" required class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-sm md:text-base outline-none">
+              <option value="" disabled selected>Pilih User ID...</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">Password</label>
+            <input type="password" id="password" required class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-sm md:text-base outline-none">
+          </div>
+        </div>
+        <button type="submit" id="btnLogin" class="w-full mt-8 bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-lg shadow-md transition text-lg">Otorisasi Masuk</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 3. WORKSPACE KARYAWAN                      -->
+  <!-- ========================================== -->
+  <div id="app-wrapper" class="flex flex-col md:flex-row w-full h-full hidden fade-in">
+    <!-- SIDEBAR -->
+    <aside class="hidden md:flex w-64 bg-gray-900 text-gray-300 flex-col shrink-0 relative shadow-xl z-20">
+      <div class="h-auto py-5 flex flex-col px-6 border-b border-gray-800 bg-gray-950">
+        <h1 class="text-white font-bold text-lg tracking-wide uppercase">Gradual <span class="text-red-600">Loyalty</span></h1>
+        <div class="mt-3 bg-gray-800 rounded px-3 py-2 text-xs border border-gray-700">
+          <p class="text-gray-400">Petugas: <span id="sessNama" class="text-white font-bold"></span></p>
+          <p class="text-gray-400">Cabang: <span id="sessCabang" class="text-yellow-400 font-bold"></span></p>
+        </div>
+      </div>
+      <nav class="flex-1 py-4 space-y-1 overflow-y-auto">
+        <button onclick="switchTab('register')" id="nav-register" class="nav-item w-full flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white text-left font-medium">Registrasi Tiket</button>
+        <button onclick="switchTab('validate')" id="nav-validate" class="nav-item w-full flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white text-left font-medium">Scanner Validasi</button>
+        <button onclick="switchTab('mra')" id="nav-mra" class="nav-item w-full flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white text-left font-medium">Data MRA (CRM)</button>
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white text-left font-medium text-yellow-400">Dasbor Analitik</button>
+        <button onclick="switchTab('panduan')" id="nav-panduan" class="nav-item w-full flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white text-left font-medium text-blue-400 mt-4 border-t border-gray-800">Buku Panduan</button>
+      </nav>
+      <div class="p-4 border-t border-gray-800"><button onclick="handleLogout()" class="w-full bg-gray-800 hover:bg-red-600 text-white font-medium py-2 rounded transition flex justify-center gap-2 items-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg> Log Out</button></div>
+    </aside>
+
+    <header class="md:hidden bg-gray-950 px-4 py-3 flex justify-between items-center shadow-md z-20 shrink-0">
+      <h1 class="text-white font-black text-lg uppercase tracking-wide">Gradual <span class="text-red-600">Loyalty</span></h1>
+      <button onclick="handleLogout()" class="text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded font-bold transition">Keluar</button>
+    </header>
+
+    <main class="flex-1 overflow-y-auto bg-gray-50 p-4 md:p-8 relative z-10 pb-20 md:pb-8">
+      
+      <!-- TAB: PANDUAN -->
+      <div id="view-panduan" class="w-full max-w-4xl mx-auto fade-in hidden">
+        <h2 class="text-2xl font-black text-gray-900 mb-6 border-b-4 border-red-600 pb-2 inline-block">Buku Panduan Sistem</h2>
+        <div id="panduan-ho" class="hidden bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-200 mb-6">
+          <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">Role: Head Office</span> Panduan Eksekutif</h3>
+          <ul class="space-y-4 text-gray-600 text-sm">
+            <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">1</span><div><strong class="text-gray-900">Distribusi Target JUMP:</strong> Gunakan menu <i>Dasbor Analitik</i> lalu klik tombol <b class="text-red-600">Upload Target JUMP</b>. Pastikan file dalam format Excel (.XLSX) dengan susunan 3 Kolom: Cabang | No Rangka | Potensi Rupiah.</div></li>
+            <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">2</span><div><strong class="text-gray-900">Early Warning System:</strong> Sistem akan menampilkan peringatan merah di Dasbor jika konversi jaringan (redeem) berada di bawah 20% setelah pertengahan bulan.</div></li>
+            <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">3</span><div><strong class="text-gray-900">Evaluasi Revenue Aktual:</strong> Fitur "Cash In" mengukur uang riil yang diinput kasir/SA saat klaim, membandingkannya dengan estimasi kerugian JUMP yang "At Risk".</div></li>
+          </ul>
+        </div>
+        <div id="panduan-cabang" class="hidden bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-200">
+          <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">Role: Cabang & SA</span> SOP Operasional</h3>
+          <ul class="space-y-4 text-gray-600 text-sm">
+            <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">1</span><div><strong class="text-gray-900">Aturan Gamifikasi Terkunci:</strong> 
+              <br>a. Pelanggan <b>wajib</b> memulai dari Servis 8. Pengecualian: Jika No. Rangka ada di database *ShortTerm* untuk target Servis 9, sistem akan otomatis melakukan By-pass Servis 8.
+              <br>b. Anda tidak bisa mendaftarkan <i>Double Claim</i> pada tahapan servis yang sama untuk VIN yang sama, meskipun dilakukan di cabang lain.
+            </div></li>
+            <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">2</span><div><strong class="text-gray-900">Smart Reminder WA:</strong> Jangan biarkan tiket hangus. Buka menu <i>Data MRA (CRM)</i> dan klik tombol hijau "Kirim WA" pada kolom Aksi tiket yang ACTIVE. Teks terbuat otomatis.</div></li>
+            <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">3</span><div><strong class="text-gray-900">Prosedur Klaim Max 6 vs Max 7:</strong> Sistem memberikan toleransi ganda. Jika pelanggan datang di bulan ke-7 (lewat dari batas 6 bulan), maka Benefit Item & Part akan <b>hangus</b>. Pelanggan hanya menerima Basic Benefit (Diskon Jasa). Jika lewat 7 Bulan, voucher 100% Expired.</div></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- TAB: REGISTRASI -->
+      <div id="view-register" class="w-full max-w-5xl mx-auto fade-in hidden">
+        <h2 class="text-xl md:text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">Registrasi & Cetak Tiket</h2>
+        <div id="formSection" class="bg-white p-5 md:p-8 rounded-xl shadow-sm border border-gray-200">
+          <form id="rewardForm" onsubmit="handleFormSubmit(event)">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+              <div class="col-span-1 md:col-span-3 pb-2 border-b border-gray-100"><h3 class="font-bold text-gray-800 text-sm md:text-base">Data Pendaftar (SA)</h3></div>
+              <div class="col-span-1 md:col-span-2">
+                <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Nama Petugas</label>
+                <select id="namaSA" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 text-sm md:text-base outline-none">
+                  <option value="" disabled selected>Pilih SA...</option>
+                </select>
+              </div>
+              <div class="col-span-1"><label class="block text-xs md:text-sm font-bold text-red-700 mb-1">Kode SA (Max 4)</label><input type="text" id="kodeSA" required maxlength="4" placeholder="Cth: A012" class="w-full px-4 py-2.5 bg-red-50 border border-red-300 rounded-lg font-mono font-bold text-red-700 focus:ring-2 focus:ring-red-600 auto-upper text-sm md:text-base" oninput="this.value = this.value.toUpperCase()"></div>
+
+              <div class="col-span-1 md:col-span-3 pb-2 border-b border-gray-100 mt-2"><h3 class="font-bold text-gray-800 text-sm md:text-base">Data Kendaraan</h3></div>
+              <div class="col-span-1 md:col-span-2"><label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Nama Pelanggan</label><input type="text" id="nama" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg auto-upper text-sm md:text-base" oninput="this.value = this.value.toUpperCase()"></div>
+              <div><label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">No WhatsApp</label><input type="tel" id="nohp" required placeholder="Cth: 081234..." class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm md:text-base"></div>
+              <div>
+                <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Model Kendaraan</label>
+                <select id="model" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm md:text-base">
+                  <option value="" disabled selected>Pilih Model...</option>
+                  <option value="AGYA">AGYA</option><option value="CALYA">CALYA</option><option value="AVANZA">AVANZA</option>
+                  <option value="VELOZ">VELOZ</option><option value="RUSH">RUSH</option><option value="RAIZE">RAIZE</option>
+                  <option value="YARIS">YARIS</option><option value="YARIS CROSS">YARIS CROSS</option><option value="COROLLA CROSS">COROLLA CROSS</option>
+                  <option value="INNOVA REBORN">INNOVA REBORN</option><option value="INNOVA ZENIX">INNOVA ZENIX</option>
+                  <option value="FORTUNER">FORTUNER</option><option value="HILUX">HILUX</option>
+                  <option value="ALPHARD">ALPHARD/VELLFIRE</option><option value="VOXY">VOXY</option><option value="LAINNYA">LAINNYA</option>
+                </select>
+              </div>
+              <div><label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">No Polisi</label><input type="text" id="nopol" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg auto-upper text-sm md:text-base" oninput="this.value = this.value.toUpperCase()"></div>
+              <div><label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">No Rangka (VIN)</label><input type="text" id="noka" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg auto-upper text-sm md:text-base" oninput="this.value = this.value.toUpperCase()"></div>
+
+              <div class="col-span-1 md:col-span-3 pb-2 border-b border-gray-100 mt-2"><h3 class="font-bold text-gray-800 text-sm md:text-base">Target Skema & Benefit</h3></div>
+              <div class="col-span-1">
+                <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Target Servis Ke-</label>
+                <select id="servisKe" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm md:text-base" onchange="updateBenefitPreview()">
+                  <option value="" disabled selected>Pilih Skema...</option>
+                  <option value="Servis 8 (70.000 KM)" data-bonus="FREE Wiper Fluid + Diskon Part 5.5%">Servis 8 (70.000 KM) - Jasa 15%</option>
+                  <option value="Servis 9 (80.000 KM)" data-bonus="FREE Brake Cleaner + Diskon Part 6.0%">Servis 9 (80.000 KM) - Jasa 20%</option>
+                  <option value="Servis 10 (90.000 KM)" data-bonus="FREE Dashboard Clean + Diskon Part 6.5%">Servis 10 (90.000 KM) - Jasa 25%</option>
+                  <option value="Servis 11 (100.000 KM)" data-bonus="FREE Injector Clean + Diskon Part 7.0%">Servis 11 (100.000 KM) - Jasa 30%</option>
+                </select>
+              </div>
+              <div class="col-span-1 md:col-span-2"><label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Estimasi Target Kedatangan (Max 6 Bln)</label><input type="date" id="bookingDate" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm md:text-base"></div>
+            </div>
+            <div class="mt-8 flex justify-end"><button type="submit" id="submitBtn" class="w-full md:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 px-10 rounded-lg shadow-md transition text-base">Generate Tiket QR</button></div>
+          </form>
+        </div>
+        
+        <!-- HASIL GENERATE VOUCHER -->
+        <div id="resultSection" class="hidden mt-8 flex-col items-center">
+          <div class="w-full max-w-[800px] overflow-x-auto no-scrollbar rounded-2xl shadow-2xl bg-gray-900 mb-6 border-4 border-gray-700">
+            <div id="loyaltyCard" class="pdf-card relative bg-tech-lines flex">
+              <div class="absolute top-0 right-10 bg-white px-6 py-2 rounded-b-xl shadow-lg border-b-4 border-red-600 flex items-center gap-3 z-10 text-gray-900">
+                <span class="font-black italic text-xl tracking-tighter">NASMOCO</span><span class="border-l-[3px] border-red-600 pl-3 font-black text-red-600 text-lg">REWARD</span>
+              </div>
+              <div class="flex w-full h-full p-8 md:p-10 relative z-10">
+                <div class="w-[60%] flex flex-col justify-center pr-6">
+                  <h1 class="text-[44px] md:text-[48px] font-black leading-[0.95] text-white tracking-tight">GRADUAL<br><span class="text-red-500">LOYALTY</span><br>VOUCHER</h1>
+                  <p class="text-sm md:text-md text-gray-300 font-semibold mt-2 tracking-widest uppercase">MODEL: <span id="cardModel" class="text-yellow-400 font-black">-</span></p>
+                  
+                  <div class="mt-4 glass-panel p-4 rounded-xl border-l-4 border-l-red-500 shadow-md">
+                    <p class="text-[10px] text-gray-300 uppercase font-bold tracking-wider mb-0.5">Target Servis Berkala:</p>
+                    <p class="text-xl font-black text-white" id="cardServisKe">-</p>
+                    <p class="text-[10px] text-yellow-400 font-bold uppercase tracking-wide mt-2">Bonus Ketepatan Jadwal (Max 6 Bln):</p>
+                    <p class="text-xs font-bold text-gray-100" id="cardBonusInfo">-</p>
+                  </div>
+                  
+                  <div class="mt-3 bg-black/30 p-2 rounded-lg border border-white/5">
+                    <p class="text-[9px] text-gray-400 font-bold uppercase mb-1">Roadmap Riwayat Loyalti:</p>
+                    <div id="cardHistory" class="flex items-center gap-2 w-full mt-1 min-h-[25px]"></div>
+                  </div>
+                  
+                  <div class="mt-auto flex gap-3">
+                    <div class="glass-panel px-3 py-1.5 rounded-lg flex-1">
+                      <p class="text-[9px] text-gray-400 font-bold uppercase">No. Polisi & Rangka</p>
+                      <p class="font-bold text-xs uppercase tracking-wide text-white" id="cardNopolNoka">-</p>
+                    </div>
+                    <div class="glass-panel px-3 py-1.5 rounded-lg bg-red-950/40 border-red-500/30">
+                      <p class="text-[9px] text-red-400 font-black uppercase">🔥 LIMIT MAX 7 BLN</p>
+                      <p class="font-mono font-black text-red-400 text-xs" id="cardValidUntil">-</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="w-[40%] flex flex-col justify-between items-center pl-6 border-l border-white/10 pt-14 pb-2">
+                  <div class="w-full bg-white p-3 rounded-xl shadow-2xl border-2 border-gray-400 flex justify-center items-center aspect-square max-h-[220px]">
+                    <img id="qrCodeImg" src="" alt="QR" class="w-full h-full object-contain">
+                  </div>
+                  <div class="text-center w-full bg-black/40 p-3 rounded-lg border border-white/5 mt-4">
+                    <p class="text-[10px] font-black tracking-widest text-yellow-500 uppercase mb-1">Unique Validation Code</p>
+                    <p class="font-mono font-black text-white text-lg bg-gray-950/60 py-1.5 rounded" id="cardCode">-</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col md:flex-row gap-3 w-full max-w-[800px]">
+            <button onclick="downloadPDF()" class="w-full md:w-1/3 bg-gray-900 hover:bg-black text-white font-bold py-3.5 rounded-lg shadow-lg transition">Unduh Tiket PDF</button>
+            <button onclick="shareLinkWA()" class="w-full md:w-1/3 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-3.5 rounded-lg shadow-lg transition">Kirim Link Portal (WA)</button>
+            <button onclick="resetRegisterForm()" class="w-full md:w-1/3 bg-white hover:bg-gray-100 text-red-600 border border-gray-300 font-bold py-3.5 rounded-lg shadow-sm transition">Buat Form Baru</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: SCANNER & VALIDASI -->
+      <div id="view-validate" class="w-full max-w-4xl mx-auto fade-in hidden">
+        <h2 class="text-xl md:text-2xl font-bold text-gray-900 mb-6">Sistem Validasi SA & Klaim Benefit</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
+          <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+            <h3 class="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">Pilih Opsi Scanner</h3>
+            <div id="live-reader" class="w-full bg-black rounded-lg overflow-hidden hidden mb-4 min-h-[250px]"></div>
+            <div class="flex flex-col gap-3">
+              <button id="btnLiveScan" onclick="startLiveScanner()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow transition">Scan Kamera Langsung</button>
+              <div class="relative"><div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-200"></div></div><div class="relative flex justify-center text-xs"><span class="px-2 bg-white text-gray-400 font-bold uppercase tracking-widest">ATAU (JIKA DIBLOKIR)</span></div></div>
+              <label for="qrUpload" class="w-full bg-gray-900 hover:bg-black text-white font-bold py-3.5 rounded-xl cursor-pointer text-center shadow transition">Buka Foto / Kamera HP</label>
+              <input type="file" id="qrUpload" accept="image/*" capture="environment" class="hidden" onchange="scanNativeImage(this)">
+            </div>
+            <p id="scanFeedback" class="text-[11px] text-gray-500 font-bold uppercase mt-4 tracking-wider text-center">Tunggu hingga kode terbaca.</p>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col justify-center">
+            <p class="text-sm font-bold text-gray-800 mb-1 text-center">Verifikasi Manual</p>
+            <input type="text" id="uniqueCode" placeholder="Kode: GL-XXXXXX" class="w-full px-4 py-4 border-2 border-gray-300 rounded-lg text-lg text-center uppercase font-mono focus:ring-2 focus:ring-red-600 mb-4 auto-upper" oninput="this.value = this.value.toUpperCase()">
+            <button onclick="handleCheck()" id="checkBtn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-lg transition text-base shadow-md">Cek Status Voucher</button>
+          </div>
+        </div>
+        <div id="validateResultSection" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-8 relative overflow-hidden">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+            <div>
+              <p class="text-xs font-bold text-gray-500 uppercase tracking-wide border-b pb-1 mb-2">Pelanggan & Unit</p>
+              <p id="resNama" class="text-xl font-black text-gray-900 uppercase">-</p>
+              <p class="text-md font-bold text-red-600 mt-1 uppercase" id="resModel">-</p>
+              <p id="resNopolNoka" class="text-sm font-mono text-gray-600 mt-1 uppercase">-</p>
+            </div>
+            <div class="md:border-l md:border-gray-200 md:pl-6">
+              <p class="text-xs font-bold text-gray-500 uppercase tracking-wide border-b pb-1 mb-2">Validasi Benefit</p>
+              <p id="resServisKe" class="text-lg font-black text-blue-700">-</p>
+              <div class="mt-3 flex flex-col gap-2">
+                 <p class="text-xs text-gray-700 font-bold">Max 6 Bln (Full Benefit): <span id="resBatasTepatWaktu" class="font-mono bg-gray-100 px-1.5 py-0.5 rounded border border-gray-300"></span></p>
+                 <p class="text-xs text-red-600 font-bold">Max 7 Bln (Hangus Basic): <span id="resBatasBasic" class="font-mono bg-red-50 text-red-700 px-1.5 py-0.5 rounded border border-red-200"></span></p>
+              </div>
+              <div class="mt-4"><span id="resStatus" class="inline-block px-5 py-2 text-sm font-black rounded-lg shadow-sm border">-</span></div>
+              <p id="resWarning" class="text-[10px] text-orange-600 font-bold mt-2 hidden bg-orange-50 border border-orange-200 p-2 rounded">⚠️ Pelanggan datang lebih dari 6 Bulan. Free Item & Diskon Part Hangus, Hanya Berlaku Diskon Jasa Basic.</p>
+            </div>
+          </div>
+          <input type="hidden" id="currentRow">
+          <div class="mt-6 flex flex-col md:flex-row justify-end gap-3 border-t border-gray-100 pt-5">
+            <button onclick="resetValidationForm()" class="w-full md:w-auto px-6 py-2.5 text-gray-600 font-bold hover:bg-gray-100 border border-gray-200 rounded-lg transition text-sm">Tutup Layar</button>
+            <button id="redeemBtn" onclick="handleRedeem()" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-2.5 rounded-lg shadow-md transition text-sm hidden">Approve & Selesaikan Klaim</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: DATA MRA -->
+      <div id="view-mra" class="w-full max-w-[1500px] mx-auto fade-in hidden">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
+          <div><h2 class="text-xl font-bold text-gray-900">Modul CRM & Retensi Cabang (Single VIN)</h2><p class="text-sm text-gray-500 mt-1">Satu No. Rangka hanya muncul satu kali beserta tanggal jatuh tempo terdekat.</p></div>
+          <button onclick="downloadMraExcel()" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-4 rounded-lg shadow flex items-center justify-center gap-2 h-fit md:mt-auto">Export ke .XLSX</button>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div class="overflow-x-auto max-h-[65vh]">
+             <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <thead class="bg-gray-900 text-white sticky top-0 z-10" id="mraTableHead">
+                   <tr>
+                      <th class="px-4 py-3 text-left font-semibold whitespace-nowrap border-r border-gray-700">Pelanggan & Unit</th>
+                      <th class="px-4 py-3 text-center font-semibold whitespace-nowrap border-r border-gray-700 text-red-400">Jatuh Tempo (Batas 6 Bln)</th>
+                      <th class="px-4 py-3 text-center font-semibold whitespace-nowrap border-r border-gray-700 w-28">Servis 8</th>
+                      <th class="px-4 py-3 text-center font-semibold whitespace-nowrap border-r border-gray-700 w-28">Servis 9</th>
+                      <th class="px-4 py-3 text-center font-semibold whitespace-nowrap border-r border-gray-700 w-28">Servis 10</th>
+                      <th class="px-4 py-3 text-center font-semibold whitespace-nowrap border-r border-gray-700 w-28">Servis 11</th>
+                      <th class="px-4 py-3 text-center font-semibold whitespace-nowrap">Aksi (Follow-up)</th>
+                   </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 bg-white" id="mraTableBody"></tbody>
+             </table>
+          </div>
+          <div id="mraLoading" class="text-center py-12 text-gray-500 font-medium hidden">Menyusun Data Kendaraan...</div>
+        </div>
+      </div>
+
+      <!-- TAB: DASBOR ANALITIK -->
+      <div id="view-dashboard" class="w-full max-w-7xl mx-auto fade-in hidden">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
+          <div><h2 class="text-xl md:text-2xl font-bold text-gray-900">Dasbor Prediktif & Analitik</h2><p class="text-sm text-gray-500 mt-1">Konversi Siklus Transisi Free Service ke Full Berbayar</p></div>
+          <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+            <div class="w-full md:w-auto"><label class="block text-xs font-bold text-gray-600 mb-1">Periode Target</label><input type="month" id="dashBulan" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg font-bold bg-white outline-none" onchange="loadDashboard()"></div>
+            <button id="btnUploadTarget" onclick="openUploadModal()" class="w-full md:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-lg shadow flex items-center justify-center gap-2 h-fit md:mt-auto hidden">Upload Master Excel</button>
+          </div>
+        </div>
+        <div id="earlyWarning" class="mb-6 bg-red-100 border-l-4 border-red-600 p-4 rounded shadow-sm hidden animate-pulse">
+           <div class="flex">
+             <div class="flex-shrink-0"><svg class="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg></div>
+             <div class="ml-3"><p class="text-sm text-red-700 font-bold uppercase tracking-widest">Early Warning System Actived!</p><p class="text-xs text-red-600 mt-1">Tingkat konversi di bawah 20%. Diperlukan WA Blasting segera.</p></div>
+           </div>
+        </div>
+        <div id="dashLoading" class="text-center py-12 text-gray-500 font-bold hidden">Mesin Analitik Prediktif Sedang Bekerja...</div>
+        <div id="dashContent" class="hidden space-y-6">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-center"><p class="text-[10px] font-bold text-gray-500 uppercase">Leads JUMP Target</p><p class="text-2xl font-black text-gray-900 mt-1" id="kpiLeads">0</p></div>
+            <div class="bg-white p-4 rounded-xl border border-blue-200 shadow-sm border-b-4 border-b-blue-500 text-center"><p class="text-[10px] font-bold text-gray-500 uppercase">Tiket Terbit (Lock-In)</p><p class="text-2xl font-black text-blue-700 mt-1" id="kpiConverted">0</p></div>
+            <div class="bg-white p-4 rounded-xl border border-green-200 shadow-sm border-b-4 border-b-green-500 text-center"><p class="text-[10px] font-bold text-gray-500 uppercase">Servis (Redeemed)</p><p class="text-2xl font-black text-green-700 mt-1" id="kpiRedeemed">0</p></div>
+            <div class="bg-white p-4 rounded-xl border border-yellow-200 shadow-sm border-b-4 border-b-yellow-500 text-center"><p class="text-[10px] font-bold text-gray-500 uppercase">Conversion Rate</p><p class="text-2xl font-black text-gray-900 mt-1" id="kpiRate">0%</p></div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="col-span-1 bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-center"><div class="relative w-full h-52 md:h-64"><canvas id="funnelChart"></canvas></div></div>
+            <div class="col-span-1 md:col-span-2 grid grid-rows-2 gap-4">
+              <div class="bg-green-50 p-5 rounded-xl border border-green-200 shadow-sm flex flex-col justify-center relative overflow-hidden"><div class="absolute top-0 right-0 bg-green-200 text-green-800 text-[9px] font-black px-3 py-1 rounded-bl-lg tracking-wider">CASH IN (KASIR)</div><p class="text-xs font-bold text-green-700 uppercase tracking-widest">Actual Revenue Diselamatkan</p><p class="text-3xl font-black text-green-700 mt-1" id="kpiActual">Rp 0</p><div class="mt-3 flex items-center gap-2"><span class="text-[10px] text-green-600 font-bold uppercase border-r border-green-300 pr-2">Estimasi Potensi:</span><span class="text-[11px] font-black text-green-800" id="kpiSaved">Rp 0</span></div></div>
+              <div class="bg-red-50 p-5 rounded-xl border border-red-200 shadow-sm flex flex-col justify-center relative overflow-hidden"><div class="absolute top-0 right-0 bg-red-200 text-red-800 text-[9px] font-black px-3 py-1 rounded-bl-lg tracking-wider">AT RISK</div><p class="text-xs font-bold text-red-700 uppercase tracking-widest">Loss Revenue (Kebocoran Finansial JUMP)</p><p class="text-3xl font-black text-red-700 mt-1" id="kpiLost">Rp 0</p></div>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+             <div class="col-span-1 md:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+                <div class="bg-gray-900 p-4 border-b border-gray-800 flex justify-between items-center"><h3 class="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2">🏆 TOP 5 SA Leaderboard</h3><span class="text-[10px] text-gray-400 font-medium">Berdasarkan Revenue Terbesar</span></div>
+                <div class="p-0 flex-1 overflow-x-auto"><table class="w-full text-sm text-left"><thead class="bg-gray-50 text-xs uppercase text-gray-500 font-bold"><tr><th class="px-4 py-3 border-b">Rank</th><th class="px-4 py-3 border-b">Service Advisor</th><th class="px-4 py-3 border-b text-center">Unit Terselamatkan</th><th class="px-4 py-3 border-b text-right">Revenue (Rp)</th></tr></thead><tbody id="leaderboardBody" class="divide-y divide-gray-100"></tbody></table></div>
+             </div>
+             <div class="col-span-1 bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col">
+               <div class="bg-gray-900 p-4 border-b border-gray-800"><h3 class="text-white font-bold text-sm uppercase tracking-wider">🎯 Segmentasi Model Retensi</h3></div>
+               <div class="p-4 flex-1 relative flex items-center justify-center min-h-[250px]"><canvas id="segmentChart"></canvas></div>
+             </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- MOBILE NAVIGATION -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center z-50 pb-safe shadow-[0_-4px_10px_rgba(0,0,0,0.08)]">
+      <button onclick="switchTab('register')" id="mob-register" class="mobile-nav-item active flex-1 py-2 flex flex-col items-center gap-0.5"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg><span class="text-[9px] font-bold">Register</span></button>
+      <button onclick="switchTab('validate')" id="mob-validate" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg><span class="text-[9px] font-bold">Scanner</span></button>
+      <button onclick="switchTab('mra')" id="mob-mra" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg><span class="text-[9px] font-bold">CRM</span></button>
+      <button onclick="switchTab('dashboard')" id="mob-dashboard" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg><span class="text-[9px] font-bold">Dasbor</span></button>
+      <button onclick="switchTab('panduan')" id="mob-panduan" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100 text-blue-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg><span class="text-[9px] font-bold">Panduan</span></button>
+    </nav>
+  </div>
+
+  <!-- UPLOAD MODAL -->
+  <div id="uploadModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900 bg-opacity-80 p-4 hidden">
+    <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-md">
+      <h3 class="text-lg font-bold text-gray-900 mb-2">Upload Master Target JUMP</h3>
+      <div class="space-y-4 mb-6">
+        <div><label class="block text-sm font-bold text-gray-700 mb-1">Bulan Data Periode</label><input type="month" id="uploadBulan" required class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 outline-none"></div>
+        <div><label class="block text-sm font-bold text-gray-700 mb-1">Pilih File Excel (.xlsx)</label><input type="file" id="excelFile" accept=".xlsx, .xls" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50"></div>
+      </div>
+      <div class="flex justify-end gap-3">
+        <button onclick="closeUploadModal()" class="px-5 py-2 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition text-sm">Batal</button>
+        <button id="btnProsesExcel" onclick="processUpload()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2 rounded-lg shadow transition text-sm">Proses Excel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    Chart.register(ChartDataLabels); 
+    var sessionUser = null; 
+    var funnelChartInstance = null;
+    var segmentChartInstance = null;
+    var html5QrCode = null; 
+
+    document.addEventListener("DOMContentLoaded", function() {
+      if (globalPortalCode && globalPortalCode !== '') {
+         document.getElementById('view-login').style.display = 'none';
+         document.getElementById('app-wrapper').style.display = 'none';
+         var portalContainer = document.getElementById('view-portal');
+         portalContainer.style.display = 'block';
+         portalContainer.classList.remove('hidden');
+         loadCustomerPortal(globalPortalCode);
+         return; 
+      }
+      var dateInput = document.getElementById('bookingDate');
+      if(dateInput) { 
+        var d = new Date(); d.setMonth(d.getMonth() + 6); 
+        var maxStr = d.toISOString().split('T')[0];
+        dateInput.value = maxStr; dateInput.setAttribute('max', maxStr); 
+      }
+      var now = new Date(); document.getElementById('dashBulan').value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+
+      fetchAPI('getBranchList').then(function(res) {
+          if(res.success) {
+             var select = document.getElementById('username');
+             res.data.forEach(function(b) { select.innerHTML += '<option value="' + b + '">' + b + '</option>'; });
+             document.getElementById('loginLoading').classList.add('hidden');
+          } else {
+             document.getElementById('loginLoading').innerHTML = '<p class="text-red-500 font-bold">Gagal menghubungkan API. Cek Link GAS.</p>';
+          }
+      });
+
+      var savedSession = localStorage.getItem('gls_session');
+      if (savedSession) {
+        sessionUser = JSON.parse(savedSession);
+        document.getElementById('view-login').classList.add('hidden'); document.getElementById('app-wrapper').classList.remove('hidden');
+        document.getElementById('sessNama').innerText = sessionUser.nama; document.getElementById('sessCabang').innerText = sessionUser.cabang;
+        loadSADropdown(); switchTab('register'); 
+      }
+    });
+
+    function loadSADropdown() {
+      var select = document.getElementById('namaSA'); select.innerHTML = '<option value="" disabled selected>Memuat list SA...</option>';
+      fetchAPI('getSAList', { userCabang: sessionUser.cabang }).then(function(res) {
+        select.innerHTML = '<option value="" disabled selected>Pilih SA...</option>';
+        if (res.success && res.data.length > 0) { res.data.forEach(function(nama) { select.innerHTML += '<option value="' + nama + '">' + nama + '</option>'; }); } 
+        else { select.innerHTML = '<option value="" disabled selected>Tidak ada data SA</option>'; }
+      });
+    }
+
+    function loadCustomerPortal(code) {
+      fetchAPI('getCustomerPortalData', { uniqueCode: code }).then(function(res) {
+        document.getElementById('portal-loading').style.display = 'none'; document.getElementById('portal-content').classList.remove('hidden');
+        if(res.success) {
+          document.getElementById('cpNama').innerText = res.info.nama; document.getElementById('cpMobil').innerText = res.info.model + ' (' + res.info.nopol + ')';
+          document.getElementById('cpValid').innerText = res.info.validUntil; document.getElementById('cpCabang').innerText = res.info.cabang;
+          var tlHtml = '';
+          res.history.forEach(function(step) {
+             var ringColor = 'border-gray-300 bg-white text-gray-400'; var titleColor = 'text-gray-500'; var statusDisplay = step.status; var boxClass = 'bg-white border-gray-200'; var redeemHtml = '';
+             if (step.status === 'DONE' || step.status === 'REDEEMED') { 
+                ringColor = 'border-green-500 bg-green-50 text-green-600'; titleColor = 'text-green-700 font-bold'; statusDisplay = 'KLAIM SELESAI'; boxClass = 'bg-green-50 border-green-200'; redeemHtml = '<div class="bg-green-100/80 p-2 rounded border border-green-200 text-[9px] text-green-800 font-bold uppercase col-span-2 mt-1">✅ Tgl Redeem Aktual: <span class="text-green-900 font-black text-[11px] ml-1">' + step.redeemDate + '</span></div>';
+             } else if (step.status === 'ACTIVE') { 
+                ringColor = 'border-red-500 bg-red-600 text-white shadow-lg animate-bounce'; titleColor = 'text-red-700 font-black'; statusDisplay = 'AKTIF (SEGERA KLAIM)'; boxClass = 'bg-red-50 border-red-200 shadow-md';
+             } else if (step.status === 'FAILED' || step.status === 'EXPIRED') { 
+                ringColor = 'border-gray-400 bg-gray-200 text-gray-600'; titleColor = 'text-gray-500 line-through'; statusDisplay = 'HANGUS'; boxClass = 'bg-gray-100 border-gray-300 opacity-60';
+             }
+             var benefitDisplay = '-';
+             if (step.benefit && typeof step.benefit === 'object') {
+                 benefitDisplay = '<div class="flex flex-col gap-1.5 w-full"><div class="flex justify-between items-start pb-1 border-b border-blue-200/50"><span>🛠️ <b>Benefit Basic:</b> <br>' + step.benefit.basic + '</span><span class="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded text-[8px] font-bold border border-blue-200 text-right">Max 7 Bulan:<br>' + step.max7 + '</span></div><div class="flex justify-between items-start"><span>🎁 <b>Benefit Tepat Waktu:</b> <br>' + step.benefit.ontime + '</span><span class="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded text-[8px] font-bold border border-blue-200 text-right">Max 6 Bulan:<br>' + step.max6 + '</span></div></div>';
+             }
+             tlHtml += '<div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active"><div class="flex items-center justify-center w-10 h-10 rounded-full border-4 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-sm z-10 ' + ringColor + ' text-lg">' + step.icon + '</div><div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-xl border ' + boxClass + '"><div class="flex items-center justify-between mb-2"><div class="' + titleColor + ' text-sm uppercase tracking-wide">' + step.label + '</div></div><div class="text-[10px] text-gray-600 font-bold uppercase mb-2">Status: <span class="font-black">' + statusDisplay + '</span></div><div class="bg-blue-50 text-blue-800 text-[10px] p-2 rounded mb-2 font-medium leading-tight shadow-sm border border-blue-100">' + benefitDisplay + '</div><div class="grid grid-cols-2 gap-2 mt-2"><div class="bg-white/60 p-2 rounded border border-gray-200 text-[9px] text-gray-500 font-bold uppercase col-span-2">🎫 Kode Tiket (Tunjukkan ke SA): <span class="text-gray-900 font-mono text-[11px] ml-2">' + step.code + '</span></div>' + redeemHtml + '</div></div></div>';
+          }); document.getElementById('cpTimeline').innerHTML = tlHtml;
+        } else { document.getElementById('cpTimeline').innerHTML = '<div class="text-center text-red-500 font-bold mt-10">Tiket Tidak Ditemukan.</div>'; }
+      });
+    }
+
+    function handleLogin(e) { 
+      e.preventDefault(); var btn = document.getElementById('btnLogin'); btn.innerText = 'Verifikasi...'; btn.disabled = true;
+      var user = document.getElementById('username').value; var pass = document.getElementById('password').value;
+      if(!user) { Swal.fire('Error', 'Pilih User ID', 'warning'); btn.innerText = 'Otorisasi Masuk'; btn.disabled = false; return; }
+      fetchAPI('doLogin', { username: user, password: pass }).then(function(res) {
+          if(res.success) {
+            sessionUser = res.user; localStorage.setItem('gls_session', JSON.stringify(sessionUser));
+            document.getElementById('view-login').classList.add('hidden'); document.getElementById('app-wrapper').classList.remove('hidden');
+            document.getElementById('sessNama').innerText = sessionUser.nama; document.getElementById('sessCabang').innerText = sessionUser.cabang;
+            loadSADropdown(); switchTab('register');
+          } else { Swal.fire('Ditolak', res.message, 'error'); btn.innerText = 'Otorisasi Masuk'; btn.disabled = false; }
+      });
+    }
+    
+    function handleLogout() { localStorage.removeItem('gls_session'); sessionUser = null; document.getElementById('app-wrapper').classList.add('hidden'); document.getElementById('view-login').classList.remove('hidden'); document.getElementById('password').value = ''; }
+    
+    function switchTab(tabId) {
+      if (html5QrCode && html5QrCode.isScanning) { html5QrCode.stop().then(function() { document.getElementById('live-reader').classList.add('hidden'); document.getElementById('btnLiveScan').classList.remove('hidden'); }); }
+      var views = document.querySelectorAll('[id^="view-"]'); for(var i=0; i<views.length; i++){ if(views[i].id !== 'view-login' && views[i].id !== 'view-portal') { views[i].classList.add('hidden'); } }
+      var navItems = document.querySelectorAll('.nav-item'); for(var j=0; j<navItems.length; j++){ navItems[j].classList.remove('active'); }
+      var dNav = document.getElementById('nav-' + tabId); if(dNav) dNav.classList.add('active');
+      var mobNavItems = document.querySelectorAll('.mobile-nav-item'); for(var k=0; k<mobNavItems.length; k++){ mobNavItems[k].classList.remove('active'); }
+      var mNav = document.getElementById('mob-' + tabId); if(mNav) mNav.classList.add('active');
+      
+      document.getElementById('view-' + tabId).classList.remove('hidden'); 
+      if (sessionUser && sessionUser.cabang.toUpperCase() === 'HEAD OFFICE') { var btnUpload = document.getElementById('btnUploadTarget'); if (btnUpload) btnUpload.classList.remove('hidden'); document.getElementById('panduan-ho').classList.remove('hidden'); document.getElementById('panduan-cabang').classList.add('hidden'); } 
+      else { var btnUpload = document.getElementById('btnUploadTarget'); if (btnUpload) btnUpload.classList.add('hidden'); document.getElementById('panduan-ho').classList.add('hidden'); document.getElementById('panduan-cabang').classList.remove('hidden'); }
+      if(tabId === 'mra') loadMraData(); if(tabId === 'dashboard') loadDashboard();
+    }
+
+    function formatWAPhone(number) { var str = number.toString().replace(/[^0-9]/g, ''); if (str.startsWith('0')) return '62' + str.substring(1); if (str.startsWith('8')) return '62' + str; return str; }
+    function updateBenefitPreview() { var select = document.getElementById('servisKe'); var selectedOption = select.options[select.selectedIndex]; var bonusText = selectedOption.getAttribute('data-bonus'); if(selectedOption.value) { document.getElementById('cardServisKe').innerText = selectedOption.value.split(' - ')[0]; document.getElementById('cardBonusInfo').innerText = bonusText || '-'; } }
+    
+    function loadHistory(noka) { 
+      fetchAPI('getHistoryData', { noka: noka }).then(function(res) { 
+        var historyDiv = document.getElementById('cardHistory'); historyDiv.innerHTML = ''; 
+        var timeline = [ { id: '8', name: 'S-8' }, { id: '9', name: 'S-9' }, { id: '10', name: 'S-10' }, { id: '11', name: 'S-11' } ];
+        var html = '';
+        timeline.forEach(function(step) {
+            var found = res.data.find(function(item) { var sClean = item.servisKe.toUpperCase().replace(/\s/g, ''); return sClean.indexOf('SERVIS' + step.id) > -1; });
+            var bgClass = 'bg-gray-800 border-gray-600 text-gray-500'; var statusText = ''; var extraClass = 'opacity-50';
+            if (found) { extraClass = ''; if (found.status === 'REDEEMED') { bgClass = 'bg-gray-500 border-gray-400 text-white'; statusText = '<span class="absolute -top-2 -right-2 bg-gray-200 text-gray-800 text-[6px] font-black px-1 py-0.5 rounded shadow transform rotate-12 border border-gray-400">REDEEMED</span>'; } else if (found.status === 'ACTIVE') { bgClass = 'bg-green-500 border-green-400 text-white shadow-[0_0_8px_rgba(34,197,94,0.6)]'; } else if (found.status === 'EXPIRED') { bgClass = 'bg-red-600 border-red-500 text-white'; statusText = '<span class="absolute -top-2 -right-2 bg-red-900 text-white text-[6px] font-black px-1 py-0.5 rounded shadow transform rotate-12">EXPIRED</span>'; } }
+            html += '<div class="relative flex-1 text-center border rounded-md py-1 ' + bgClass + ' ' + extraClass + ' transition-all"><p class="text-[10px] font-black tracking-wider">' + step.name + '</p>' + statusText + '</div>';
+        }); historyDiv.innerHTML = html;
+      }); 
+    }
+    
+    function handleFormSubmit(event) { 
+        event.preventDefault(); var btn = document.getElementById('submitBtn'); btn.innerHTML = 'Memvalidasi...'; btn.disabled = true; 
+        var nokaRaw = document.getElementById('noka').value.trim().toUpperCase(); var targetSvc = document.getElementById('servisKe').value;
+        fetchAPI('getHistoryData', { noka: nokaRaw }).then(function(histRes) {
+            if (histRes.success) {
+                var history = histRes.data; 
+                var checkExistsExact = function(fullSvcName) { var tClean = fullSvcName.toUpperCase().replace(/\s/g, ''); return history.some(function(h) { return h.servisKe.toUpperCase().replace(/\s/g, '') === tClean; }); };
+                var checkExistsLevel = function(levelNum) { return history.some(function(h) { var sClean = h.servisKe.toUpperCase().replace(/\s/g, ''); return sClean.indexOf('SERVIS' + levelNum) > -1; }); };
+                var errorMsg = null; var baseTargetSvcName = targetSvc.split(' (')[0].trim(); var targetSvcClean = targetSvc.toUpperCase().replace(/\s/g, '');
+                
+                if (checkExistsExact(targetSvc)) { errorMsg = "Kunci Sistem: Voucher untuk tahapan ini (" + baseTargetSvcName + ") sudah pernah diterbitkan (Double Claim)."; } 
+                else if (targetSvcClean.indexOf('SERVIS9') > -1 && !checkExistsLevel('8')) { errorMsg = "Kunci Sistem: Start program wajib dimulai dari Servis 8. Anda belum mendaftarkan tiket Servis 8 untuk nomor rangka ini."; } 
+                else if (targetSvcClean.indexOf('SERVIS10') > -1 && !checkExistsLevel('9')) { errorMsg = "Kunci Sistem: Rantai terputus. Anda belum memiliki histori pendaftaran Servis 9."; } 
+                else if (targetSvcClean.indexOf('SERVIS11') > -1 && !checkExistsLevel('10')) { errorMsg = "Kunci Sistem: Rantai terputus. Anda belum memiliki histori pendaftaran Servis 10."; }
+
+                if (errorMsg) { Swal.fire('Registrasi Ditolak (Gamifikasi)', errorMsg, 'error'); btn.innerHTML = 'Generate Tiket QR'; btn.disabled = false; return; }
+
+                btn.innerHTML = 'Menerbitkan Tiket...';
+                var data = { cabang: sessionUser.cabang, namaSA: document.getElementById('namaSA').value, kodeSA: document.getElementById('kodeSA').value, nama: document.getElementById('nama').value, nohp: document.getElementById('nohp').value, model: document.getElementById('model').value, nopol: document.getElementById('nopol').value.toUpperCase(), noka: nokaRaw, servisKe: targetSvc, booking: document.getElementById('bookingDate').value }; 
+                fetchAPI('submitData', { customerData: data }).then(function(res) { 
+                    if(res.success) { 
+                        document.getElementById('formSection').classList.add('hidden'); document.getElementById('resultSection').classList.remove('hidden'); document.getElementById('resultSection').classList.add('flex'); 
+                        document.getElementById('cardModel').innerText = res.model; document.getElementById('cardNopolNoka').innerText = res.nopol.toUpperCase() + ' / ' + res.noka.toUpperCase(); 
+                        document.getElementById('cardCode').innerText = res.code; document.getElementById('cardValidUntil').innerText = res.validUntil; 
+                        document.getElementById('qrCodeImg').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + res.code + '&bgcolor=ffffff'; 
+                        updateBenefitPreview(); loadHistory(res.noka); window.scrollTo({top: 0, behavior: 'smooth'}); 
+                    } else { Swal.fire('Ditolak', res.message, 'warning'); } 
+                    btn.innerHTML = 'Generate Tiket QR'; btn.disabled = false; 
+                });
+            } else { Swal.fire('Error', 'Sistem gagal memverifikasi histori.', 'error'); btn.innerHTML = 'Generate Tiket QR'; btn.disabled = false; }
+        });
+    }
+    
+    function downloadPDF() { var element = document.getElementById('loyaltyCard'); var nopol = document.getElementById('nopol').value; html2pdf().set({ margin: 0, filename: 'Voucher-'+nopol+'.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'px', format: [800, 450], orientation: 'landscape' } }).from(element).save(); }
+    
+    function resetRegisterForm() { 
+      var kode = document.getElementById('kodeSA').value; document.getElementById('rewardForm').reset(); 
+      var d = new Date(); d.setMonth(d.getMonth() + 6); var maxStr = d.toISOString().split('T')[0];
+      var dateInput = document.getElementById('bookingDate'); dateInput.value = maxStr; dateInput.setAttribute('max', maxStr); 
+      document.getElementById('kodeSA').value = kode; document.getElementById('namaSA').selectedIndex = 0; 
+      document.getElementById('formSection').classList.remove('hidden'); document.getElementById('resultSection').classList.add('hidden'); document.getElementById('resultSection').classList.remove('flex'); 
+    }
+
+    function shareLinkWA() {
+      var nohpRaw = document.getElementById('nohp').value; var nama = document.getElementById('nama').value; var code = document.getElementById('cardCode').innerText;
+      if (!nohpRaw || !code) { return Swal.fire('Error', 'Data tiket tidak lengkap.', 'error'); }
+      var portalLink = window.location.href.split('?')[0] + "?code=" + code;
+      var text = "Halo Kak *" + nama + "*,\n\nTerima kasih atas kepercayaannya pada Nasmoco. Cek hadiah *Loyalty Reward* dan progres servis kendaraan Anda melalui tautan portal pribadi Anda di bawah ini:\n\n👉 " + portalLink + "\n\nTunjukkan halaman tersebut kepada Service Advisor kami saat Anda berkunjung ke bengkel.\n\n*Nasmoco*";
+      window.open("https://wa.me/" + formatWAPhone(nohpRaw) + "?text=" + encodeURIComponent(text), '_blank');
+    }
+
+    function startLiveScanner() { document.getElementById('live-reader').classList.remove('hidden'); document.getElementById('btnLiveScan').classList.add('hidden'); document.getElementById('scanFeedback').innerText = "MENYALAKAN KAMERA..."; if (!html5QrCode) { html5QrCode = new Html5Qrcode("live-reader"); } html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, function(decodedText) { document.getElementById('uniqueCode').value = decodedText; document.getElementById('scanFeedback').innerText = "QR CODE TERBACA!"; html5QrCode.stop().then(function() { document.getElementById('live-reader').classList.add('hidden'); document.getElementById('btnLiveScan').classList.remove('hidden'); handleCheck(); }); }, function(err) { }).catch(function(err) { document.getElementById('live-reader').classList.add('hidden'); document.getElementById('btnLiveScan').classList.remove('hidden'); Swal.fire('Kamera Terblokir', 'Gunakan opsi Buka Foto/Kamera HP.', 'warning'); }); }
+    function scanNativeImage(input) { if (!input.files || !input.files[0]) return; var reader = new FileReader(); document.getElementById('scanFeedback').innerText = "MEMPROSES GAMBAR..."; reader.onload = function(e) { var img = new Image(); img.onload = function() { var canvas = document.createElement("canvas"); var context = canvas.getContext("2d", { willReadFrequently: true }); var scale = img.width > 800 ? 800 / img.width : 1; canvas.width = img.width * scale; canvas.height = img.height * scale; context.drawImage(img, 0, 0, canvas.width, canvas.height); var imageData = context.getImageData(0, 0, canvas.width, canvas.height); var code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" }); if (code && code.data) { document.getElementById('uniqueCode').value = code.data; handleCheck(); } else { Swal.fire('Gagal', 'QR tidak terbaca.', 'warning'); } input.value = ""; }; img.src = e.target.result; }; reader.readAsDataURL(input.files[0]); }
+    
+    function handleCheck() { 
+      var code = document.getElementById('uniqueCode').value.trim().toUpperCase(); var btn = document.getElementById('checkBtn'); 
+      if (!code) return; btn.innerText = 'Cek...'; btn.disabled = true; document.getElementById('validateResultSection').classList.add('hidden'); 
+      fetchAPI('checkCode', { code: code }).then(function(res) { 
+        btn.innerText = 'Cek Status Voucher'; btn.disabled = false; 
+        if (res.found) { 
+          document.getElementById('validateResultSection').classList.remove('hidden'); 
+          document.getElementById('resNama').innerText = res.nama; document.getElementById('resModel').innerText = res.model; document.getElementById('resNopolNoka').innerText = res.nopol + ' | ' + res.noka; document.getElementById('resServisKe').innerText = res.servisKe; document.getElementById('resBatasTepatWaktu').innerText = res.batasTepatWaktu; document.getElementById('resBatasBasic').innerText = res.batasBasic; document.getElementById('currentRow').value = res.row; 
+          var statusEl = document.getElementById('resStatus'); var redeemBtn = document.getElementById('redeemBtn'); var warningEl = document.getElementById('resWarning'); warningEl.classList.add('hidden');
+          if (res.status === 'ACTIVE') { if (res.claimType === 'BASIC_ONLY') { statusEl.innerText = '✔ TIKET VALID (BASIC ONLY)'; statusEl.className = 'inline-block px-4 py-2 text-sm font-black rounded-lg bg-yellow-100 text-yellow-800 border border-yellow-300'; warningEl.classList.remove('hidden'); } else { statusEl.innerText = '✔ TIKET VALID (FULL BENEFIT)'; statusEl.className = 'inline-block px-4 py-2 text-sm font-black rounded-lg bg-green-100 text-green-800 border border-green-300'; } redeemBtn.classList.remove('hidden'); } 
+          else { statusEl.innerText = (res.status === 'EXPIRED') ? '✖ REJECTED (EXPIRED > 7 BLN)' : '✖ SUDAH TERPAKAI'; statusEl.className = 'inline-block px-4 py-2 text-sm font-black rounded-lg bg-gray-100 text-gray-700 border border-gray-300'; redeemBtn.classList.add('hidden'); } 
+        } else { Swal.fire('Gagal', res.message, 'error'); } 
+      }); 
+    }
+    
+    function handleRedeem() { Swal.fire({ title: 'Otorisasi Klaim Final', html: '<p class="text-sm text-gray-500 mb-5">Masukkan data aktual transaksi (Biling Kasir).</p><div class="text-left mb-3"><label class="text-xs font-bold text-gray-700 ml-1">Nomor Work Order (WO)</label><input id="swal-wo" class="swal2-input !mt-1" style="text-transform: uppercase;" placeholder="Cth: WO2400123" maxlength="15"></div><div class="text-left mb-2"><label class="text-xs font-bold text-gray-700 ml-1">Total Actual Revenue (Rp)</label><input id="swal-rev" type="number" class="swal2-input !mt-1" placeholder="Cth: 1550000"></div>', focusConfirm: false, showCancelButton: true, confirmButtonText: 'Selesaikan Klaim ✔', confirmButtonColor: '#16a34a', cancelButtonText: 'Batal', preConfirm: () => { const wo = document.getElementById('swal-wo').value.trim(); const rev = document.getElementById('swal-rev').value.trim(); if (!wo || !rev) { Swal.showValidationMessage('Wajib diisi!'); } return { wo: wo.toUpperCase(), rev: rev }; } }).then(function(result) { if (result.isConfirmed) { var btn = document.getElementById('redeemBtn'); btn.innerText = 'Memproses...'; btn.disabled = true; fetchAPI('redeemCode', { rowNumber: document.getElementById('currentRow').value, noWo: result.value.wo, actualRevenue: result.value.rev }).then(function(res) { if (res.success) { Swal.fire('Sukses!', 'Klaim divalidasi. Revenue aktual berhasil dicatat.', 'success'); handleCheck(); } else { Swal.fire('Error', res.message, 'error'); btn.disabled = false; btn.innerText = 'Approve & Selesaikan Klaim'; } }); } }); }
+    function resetValidationForm() { document.getElementById('uniqueCode').value = ''; document.getElementById('validateResultSection').classList.add('hidden'); }
+
+    function buildBadgeCell(svc) {
+        if (!svc) return '-';
+        if(svc.status === 'REDEEMED') return '<div class="bg-green-50 border border-green-200 text-green-700 font-bold px-2 py-1.5 rounded shadow-sm flex flex-col justify-center items-center gap-1 leading-tight"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg><span class="text-[9px] uppercase">Selesai</span></div>';
+        if(svc.status === 'EXPIRED') return '<div class="bg-gray-100 border border-gray-200 text-gray-500 font-bold px-2 py-1.5 rounded flex flex-col justify-center items-center gap-1 leading-tight"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg><span class="text-[9px] uppercase">Hangus</span></div>';
+        if(svc.status === 'ACTIVE') return '<div class="bg-red-50 border border-red-200 text-red-700 font-bold px-2 py-1.5 rounded shadow flex flex-col justify-center items-center gap-0.5 leading-tight animate-pulse"><span class="text-[11px] font-mono whitespace-nowrap">' + svc.validUntil + '</span><span class="text-[9px] uppercase bg-red-600 text-white px-1.5 rounded">Aktif</span></div>';
+        return '-';
+    }
+
+    function loadMraData() {
+      document.getElementById('mraLoading').classList.remove('hidden'); document.getElementById('mraTableBody').innerHTML = '';
+      fetchAPI('getMraData', { userCabang: sessionUser.cabang }).then(function(res) {
+          document.getElementById('mraLoading').classList.add('hidden'); 
+          if (!res.success) { document.getElementById('mraTableBody').innerHTML = '<tr><td colspan="7" class="text-center py-10 text-red-600 font-bold">Terjadi Kesalahan: ' + res.message + '</td></tr>'; return; }
+          if (!res.rows || res.rows.length === 0) { document.getElementById('mraTableBody').innerHTML = '<tr><td colspan="7" class="text-center py-10 text-gray-500 font-bold tracking-wide">Belum ada data tiket untuk cabang Anda.</td></tr>'; return; }
+          globalMraDataRaw = res.rows; var tbodyHtml = '';
+          res.rows.forEach(function(row) { 
+            var cell8 = buildBadgeCell(row.history['S8']); var cell9 = buildBadgeCell(row.history['S9']); var cell10 = buildBadgeCell(row.history['S10']); var cell11 = buildBadgeCell(row.history['S11']);
+            var activeSvc = null; for(var key in row.history) { if(row.history[key].status === 'ACTIVE') activeSvc = row.history[key]; }
+            var btnWA = '-';
+            if (activeSvc) { 
+              var waFormat = formatWAPhone(row.nohp);
+              var waText = encodeURIComponent("Halo *" + row.nama + "*, ini tim Nasmoco. Mengingatkan bahwa tiket hadiah untuk *" + activeSvc.servisFull + "* mobil " + row.model + " Anda akan segera hangus pada *" + activeSvc.validUntil + "*. Jangan sampai kehilangan bonus loyaltinya ya Kak! Kapan rencana bisa merapat ke bengkel Nasmoco?");
+              btnWA = '<a href="https://wa.me/' + waFormat + '?text=' + waText + '" target="_blank" class="bg-[#25D366] hover:bg-green-600 text-white text-[10px] px-3 py-1.5 rounded font-bold shadow flex justify-center items-center gap-1 transition whitespace-nowrap"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Kirim Reminder WA</a>';
+            }
+            tbodyHtml += '<tr class="hover:bg-gray-50 border-b border-gray-100 text-xs"><td class="px-4 py-3 border-r border-gray-100"><p class="font-bold text-gray-900 uppercase">' + row.nama + '</p><p class="text-gray-600 font-medium mt-0.5">' + row.model + ' (' + row.nopol + ')</p><p class="font-mono text-[9px] text-gray-400 mt-1">' + row.noka + ' | 📞 ' + formatWAPhone(row.nohp) + '</p></td><td class="px-4 py-3 text-center border-r border-gray-100 font-mono font-bold text-red-600 whitespace-nowrap">' + row.jatuhTempoTerdekat + '</td><td class="px-2 py-3 text-center align-middle border-r border-gray-100">' + cell8 + '</td><td class="px-2 py-3 text-center align-middle border-r border-gray-100">' + cell9 + '</td><td class="px-2 py-3 text-center align-middle border-r border-gray-100">' + cell10 + '</td><td class="px-2 py-3 text-center align-middle border-r border-gray-100">' + cell11 + '</td><td class="px-4 py-3 text-center align-middle flex justify-center items-center h-full">' + btnWA + '</td></tr>';
+          }); document.getElementById('mraTableBody').innerHTML = tbodyHtml;
+      });
+    }
+
+    function downloadMraExcel() {
+        if (!globalMraDataRaw || globalMraDataRaw.length === 0) { return Swal.fire('Kosong', 'Tidak ada data untuk diekspor.', 'warning'); }
+        var exportData = [ ["Nama Pelanggan", "Model Unit", "No Polisi", "No Rangka", "No WhatsApp", "Cabang", "Jatuh Tempo Terdekat", "Status Servis 8", "Status Servis 9", "Status Servis 10", "Status Servis 11"] ];
+        globalMraDataRaw.forEach(function(row) { var s8 = row.history['S8'] ? row.history['S8'].status : '-'; var s9 = row.history['S9'] ? row.history['S9'].status : '-'; var s10 = row.history['S10'] ? row.history['S10'].status : '-'; var s11 = row.history['S11'] ? row.history['S11'].status : '-'; exportData.push([row.nama, row.model, row.nopol, row.noka, formatWAPhone(row.nohp), row.cabang, row.jatuhTempoTerdekat, s8, s9, s10, s11]); });
+        var ws = XLSX.utils.aoa_to_sheet(exportData); var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Data_MRA"); XLSX.writeFile(wb, "Data_MRA_CRM.xlsx");
+    }
+
+    function openUploadModal() { document.getElementById('uploadBulan').value = document.getElementById('dashBulan').value; document.getElementById('uploadModal').classList.remove('hidden'); }
+    function closeUploadModal() { document.getElementById('uploadModal').classList.add('hidden'); document.getElementById('excelFile').value = ''; }
+    
+    function processUpload() {
+      var file = document.getElementById('excelFile').files[0]; var bulan = document.getElementById('uploadBulan').value;
+      if (!file || !bulan) return Swal.fire('Error', 'Lengkapi file dan bulan.', 'warning');
+      var btn = document.getElementById('btnProsesExcel'); btn.innerText = 'Processing...'; btn.disabled = true;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var rows = XLSX.utils.sheet_to_json(XLSX.read(new Uint8Array(e.target.result), {type: 'array'}).Sheets[XLSX.read(new Uint8Array(e.target.result), {type: 'array'}).SheetNames[0]], {header: 1});
+        var dataArray = [];
+        for (var i = 1; i < rows.length; i++) { if (rows[i] && rows[i].length >= 3) { var cbg = rows[i][0] ? rows[i][0].toString().trim().replace(/NS\s/i, '') : ''; var nk = rows[i][1] ? rows[i][1].toString().trim().toUpperCase() : ''; var rp = rows[i][2] ? rows[i][2].toString().replace(/[^0-9]/g, '') : '0'; if (cbg !== '' && nk !== '') dataArray.push([cbg, nk, rp]); } }
+        if(dataArray.length === 0) { btn.innerText = 'Proses Excel'; btn.disabled = false; return Swal.fire('Gagal', 'Tidak ada data valid.', 'error'); }
+        fetchAPI('uploadMasterTarget', { dataArray: dataArray, bulanTarget: bulan }).then(function(res) { if (res.success) { closeUploadModal(); loadDashboard(); Swal.fire('Sukses', res.count + ' Data Terunggah', 'success'); } else { Swal.fire('Error', res.message, 'error'); } btn.innerText = 'Proses Excel'; btn.disabled = false; });
+      }; reader.readAsArrayBuffer(file);
+    }
+
+    function loadDashboard() {
+      document.getElementById('dashContent').classList.add('hidden'); document.getElementById('dashLoading').classList.remove('hidden'); document.getElementById('earlyWarning').classList.add('hidden');
+      var bulanVal = document.getElementById('dashBulan').value;
+      fetchAPI('getDashboardData', { bulanTarget: bulanVal, cabang: sessionUser.cabang }).then(function(res) {
+          document.getElementById('dashLoading').classList.add('hidden'); document.getElementById('dashContent').classList.remove('hidden');
+          if(res.success) {
+            document.getElementById('kpiLeads').innerText = res.leads; document.getElementById('kpiConverted').innerText = res.converted;
+            document.getElementById('kpiRate').innerText = res.rate + '%'; document.getElementById('kpiRedeemed').innerText = res.redeemed;
+            var formatRp = function(num) { return 'Rp ' + Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); };
+            document.getElementById('kpiSaved').innerText = formatRp(res.savedEstimasi); document.getElementById('kpiActual').innerText = formatRp(res.savedActual); document.getElementById('kpiLost').innerText = formatRp(res.lost);
+            var today = new Date(); if (today.getDate() >= 15 && parseFloat(res.rate) < 20 && res.leads > 0) { document.getElementById('earlyWarning').classList.remove('hidden'); }
+            if(funnelChartInstance) funnelChartInstance.destroy();
+            funnelChartInstance = new Chart(document.getElementById('funnelChart').getContext('2d'), { type: 'bar', data: { labels: ['Target', 'Lock-in', 'Redeemed'], datasets: [{ data: [res.leads, res.converted, res.redeemed], backgroundColor: ['#94a3b8', '#3b82f6', '#22c55e'], borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { color: '#ffffff', font: { weight: 'bold', size: 14 }, formatter: function(value) { return value > 0 ? value : ''; } } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } } });
+            var lbHtml = '';
+            if (res.leaderboard.length > 0) { res.leaderboard.forEach(function(sa, idx) { var medal = (idx === 0) ? '🥇' : (idx === 1) ? '🥈' : (idx === 2) ? '🥉' : '<span class="text-gray-400">' + (idx + 1) + '</span>'; lbHtml += '<tr class="hover:bg-gray-50"><td class="px-4 py-3 font-black text-center w-10 text-lg border-b border-gray-100">' + medal + '</td><td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">' + sa.nama + '</td><td class="px-4 py-3 text-center font-bold text-blue-600 border-b border-gray-100">' + sa.redeemed + ' <span class="text-[10px] font-normal text-gray-400 uppercase">Unit</span></td><td class="px-4 py-3 text-right font-black text-green-700 border-b border-gray-100">' + formatRp(sa.revenue) + '</td></tr>'; }); } else { lbHtml = '<tr><td colspan="4" class="px-4 py-8 text-center text-gray-400 italic font-medium">Belum ada SA yang mencetak angka.</td></tr>'; }
+            document.getElementById('leaderboardBody').innerHTML = lbHtml;
+            if(segmentChartInstance) segmentChartInstance.destroy();
+            var segLabels = Object.keys(res.segments); var segData = Object.values(res.segments); var totalSeg = segData.reduce(function(a,b){return a+b}, 0);
+            segmentChartInstance = new Chart(document.getElementById('segmentChart').getContext('2d'), { type: 'doughnut', data: { labels: segLabels, datasets: [{ data: segData, backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#64748b', '#ec4899', '#14b8a6'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } }, datalabels: { color: '#ffffff', font: { weight: 'bold', size: 11 }, formatter: function(value) { return Math.round((value/totalSeg)*100) + '%'; } } } } });
+          }
+      });
+    }
+  </script>
+</body>
+</html>
