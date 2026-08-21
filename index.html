@@ -235,7 +235,7 @@
           </form>
         </div>
         
-        <!-- HASIL GENERATE VOUCHER (SUDAH DIPERBARUI LAYOUTNYA) -->
+        <!-- HASIL GENERATE VOUCHER (UPDATE PROPORSIONAL & RAPAT) -->
         <div id="resultSection" class="hidden mt-8 flex-col items-center">
           <div class="w-full max-w-[800px] overflow-x-auto no-scrollbar rounded-2xl shadow-2xl bg-gray-900 mb-6 border-4 border-gray-700">
             <!-- PDF CARD -->
@@ -244,53 +244,62 @@
                 <span class="font-black italic text-lg tracking-tighter">NASMOCO</span><span class="border-l-[3px] border-red-600 pl-3 font-black text-red-600 text-base">REWARD</span>
               </div>
               
-              <!-- PADDING KESELURUHAN LEBIH KECIL (py-5 md:py-6) AGAR TIDAK MELUAP -->
-              <div class="flex w-full h-full px-8 py-5 md:px-10 md:py-6 relative z-10">
-                <div class="w-[60%] flex flex-col justify-center pr-5">
-                  <h1 class="text-[36px] md:text-[40px] font-black leading-[0.9] text-white tracking-tight">GRADUAL<br><span class="text-red-500">LOYALTY</span><br>VOUCHER</h1>
-                  <p class="text-xs md:text-sm text-gray-300 font-semibold mt-1.5 tracking-widest uppercase">MODEL: <span id="cardModel" class="text-yellow-400 font-black">-</span></p>
+              <!-- PADDING KESELURUHAN & TINGGI PENUH UNTUK DISTRIBUSI AUTO -->
+              <div class="flex w-full h-full px-8 py-7 md:px-10 md:py-8 relative z-10">
+                
+                <!-- KOLOM KIRI (FLEX COL + JUSTIFY BETWEEN) -->
+                <div class="w-[60%] flex flex-col h-full justify-between pr-6 py-1">
+                  <!-- Judul -->
+                  <div>
+                    <h1 class="text-[40px] md:text-[44px] font-black leading-[0.95] text-white tracking-tight">GRADUAL<br><span class="text-red-500">LOYALTY</span><br>VOUCHER</h1>
+                    <p class="text-xs md:text-sm text-gray-300 font-semibold mt-1.5 tracking-widest uppercase">MODEL: <span id="cardModel" class="text-yellow-400 font-black">-</span></p>
+                  </div>
                   
-                  <div class="mt-2.5 glass-panel p-2 md:p-2.5 rounded-xl border-l-4 border-l-red-500 shadow-md flex justify-between items-center gap-2">
+                  <!-- Box Benefit -->
+                  <div class="glass-panel p-3 md:p-3 rounded-xl border-l-4 border-l-red-500 shadow-md flex justify-between items-center gap-3">
                     <div class="w-[55%]">
                       <p class="text-[9px] text-gray-300 uppercase font-bold tracking-wider mb-0.5">Target Servis Berkala:</p>
-                      <p class="text-[17px] font-black text-white leading-none mb-1.5" id="cardServisKe">-</p>
-                      <p class="text-[8px] text-yellow-400 font-bold uppercase tracking-wide mt-1">Full Benefit (Jasa, Part & Bonus):</p>
-                      <p class="text-[9px] font-bold text-gray-100 leading-tight mt-0.5" id="cardBonusInfo">-</p>
-                      <p class="text-[8px] text-blue-300 font-bold uppercase tracking-wide mt-1.5">Basic Benefit (Diskon Jasa Saja):</p>
-                      <p class="text-[9px] font-bold text-gray-100 leading-tight mt-0.5" id="cardBasicInfo">-</p>
+                      <p class="text-[18px] md:text-xl font-black text-white leading-none mb-2" id="cardServisKe">-</p>
+                      <p class="text-[8px] text-yellow-400 font-bold uppercase tracking-wide">Full Benefit (Jasa, Part & Bonus):</p>
+                      <p class="text-[10px] font-bold text-gray-100 leading-tight mt-0.5 mb-1.5" id="cardBonusInfo">-</p>
+                      <p class="text-[8px] text-blue-300 font-bold uppercase tracking-wide">Basic Benefit (Diskon Jasa Saja):</p>
+                      <p class="text-[10px] font-bold text-gray-100 leading-tight mt-0.5" id="cardBasicInfo">-</p>
                     </div>
-                    <div class="w-[45%] flex flex-col gap-1.5 border-l border-white/20 pl-2">
-                       <div class="bg-blue-900/60 p-1.5 rounded border border-blue-400/30">
-                          <p class="text-[7.5px] text-blue-200 font-bold uppercase tracking-wide">Batas Max 6 Bln (Full):</p>
-                          <p class="text-xs font-black text-white mt-0.5 leading-none" id="cardMax6">-</p>
+                    <div class="w-[45%] flex flex-col gap-2 border-l border-white/20 pl-3">
+                       <div class="bg-blue-900/60 p-2 rounded border border-blue-400/30">
+                          <p class="text-[8px] text-blue-200 font-bold uppercase tracking-wide">Batas Max 6 Bln (Full):</p>
+                          <p class="text-sm font-black text-white mt-0.5 leading-none" id="cardMax6">-</p>
                        </div>
-                       <div class="bg-red-900/60 p-1.5 rounded border border-red-400/30">
-                          <p class="text-[7.5px] text-red-200 font-bold uppercase tracking-wide">Batas Max 7 Bln (Basic):</p>
-                          <p class="text-xs font-black text-white mt-0.5 leading-none" id="cardMax7">-</p>
+                       <div class="bg-red-900/60 p-2 rounded border border-red-400/30">
+                          <p class="text-[8px] text-red-200 font-bold uppercase tracking-wide">Batas Max 7 Bln (Basic):</p>
+                          <p class="text-sm font-black text-white mt-0.5 leading-none" id="cardMax7">-</p>
                        </div>
                     </div>
                   </div>
                   
-                  <div class="mt-2.5 bg-black/30 p-1.5 rounded-lg border border-white/5">
-                    <p class="text-[8px] text-gray-400 font-bold uppercase mb-1">Roadmap Riwayat Loyalti:</p>
-                    <div id="cardHistory" class="flex items-center gap-2 w-full min-h-[22px]"></div>
+                  <!-- Box Roadmap -->
+                  <div class="bg-black/30 p-2 rounded-lg border border-white/5">
+                    <p class="text-[9px] text-gray-400 font-bold uppercase mb-1.5">Roadmap Riwayat Loyalti:</p>
+                    <div id="cardHistory" class="flex items-center gap-2 w-full min-h-[26px]"></div>
                   </div>
                   
-                  <div class="mt-auto flex gap-3 pt-2">
-                    <div class="glass-panel px-3 py-1.5 rounded-lg flex-1">
-                      <p class="text-[8px] text-gray-400 font-bold uppercase mb-0.5">No. Polisi & Rangka</p>
-                      <p class="font-bold text-[10px] uppercase tracking-wide text-white leading-none" id="cardNopolNoka">-</p>
+                  <!-- Box Nopol -->
+                  <div class="flex gap-3">
+                    <div class="glass-panel px-3 py-2 rounded-lg flex-1">
+                      <p class="text-[9px] text-gray-400 font-bold uppercase mb-1">No. Polisi & Rangka</p>
+                      <p class="font-bold text-xs uppercase tracking-wide text-white leading-none" id="cardNopolNoka">-</p>
                     </div>
                   </div>
                 </div>
                 
-                <div class="w-[40%] flex flex-col justify-between items-center pl-6 border-l border-white/10 pt-7 pb-1">
-                  <div class="w-full bg-white p-2.5 rounded-xl shadow-2xl border-2 border-gray-400 flex justify-center items-center aspect-square max-h-[190px]">
+                <!-- KOLOM KANAN (FLEX COL + CENTER/GAP) -->
+                <div class="w-[40%] flex flex-col justify-center items-center pl-8 border-l border-white/10 gap-6">
+                  <div class="w-full bg-white p-3 rounded-xl shadow-2xl border-2 border-gray-400 flex justify-center items-center aspect-square max-h-[210px]">
                     <img id="qrCodeImg" src="" alt="QR" class="w-full h-full object-contain">
                   </div>
-                  <div class="text-center w-full bg-black/40 p-2.5 rounded-lg border border-white/5 mt-3">
-                    <p class="text-[9px] font-black tracking-widest text-yellow-500 uppercase mb-1">Unique Validation Code</p>
-                    <p class="font-mono font-black text-white text-base bg-gray-950/60 py-1 rounded leading-none" id="cardCode">-</p>
+                  <div class="text-center w-full bg-black/40 p-3 rounded-lg border border-white/5">
+                    <p class="text-[10px] font-black tracking-widest text-yellow-500 uppercase mb-1">Unique Validation Code</p>
+                    <p class="font-mono font-black text-white text-lg bg-gray-950/60 py-1.5 rounded leading-none" id="cardCode">-</p>
                   </div>
                 </div>
               </div>
