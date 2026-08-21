@@ -30,6 +30,14 @@
       "11": { basic: "Diskon Jasa 30%", ontime: "FREE Injector Clean + Diskon Part 7.0%" }
     };
 
+    // Default HTML untuk Roadmap agar tidak kosong saat loading
+    const defaultHistoryHTML = `
+        <div class="flex-1 text-center border rounded-md py-1.5 bg-gray-800 border-gray-600 text-gray-500 opacity-50"><p class="text-[10px] font-black tracking-wider">S-8</p></div>
+        <div class="flex-1 text-center border rounded-md py-1.5 bg-gray-800 border-gray-600 text-gray-500 opacity-50"><p class="text-[10px] font-black tracking-wider">S-9</p></div>
+        <div class="flex-1 text-center border rounded-md py-1.5 bg-gray-800 border-gray-600 text-gray-500 opacity-50"><p class="text-[10px] font-black tracking-wider">S-10</p></div>
+        <div class="flex-1 text-center border rounded-md py-1.5 bg-gray-800 border-gray-600 text-gray-500 opacity-50"><p class="text-[10px] font-black tracking-wider">S-11</p></div>
+    `;
+
     // Date Formatter ID (dd MMM yyyy)
     function formatDateID(dateObj) {
         const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
@@ -235,77 +243,80 @@
           </form>
         </div>
         
-        <!-- HASIL GENERATE VOUCHER (UPDATE PROPORSIONAL & RAPAT) -->
+        <!-- HASIL GENERATE VOUCHER (UPDATE FINAL PROPORSIONAL & KUNCI UKURAN) -->
         <div id="resultSection" class="hidden mt-8 flex-col items-center">
           <div class="w-full max-w-[800px] overflow-x-auto no-scrollbar rounded-2xl shadow-2xl bg-gray-900 mb-6 border-4 border-gray-700">
-            <!-- PDF CARD -->
-            <div id="loyaltyCard" class="pdf-card relative bg-tech-lines flex">
+            <!-- PDF CARD - FIXED 800x450 -->
+            <div id="loyaltyCard" class="pdf-card relative bg-tech-lines flex overflow-hidden">
               <div class="absolute top-0 right-10 bg-white px-5 py-1.5 rounded-b-xl shadow-lg border-b-4 border-red-600 flex items-center gap-3 z-10 text-gray-900">
                 <span class="font-black italic text-lg tracking-tighter">NASMOCO</span><span class="border-l-[3px] border-red-600 pl-3 font-black text-red-600 text-base">REWARD</span>
               </div>
               
-              <!-- PADDING KESELURUHAN & TINGGI PENUH UNTUK DISTRIBUSI AUTO -->
-              <div class="flex w-full h-full px-8 py-7 md:px-10 md:py-8 relative z-10">
+              <!-- WRAPPER: PADDING TETAP (32px) ALL AROUND -->
+              <div class="flex w-full h-full p-8 relative z-10">
                 
-                <!-- KOLOM KIRI (FLEX COL + JUSTIFY BETWEEN) -->
-                <div class="w-[60%] flex flex-col h-full justify-between pr-6 py-1">
-                  <!-- Judul -->
-                  <div>
-                    <h1 class="text-[40px] md:text-[44px] font-black leading-[0.95] text-white tracking-tight">GRADUAL<br><span class="text-red-500">LOYALTY</span><br>VOUCHER</h1>
-                    <p class="text-xs md:text-sm text-gray-300 font-semibold mt-1.5 tracking-widest uppercase">MODEL: <span id="cardModel" class="text-yellow-400 font-black">-</span></p>
+                <!-- KOLOM KIRI: Dibuat 62% agar tulisan Servis 8 (70.000 KM) tidak turun baris -->
+                <div class="w-[62%] flex flex-col justify-start pr-6 h-full">
+                  
+                  <!-- Blok 1: Judul -->
+                  <div class="mb-4">
+                    <h1 class="text-[36px] font-black leading-none text-white tracking-tight">GRADUAL<br><span class="text-red-500">LOYALTY</span><br>VOUCHER</h1>
+                    <p class="text-xs text-gray-300 font-bold mt-2 tracking-widest uppercase">MODEL: <span id="cardModel" class="text-yellow-400 font-black">-</span></p>
                   </div>
                   
-                  <!-- Box Benefit -->
-                  <div class="glass-panel p-3 md:p-3 rounded-xl border-l-4 border-l-red-500 shadow-md flex justify-between items-center gap-3">
-                    <div class="w-[55%]">
+                  <!-- Blok 2: Box Benefit -->
+                  <div class="glass-panel p-3.5 rounded-xl border-l-4 border-l-red-500 shadow-md flex items-center gap-3 mb-4">
+                    <div class="w-[58%]">
                       <p class="text-[9px] text-gray-300 uppercase font-bold tracking-wider mb-0.5">Target Servis Berkala:</p>
-                      <p class="text-[18px] md:text-xl font-black text-white leading-none mb-2" id="cardServisKe">-</p>
+                      <p class="text-[18px] font-black text-white leading-none mb-2" id="cardServisKe">-</p>
                       <p class="text-[8px] text-yellow-400 font-bold uppercase tracking-wide">Full Benefit (Jasa, Part & Bonus):</p>
                       <p class="text-[10px] font-bold text-gray-100 leading-tight mt-0.5 mb-1.5" id="cardBonusInfo">-</p>
                       <p class="text-[8px] text-blue-300 font-bold uppercase tracking-wide">Basic Benefit (Diskon Jasa Saja):</p>
                       <p class="text-[10px] font-bold text-gray-100 leading-tight mt-0.5" id="cardBasicInfo">-</p>
                     </div>
-                    <div class="w-[45%] flex flex-col gap-2 border-l border-white/20 pl-3">
+                    <div class="w-[42%] flex flex-col gap-2 border-l border-white/20 pl-3">
                        <div class="bg-blue-900/60 p-2 rounded border border-blue-400/30">
                           <p class="text-[8px] text-blue-200 font-bold uppercase tracking-wide">Batas Max 6 Bln (Full):</p>
-                          <p class="text-sm font-black text-white mt-0.5 leading-none" id="cardMax6">-</p>
+                          <p class="text-xs font-black text-white mt-0.5 leading-none" id="cardMax6">-</p>
                        </div>
                        <div class="bg-red-900/60 p-2 rounded border border-red-400/30">
                           <p class="text-[8px] text-red-200 font-bold uppercase tracking-wide">Batas Max 7 Bln (Basic):</p>
-                          <p class="text-sm font-black text-white mt-0.5 leading-none" id="cardMax7">-</p>
+                          <p class="text-xs font-black text-white mt-0.5 leading-none" id="cardMax7">-</p>
                        </div>
                     </div>
                   </div>
                   
-                  <!-- Box Roadmap -->
-                  <div class="bg-black/30 p-2 rounded-lg border border-white/5">
-                    <p class="text-[9px] text-gray-400 font-bold uppercase mb-1.5">Roadmap Riwayat Loyalti:</p>
-                    <div id="cardHistory" class="flex items-center gap-2 w-full min-h-[26px]"></div>
+                  <!-- Blok 3: Roadmap (Ditambah Placeholder Default agar TIDAK kosong) -->
+                  <div class="bg-black/30 p-3 rounded-lg border border-white/5 mb-4">
+                    <p class="text-[9px] text-gray-400 font-bold uppercase mb-2">Roadmap Riwayat Loyalti:</p>
+                    <div id="cardHistory" class="flex items-center gap-2 w-full h-[32px]">
+                      <!-- Placeholder akan otomatis digantikan oleh JS jika data sukses -->
+                    </div>
                   </div>
                   
-                  <!-- Box Nopol -->
-                  <div class="flex gap-3">
-                    <div class="glass-panel px-3 py-2 rounded-lg flex-1">
-                      <p class="text-[9px] text-gray-400 font-bold uppercase mb-1">No. Polisi & Rangka</p>
-                      <p class="font-bold text-xs uppercase tracking-wide text-white leading-none" id="cardNopolNoka">-</p>
-                    </div>
+                  <!-- Blok 4: Nopol & Rangka (mt-auto akan menempelkannya sempurna di bawah) -->
+                  <div class="glass-panel px-4 py-2.5 rounded-lg w-full mt-auto">
+                    <p class="text-[9px] text-gray-400 font-bold uppercase mb-1">No. Polisi & Rangka</p>
+                    <p class="font-bold text-xs uppercase tracking-wide text-white leading-none" id="cardNopolNoka">-</p>
                   </div>
                 </div>
                 
-                <!-- KOLOM KANAN (FLEX COL + CENTER/GAP) -->
-                <div class="w-[40%] flex flex-col justify-center items-center pl-8 border-l border-white/10 gap-6">
-                  <div class="w-full bg-white p-3 rounded-xl shadow-2xl border-2 border-gray-400 flex justify-center items-center aspect-square max-h-[210px]">
+                <!-- KOLOM KANAN: QR Code & Validation Code -->
+                <div class="w-[38%] flex flex-col justify-center items-center pl-6 border-l border-white/10 gap-6 h-full">
+                  <div class="w-[200px] h-[200px] bg-white p-3 rounded-xl shadow-2xl border-2 border-gray-400 flex justify-center items-center">
                     <img id="qrCodeImg" src="" alt="QR" class="w-full h-full object-contain">
                   </div>
-                  <div class="text-center w-full bg-black/40 p-3 rounded-lg border border-white/5">
-                    <p class="text-[10px] font-black tracking-widest text-yellow-500 uppercase mb-1">Unique Validation Code</p>
-                    <p class="font-mono font-black text-white text-lg bg-gray-950/60 py-1.5 rounded leading-none" id="cardCode">-</p>
+                  <div class="text-center w-full bg-black/40 p-3.5 rounded-lg border border-white/5">
+                    <p class="text-[10px] font-black tracking-widest text-yellow-500 uppercase mb-2">Unique Validation Code</p>
+                    <p class="font-mono font-black text-white text-lg bg-gray-950/60 py-2 rounded leading-none" id="cardCode">-</p>
                   </div>
                 </div>
+                
               </div>
             </div>
             <!-- END PDF CARD -->
           </div>
+          
           <div class="flex flex-col md:flex-row gap-3 w-full max-w-[800px]">
             <button onclick="downloadPDF()" class="w-full md:w-1/3 bg-gray-900 hover:bg-black text-white font-bold py-3.5 rounded-lg shadow-lg transition">Unduh Tiket PDF</button>
             <button onclick="shareLinkWA()" class="w-full md:w-1/3 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-3.5 rounded-lg shadow-lg transition">Kirim Link Portal (WA)</button>
@@ -580,11 +591,11 @@
       var selectedOption = select.options[select.selectedIndex]; 
       
       if(selectedOption.value) { 
-        var svcName = selectedOption.value.split(' - ')[0]; // Ambil nama servis, e.g. "Servis 8 (70.000 KM)"
+        var svcName = selectedOption.value.split(' - ')[0]; 
         document.getElementById('cardServisKe').innerText = svcName; 
         
-        var svcLevel = svcName.match(/\d+/)[0]; // Ambil angka level servis (8, 9, 10, 11)
-        var benefits = bMap[svcLevel]; // Cari di Map
+        var svcLevel = svcName.match(/\d+/)[0]; 
+        var benefits = bMap[svcLevel]; 
         
         if(benefits) {
            document.getElementById('cardBonusInfo').innerText = benefits.ontime;
@@ -600,9 +611,9 @@
         var html = '';
         timeline.forEach(function(step) {
             var found = res.data.find(function(item) { var sClean = item.servisKe.toUpperCase().replace(/\s/g, ''); return sClean.indexOf('SERVIS' + step.id) > -1; });
-            var bgClass = 'bg-gray-800 border-gray-600 text-gray-500'; var statusText = ''; var extraClass = 'opacity-50';
-            if (found) { extraClass = ''; if (found.status === 'REDEEMED') { bgClass = 'bg-gray-500 border-gray-400 text-white'; statusText = '<span class="absolute -top-2 -right-2 bg-gray-200 text-gray-800 text-[6px] font-black px-1 py-0.5 rounded shadow transform rotate-12 border border-gray-400">REDEEMED</span>'; } else if (found.status === 'ACTIVE') { bgClass = 'bg-green-500 border-green-400 text-white shadow-[0_0_8px_rgba(34,197,94,0.6)]'; } else if (found.status === 'EXPIRED') { bgClass = 'bg-red-600 border-red-500 text-white'; statusText = '<span class="absolute -top-2 -right-2 bg-red-900 text-white text-[6px] font-black px-1 py-0.5 rounded shadow transform rotate-12">EXPIRED</span>'; } }
-            html += '<div class="relative flex-1 text-center border rounded-md py-1 ' + bgClass + ' ' + extraClass + ' transition-all"><p class="text-[10px] font-black tracking-wider">' + step.name + '</p>' + statusText + '</div>';
+            var bgClass = 'bg-gray-800 border-gray-600 text-gray-500 opacity-50'; var statusText = '';
+            if (found) { bgClass = 'bg-gray-800 border-gray-600 text-gray-500'; if (found.status === 'REDEEMED') { bgClass = 'bg-gray-500 border-gray-400 text-white'; statusText = '<span class="absolute -top-2 -right-2 bg-gray-200 text-gray-800 text-[6px] font-black px-1 py-0.5 rounded shadow transform rotate-12 border border-gray-400">REDEEMED</span>'; } else if (found.status === 'ACTIVE') { bgClass = 'bg-green-500 border-green-400 text-white shadow-[0_0_8px_rgba(34,197,94,0.6)]'; } else if (found.status === 'EXPIRED') { bgClass = 'bg-red-600 border-red-500 text-white'; statusText = '<span class="absolute -top-2 -right-2 bg-red-900 text-white text-[6px] font-black px-1 py-0.5 rounded shadow transform rotate-12">EXPIRED</span>'; } }
+            html += '<div class="relative flex-1 text-center border rounded-md py-1.5 ' + bgClass + ' transition-all"><p class="text-[10px] font-black tracking-wider">' + step.name + '</p>' + statusText + '</div>';
         }); historyDiv.innerHTML = html;
       }); 
     }
@@ -620,6 +631,9 @@
             document.getElementById('cardMax6').innerText = formatDateID(d6);
             document.getElementById('cardMax7').innerText = formatDateID(d7);
         }
+
+        // Tampilkan placeholder langsung di UI agar Roadmap tidak terlihat blank sebelum API merespon
+        document.getElementById('cardHistory').innerHTML = defaultHistoryHTML;
 
         fetchAPI('getHistoryData', { noka: nokaRaw }).then(function(histRes) {
             if (histRes.success) {
@@ -659,6 +673,8 @@
       var d = new Date(); d.setMonth(d.getMonth() + 6); var maxStr = d.toISOString().split('T')[0];
       var dateInput = document.getElementById('bookingDate'); dateInput.value = maxStr; dateInput.setAttribute('max', maxStr); 
       document.getElementById('kodeSA').value = kode; document.getElementById('namaSA').selectedIndex = 0; 
+      // Reset Default Placeholder
+      document.getElementById('cardHistory').innerHTML = defaultHistoryHTML;
       document.getElementById('formSection').classList.remove('hidden'); document.getElementById('resultSection').classList.add('hidden'); document.getElementById('resultSection').classList.remove('flex'); 
     }
 
