@@ -16,11 +16,15 @@
 
   <script> 
     // 🔴 GANTI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA 🔴
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzDoS-WcWDyoMW_JC0WgDk5fboMdqaOb9NqbqiVAoIgaUbF_0AkFXSgmVCqWXfns0-T0w/exec";
+    const GAS_API_URL = "AKfycbzDoS-WcWDyoMW_JC0WgDk5fboMdqaOb9NqbqiVAoIgaUbF_0AkFXSgmVCqWXfns0-T0w";
     
     const urlParams = new URLSearchParams(window.location.search);
     var globalPortalCode = urlParams.get('code') || '';
     var globalMraDataRaw = [];
+    
+    // VARIABEL CACHE UNTUK MEMPERCEPAT PROSES (ANTI-LEMOT)
+    var cachedHistoryData = {};
+    var isPrefetching = false;
 
     // Mapping Benefit
     const bMap = {
@@ -180,15 +184,20 @@
           <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">Role: Head Office</span> Panduan Eksekutif</h3>
           <ul class="space-y-4 text-gray-600 text-sm">
             <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">1</span><div><strong class="text-gray-900">Distribusi Target JUMP:</strong> Gunakan menu <i>Dasbor Analitik</i> lalu klik tombol <b class="text-red-600">Upload Target JUMP</b>. Pastikan file dalam format Excel (.XLSX) dengan susunan 3 Kolom: Cabang | No Rangka | Potensi Rupiah.</div></li>
-            <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">2</span><div><strong class="text-gray-900">Early Warning System:</strong> Sistem akan menampilkan peringatan merah di Dasbor jika konversi jaringan (redeem) berada di bawah 20% setelah pertengahan bulan.</div></li>
-            <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">3</span><div><strong class="text-gray-900">Evaluasi Revenue Aktual:</strong> Fitur "Cash In" mengukur uang riil yang diinput kasir/SA saat klaim, membandingkannya dengan estimasi kerugian JUMP yang "At Risk".</div></li>
           </ul>
         </div>
         <div id="panduan-cabang" class="hidden bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-200">
           <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">Role: Cabang & SA</span> SOP Operasional</h3>
           <ul class="space-y-4 text-gray-600 text-sm">
-            <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">1</span><div><strong class="text-gray-900">Aturan Gamifikasi Terkunci:</strong> <br>a. Pelanggan <b>wajib</b> memulai dari Servis 8. (Otomatis By-pass jika VIN terdaftar di ShortTerm target S-9).<br>b. Tidak bisa mendaftarkan <i>Double Claim</i> pada tahapan servis yang sama.</div></li>
-            <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">2</span><div><strong class="text-gray-900">Prosedur Klaim Max 6 vs Max 7:</strong> Sistem memberikan toleransi ganda. Jika pelanggan datang di bulan ke-7, maka Benefit Item & Part <b>hangus</b>, hanya menerima Diskon Jasa Basic. Lewat 7 Bulan = Voucher Expired.</div></li>
+            <li class="flex items-start gap-3">
+              <span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">1</span>
+              <div>
+                <strong class="text-gray-900">Aturan Gamifikasi Terkunci:</strong> <br>
+                a. Pelanggan <b>wajib</b> memulai dari Servis 8. <span class="text-blue-600 font-bold">(Otomatis By-pass ke Servis 9 jika VIN terdaftar di Target ShortTerm S-9)</span>.<br>
+                b. Anda tidak dapat membuat tiket lanjutan jika tiket sebelumnya masih berstatus <b>ACTIVE</b> (Belum di Klaim/Redeem Kasir).
+              </div>
+            </li>
+            <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">2</span><div><strong class="text-gray-900">Prosedur Klaim Max 6 vs Max 7:</strong> Lewat dari 6 Bulan = Free Item hangus (Tersisa Diskon Jasa Basic). Lewat dari 7 Bulan = Tiket Expired Total.</div></li>
           </ul>
         </div>
       </div>
@@ -196,9 +205,11 @@
       <!-- TAB: REGISTRASI -->
       <div id="view-register" class="w-full max-w-5xl mx-auto fade-in hidden">
         <h2 class="text-xl md:text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">Registrasi & Cetak Tiket</h2>
-        <div id="formSection" class="bg-white p-5 md:p-8 rounded-xl shadow-sm border border-gray-200">
+        <div id="formSection" class="bg-white p-5 md:p-8 rounded-xl shadow-sm border border-gray-200 relative overflow-hidden">
+          <div id="prefetchIndicator" class="absolute top-0 left-0 w-full bg-blue-500 text-white text-[10px] font-bold text-center py-0.5 hidden tracking-widest">⚡ MENSINKRONISASI DATA HISTORI DI LATAR BELAKANG...</div>
+          
           <form id="rewardForm" onsubmit="handleFormSubmit(event)">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-2">
               <div class="col-span-1 md:col-span-3 pb-2 border-b border-gray-100"><h3 class="font-bold text-gray-800 text-sm md:text-base">Data Pendaftar (SA)</h3></div>
               <div class="col-span-1 md:col-span-2">
                 <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Nama Petugas</label>
@@ -224,7 +235,7 @@
                 </select>
               </div>
               <div><label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">No Polisi</label><input type="text" id="nopol" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg auto-upper text-sm md:text-base" oninput="this.value = this.value.toUpperCase()"></div>
-              <div><label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">No Rangka (VIN)</label><input type="text" id="noka" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg auto-upper text-sm md:text-base" oninput="this.value = this.value.toUpperCase()"></div>
+              <div><label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">No Rangka (VIN)</label><input type="text" id="noka" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg auto-upper text-sm md:text-base" oninput="this.value = this.value.toUpperCase()" onblur="prefetchHistory()"></div>
 
               <div class="col-span-1 md:col-span-3 pb-2 border-b border-gray-100 mt-2"><h3 class="font-bold text-gray-800 text-sm md:text-base">Target Skema & Benefit</h3></div>
               <div class="col-span-1">
@@ -243,7 +254,7 @@
           </form>
         </div>
         
-        <!-- HASIL GENERATE VOUCHER (UPDATE FINAL PROPORSIONAL & KUNCI UKURAN) -->
+        <!-- HASIL GENERATE VOUCHER (UPDATE FINAL LAYOUT PRESISI) -->
         <div id="resultSection" class="hidden mt-8 flex-col items-center">
           <div class="w-full max-w-[800px] overflow-x-auto no-scrollbar rounded-2xl shadow-2xl bg-gray-900 mb-6 border-4 border-gray-700">
             <!-- PDF CARD - FIXED 800x450 -->
@@ -252,57 +263,61 @@
                 <span class="font-black italic text-lg tracking-tighter">NASMOCO</span><span class="border-l-[3px] border-red-600 pl-3 font-black text-red-600 text-base">REWARD</span>
               </div>
               
-              <!-- WRAPPER: PADDING TETAP (32px) ALL AROUND -->
-              <div class="flex w-full h-full p-8 relative z-10">
+              <!-- WRAPPER: DIKURANGI PADDING MENJADI p-6 (24px) AGAR KONTEN BAWAH TIDAK TERPOTONG -->
+              <div class="flex w-full h-full p-6 relative z-10">
                 
-                <!-- KOLOM KIRI: Dibuat 62% agar tulisan Servis 8 (70.000 KM) tidak turun baris -->
-                <div class="w-[62%] flex flex-col justify-start pr-6 h-full">
+                <!-- KOLOM KIRI: Menggunakan justify-between agar No Polisi & Rangka ditekan sempurna ke bawah frame -->
+                <div class="w-[62%] flex flex-col justify-between pr-6 h-full">
                   
-                  <!-- Blok 1: Judul -->
-                  <div class="mb-4">
-                    <h1 class="text-[36px] font-black leading-none text-white tracking-tight">GRADUAL<br><span class="text-red-500">LOYALTY</span><br>VOUCHER</h1>
-                    <p class="text-xs text-gray-300 font-bold mt-2 tracking-widest uppercase">MODEL: <span id="cardModel" class="text-yellow-400 font-black">-</span></p>
+                  <div>
+                    <!-- Blok 1: Judul -->
+                    <div class="mb-4">
+                      <h1 class="text-[36px] font-black leading-none text-white tracking-tight">GRADUAL<br><span class="text-red-500">LOYALTY</span><br>VOUCHER</h1>
+                      <p class="text-xs text-gray-300 font-bold mt-2 tracking-widest uppercase">MODEL: <span id="cardModel" class="text-yellow-400 font-black">-</span></p>
+                    </div>
+                    
+                    <!-- Blok 2: Box Benefit -->
+                    <div class="glass-panel p-3.5 rounded-xl border-l-4 border-l-red-500 shadow-md flex items-center gap-3 mb-4">
+                      <div class="w-[58%]">
+                        <p class="text-[9px] text-gray-300 uppercase font-bold tracking-wider mb-0.5">Target Servis Berkala:</p>
+                        <p class="text-[18px] font-black text-white leading-none mb-2" id="cardServisKe">-</p>
+                        <p class="text-[8px] text-yellow-400 font-bold uppercase tracking-wide">Full Benefit (Jasa, Part & Bonus):</p>
+                        <p class="text-[10px] font-bold text-gray-100 leading-tight mt-0.5 mb-1.5" id="cardBonusInfo">-</p>
+                        <p class="text-[8px] text-blue-300 font-bold uppercase tracking-wide">Basic Benefit (Diskon Jasa Saja):</p>
+                        <p class="text-[10px] font-bold text-gray-100 leading-tight mt-0.5" id="cardBasicInfo">-</p>
+                      </div>
+                      <div class="w-[42%] flex flex-col gap-2 border-l border-white/20 pl-3">
+                         <div class="bg-blue-900/60 p-2 rounded border border-blue-400/30">
+                            <p class="text-[8px] text-blue-200 font-bold uppercase tracking-wide">Batas Max 6 Bln (Full):</p>
+                            <p class="text-xs font-black text-white mt-0.5 leading-none" id="cardMax6">-</p>
+                         </div>
+                         <div class="bg-red-900/60 p-2 rounded border border-red-400/30">
+                            <p class="text-[8px] text-red-200 font-bold uppercase tracking-wide">Batas Max 7 Bln (Basic):</p>
+                            <p class="text-xs font-black text-white mt-0.5 leading-none" id="cardMax7">-</p>
+                         </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Blok 3: Roadmap -->
+                    <div class="bg-black/30 p-3 rounded-lg border border-white/5">
+                      <p class="text-[9px] text-gray-400 font-bold uppercase mb-2">Roadmap Riwayat Loyalti:</p>
+                      <div id="cardHistory" class="flex items-center gap-2 w-full h-[32px]">
+                        <!-- Placeholder -->
+                      </div>
+                    </div>
                   </div>
                   
-                  <!-- Blok 2: Box Benefit -->
-                  <div class="glass-panel p-3.5 rounded-xl border-l-4 border-l-red-500 shadow-md flex items-center gap-3 mb-4">
-                    <div class="w-[58%]">
-                      <p class="text-[9px] text-gray-300 uppercase font-bold tracking-wider mb-0.5">Target Servis Berkala:</p>
-                      <p class="text-[18px] font-black text-white leading-none mb-2" id="cardServisKe">-</p>
-                      <p class="text-[8px] text-yellow-400 font-bold uppercase tracking-wide">Full Benefit (Jasa, Part & Bonus):</p>
-                      <p class="text-[10px] font-bold text-gray-100 leading-tight mt-0.5 mb-1.5" id="cardBonusInfo">-</p>
-                      <p class="text-[8px] text-blue-300 font-bold uppercase tracking-wide">Basic Benefit (Diskon Jasa Saja):</p>
-                      <p class="text-[10px] font-bold text-gray-100 leading-tight mt-0.5" id="cardBasicInfo">-</p>
-                    </div>
-                    <div class="w-[42%] flex flex-col gap-2 border-l border-white/20 pl-3">
-                       <div class="bg-blue-900/60 p-2 rounded border border-blue-400/30">
-                          <p class="text-[8px] text-blue-200 font-bold uppercase tracking-wide">Batas Max 6 Bln (Full):</p>
-                          <p class="text-xs font-black text-white mt-0.5 leading-none" id="cardMax6">-</p>
-                       </div>
-                       <div class="bg-red-900/60 p-2 rounded border border-red-400/30">
-                          <p class="text-[8px] text-red-200 font-bold uppercase tracking-wide">Batas Max 7 Bln (Basic):</p>
-                          <p class="text-xs font-black text-white mt-0.5 leading-none" id="cardMax7">-</p>
-                       </div>
-                    </div>
-                  </div>
-                  
-                  <!-- Blok 3: Roadmap (Ditambah Placeholder Default agar TIDAK kosong) -->
-                  <div class="bg-black/30 p-3 rounded-lg border border-white/5 mb-4">
-                    <p class="text-[9px] text-gray-400 font-bold uppercase mb-2">Roadmap Riwayat Loyalti:</p>
-                    <div id="cardHistory" class="flex items-center gap-2 w-full h-[32px]">
-                      <!-- Placeholder akan otomatis digantikan oleh JS jika data sukses -->
-                    </div>
-                  </div>
-                  
-                  <!-- Blok 4: Nopol & Rangka (mt-auto akan menempelkannya sempurna di bawah) -->
-                  <div class="glass-panel px-4 py-2.5 rounded-lg w-full mt-auto">
+                  <!-- Blok 4: Nopol & Rangka -->
+                  <!-- Karena kontainer induk pakai justify-between, blok ini akan nempel sempurna di bawah tanpa terpotong -->
+                  <div class="glass-panel px-4 py-2.5 rounded-lg w-full shrink-0">
                     <p class="text-[9px] text-gray-400 font-bold uppercase mb-1">No. Polisi & Rangka</p>
                     <p class="font-bold text-xs uppercase tracking-wide text-white leading-none" id="cardNopolNoka">-</p>
                   </div>
+
                 </div>
                 
-                <!-- KOLOM KANAN: QR Code & Validation Code -->
-                <div class="w-[38%] flex flex-col justify-center items-center pl-6 border-l border-white/10 gap-6 h-full">
+                <!-- KOLOM KANAN: Border dipindah ke pembungkus agar konten flex 100% center -->
+                <div class="w-[38%] border-l border-white/20 h-full flex flex-col justify-center items-center px-6 gap-6">
                   <div class="w-[200px] h-[200px] bg-white p-3 rounded-xl shadow-2xl border-2 border-gray-400 flex justify-center items-center">
                     <img id="qrCodeImg" src="" alt="QR" class="w-full h-full object-contain">
                   </div>
@@ -519,13 +534,49 @@
       }
     });
 
+    // CACHE SA UNTUK MENCEGAH LEMOT SAAT LOAD PERTAMA KALI
     function loadSADropdown() {
-      var select = document.getElementById('namaSA'); select.innerHTML = '<option value="" disabled selected>Memuat list SA...</option>';
-      fetchAPI('getSAList', { userCabang: sessionUser.cabang }).then(function(res) {
+      var select = document.getElementById('namaSA');
+      var cachedSA = sessionStorage.getItem('gls_sa_list_' + sessionUser.cabang);
+      
+      if (cachedSA) {
+        var dataSA = JSON.parse(cachedSA);
         select.innerHTML = '<option value="" disabled selected>Pilih SA...</option>';
-        if (res.success && res.data.length > 0) { res.data.forEach(function(nama) { select.innerHTML += '<option value="' + nama + '">' + nama + '</option>'; }); } 
-        else { select.innerHTML = '<option value="" disabled selected>Tidak ada data SA</option>'; }
+        dataSA.forEach(function(nama) { select.innerHTML += '<option value="' + nama + '">' + nama + '</option>'; });
+      } else {
+        select.innerHTML = '<option value="" disabled selected>Memuat list SA...</option>';
+      }
+
+      fetchAPI('getSAList', { userCabang: sessionUser.cabang }).then(function(res) {
+        if (res.success && res.data.length > 0) { 
+            sessionStorage.setItem('gls_sa_list_' + sessionUser.cabang, JSON.stringify(res.data));
+            if (!cachedSA) {
+                select.innerHTML = '<option value="" disabled selected>Pilih SA...</option>';
+                res.data.forEach(function(nama) { select.innerHTML += '<option value="' + nama + '">' + nama + '</option>'; }); 
+            }
+        } else if (!cachedSA) { 
+            select.innerHTML = '<option value="" disabled selected>Tidak ada data SA</option>'; 
+        }
       });
+    }
+
+    // PRE-FETCH MECHANISM: Ambil data histori ketika SA selesai mengetik Nomor Rangka
+    function prefetchHistory() {
+        var nokaRaw = document.getElementById('noka').value.trim().toUpperCase();
+        if (nokaRaw.length > 5) {
+            isPrefetching = true;
+            document.getElementById('prefetchIndicator').classList.remove('hidden');
+            fetchAPI('getHistoryData', { noka: nokaRaw }).then(function(res) {
+                if(res.success) {
+                    cachedHistoryData[nokaRaw] = { history: res.data, allowBypassS9: res.allowBypassS9 };
+                }
+                isPrefetching = false;
+                document.getElementById('prefetchIndicator').classList.add('hidden');
+            }).catch(e => {
+                isPrefetching = false;
+                document.getElementById('prefetchIndicator').classList.add('hidden');
+            });
+        }
     }
 
     function loadCustomerPortal(code) {
@@ -604,66 +655,106 @@
       } 
     }
     
-    function loadHistory(noka) { 
-      fetchAPI('getHistoryData', { noka: noka }).then(function(res) { 
-        var historyDiv = document.getElementById('cardHistory'); historyDiv.innerHTML = ''; 
-        var timeline = [ { id: '8', name: 'S-8' }, { id: '9', name: 'S-9' }, { id: '10', name: 'S-10' }, { id: '11', name: 'S-11' } ];
-        var html = '';
-        timeline.forEach(function(step) {
-            var found = res.data.find(function(item) { var sClean = item.servisKe.toUpperCase().replace(/\s/g, ''); return sClean.indexOf('SERVIS' + step.id) > -1; });
-            var bgClass = 'bg-gray-800 border-gray-600 text-gray-500 opacity-50'; var statusText = '';
-            if (found) { bgClass = 'bg-gray-800 border-gray-600 text-gray-500'; if (found.status === 'REDEEMED') { bgClass = 'bg-gray-500 border-gray-400 text-white'; statusText = '<span class="absolute -top-2 -right-2 bg-gray-200 text-gray-800 text-[6px] font-black px-1 py-0.5 rounded shadow transform rotate-12 border border-gray-400">REDEEMED</span>'; } else if (found.status === 'ACTIVE') { bgClass = 'bg-green-500 border-green-400 text-white shadow-[0_0_8px_rgba(34,197,94,0.6)]'; } else if (found.status === 'EXPIRED') { bgClass = 'bg-red-600 border-red-500 text-white'; statusText = '<span class="absolute -top-2 -right-2 bg-red-900 text-white text-[6px] font-black px-1 py-0.5 rounded shadow transform rotate-12">EXPIRED</span>'; } }
-            html += '<div class="relative flex-1 text-center border rounded-md py-1.5 ' + bgClass + ' transition-all"><p class="text-[10px] font-black tracking-wider">' + step.name + '</p>' + statusText + '</div>';
-        }); historyDiv.innerHTML = html;
-      }); 
+    function loadHistory(noka, historyData = null) { 
+        const processHistory = (data) => {
+            var historyDiv = document.getElementById('cardHistory'); historyDiv.innerHTML = ''; 
+            var timeline = [ { id: '8', name: 'S-8' }, { id: '9', name: 'S-9' }, { id: '10', name: 'S-10' }, { id: '11', name: 'S-11' } ];
+            var html = '';
+            timeline.forEach(function(step) {
+                var found = data.find(function(item) { var sClean = item.servisKe.toUpperCase().replace(/\s/g, ''); return sClean.indexOf('SERVIS' + step.id) > -1; });
+                var bgClass = 'bg-gray-800 border-gray-600 text-gray-500 opacity-50'; var statusText = '';
+                if (found) { 
+                    bgClass = 'bg-gray-800 border-gray-600 text-gray-500'; 
+                    if (found.status === 'REDEEMED') { bgClass = 'bg-gray-500 border-gray-400 text-white'; statusText = '<span class="absolute -top-2 -right-2 bg-gray-200 text-gray-800 text-[6px] font-black px-1 py-0.5 rounded shadow transform rotate-12 border border-gray-400">REDEEMED</span>'; } 
+                    else if (found.status === 'ACTIVE') { bgClass = 'bg-green-500 border-green-400 text-white shadow-[0_0_8px_rgba(34,197,94,0.6)]'; } 
+                    else if (found.status === 'EXPIRED') { bgClass = 'bg-red-600 border-red-500 text-white'; statusText = '<span class="absolute -top-2 -right-2 bg-red-900 text-white text-[6px] font-black px-1 py-0.5 rounded shadow transform rotate-12">EXPIRED</span>'; } 
+                }
+                html += '<div class="relative flex-1 text-center border rounded-md py-1.5 ' + bgClass + ' transition-all"><p class="text-[10px] font-black tracking-wider">' + step.name + '</p>' + statusText + '</div>';
+            }); historyDiv.innerHTML = html;
+        };
+
+        if (historyData) {
+            processHistory(historyData);
+        } else {
+            fetchAPI('getHistoryData', { noka: noka }).then(function(res) { 
+                if (res.success) processHistory(res.data);
+            }); 
+        }
     }
     
-    function handleFormSubmit(event) { 
-        event.preventDefault(); var btn = document.getElementById('submitBtn'); btn.innerHTML = 'Memvalidasi...'; btn.disabled = true; 
+    async function handleFormSubmit(event) { 
+        event.preventDefault(); 
+        var btn = document.getElementById('submitBtn'); btn.innerHTML = 'Memvalidasi...'; btn.disabled = true; 
         var nokaRaw = document.getElementById('noka').value.trim().toUpperCase(); var targetSvc = document.getElementById('servisKe').value;
         
         var bDate = document.getElementById('bookingDate').value; 
         if(bDate) {
             var bParts = bDate.split('-');
-            var d6 = new Date(bParts[0], bParts[1], 0); // EOM of current month
-            var d7 = new Date(bParts[0], parseInt(bParts[1]), 0); // EOM of next month
-            
+            var d6 = new Date(bParts[0], bParts[1], 0); 
+            var d7 = new Date(bParts[0], parseInt(bParts[1]), 0); 
             document.getElementById('cardMax6').innerText = formatDateID(d6);
             document.getElementById('cardMax7').innerText = formatDateID(d7);
         }
 
-        // Tampilkan placeholder langsung di UI agar Roadmap tidak terlihat blank sebelum API merespon
         document.getElementById('cardHistory').innerHTML = defaultHistoryHTML;
 
-        fetchAPI('getHistoryData', { noka: nokaRaw }).then(function(histRes) {
-            if (histRes.success) {
-                var history = histRes.data; 
-                var checkExistsExact = function(fullSvcName) { var tClean = fullSvcName.toUpperCase().replace(/\s/g, ''); return history.some(function(h) { return h.servisKe.toUpperCase().replace(/\s/g, '') === tClean; }); };
-                var checkExistsLevel = function(levelNum) { return history.some(function(h) { var sClean = h.servisKe.toUpperCase().replace(/\s/g, ''); return sClean.indexOf('SERVIS' + levelNum) > -1; }); };
-                var errorMsg = null; var baseTargetSvcName = targetSvc.split(' (')[0].trim(); var targetSvcClean = targetSvc.toUpperCase().replace(/\s/g, '');
-                
-                if (checkExistsExact(targetSvc)) { errorMsg = "Kunci Sistem: Voucher untuk tahapan ini (" + baseTargetSvcName + ") sudah pernah diterbitkan (Double Claim)."; } 
-                else if (targetSvcClean.indexOf('SERVIS9') > -1 && !checkExistsLevel('8')) { errorMsg = "Kunci Sistem: Start program wajib dimulai dari Servis 8. Anda belum mendaftarkan tiket Servis 8 untuk nomor rangka ini."; } 
-                else if (targetSvcClean.indexOf('SERVIS10') > -1 && !checkExistsLevel('9')) { errorMsg = "Kunci Sistem: Rantai terputus. Anda belum memiliki histori pendaftaran Servis 9."; } 
-                else if (targetSvcClean.indexOf('SERVIS11') > -1 && !checkExistsLevel('10')) { errorMsg = "Kunci Sistem: Rantai terputus. Anda belum memiliki histori pendaftaran Servis 10."; }
+        var historyRes;
+        if (cachedHistoryData[nokaRaw] && !isPrefetching) {
+            historyRes = { success: true, data: cachedHistoryData[nokaRaw].history, allowBypassS9: cachedHistoryData[nokaRaw].allowBypassS9 };
+        } else {
+            historyRes = await fetchAPI('getHistoryData', { noka: nokaRaw });
+            if (historyRes.success) {
+                cachedHistoryData[nokaRaw] = { history: historyRes.data, allowBypassS9: historyRes.allowBypassS9 };
+            }
+        }
 
-                if (errorMsg) { Swal.fire('Registrasi Ditolak (Gamifikasi)', errorMsg, 'error'); btn.innerHTML = 'Generate Tiket QR'; btn.disabled = false; return; }
+        if (historyRes.success) {
+            var history = historyRes.data || historyRes.history; 
+            var isBypassS9 = historyRes.allowBypassS9 === true; 
+            
+            var checkExistsExact = function(fullSvcName) { var tClean = fullSvcName.toUpperCase().replace(/\s/g, ''); return history.some(function(h) { return h.servisKe.toUpperCase().replace(/\s/g, '') === tClean; }); };
+            var checkRedeemedLevel = function(levelNum) { 
+                return history.some(function(h) { 
+                    var sClean = h.servisKe.toUpperCase().replace(/\s/g, ''); 
+                    return sClean.indexOf('SERVIS' + levelNum) > -1 && h.status === 'REDEEMED'; 
+                }); 
+            };
+            
+            var errorMsg = null; var baseTargetSvcName = targetSvc.split(' (')[0].trim(); var targetSvcClean = targetSvc.toUpperCase().replace(/\s/g, '');
+            
+            if (checkExistsExact(targetSvc)) { 
+                errorMsg = "Kunci Sistem: Voucher untuk tahapan ini (" + baseTargetSvcName + ") sudah pernah diterbitkan (Double Claim)."; 
+            } 
+            else if (targetSvcClean.indexOf('SERVIS9') > -1 && !checkRedeemedLevel('8') && !isBypassS9) { 
+                errorMsg = "Aturan Gamifikasi: Tiket Servis 8 pelanggan ini belum di-Klaim/Redeem (Masih Aktif) atau belum dibuat. (Bypass ditolak karena tidak ada di target ShortTerm)."; 
+            } 
+            else if (targetSvcClean.indexOf('SERVIS10') > -1 && !checkRedeemedLevel('9')) { 
+                errorMsg = "Aturan Gamifikasi: Tiket Servis 9 pelanggan ini belum di-Klaim/Redeem (Masih Aktif). Wajib diselesaikan dahulu."; 
+            } 
+            else if (targetSvcClean.indexOf('SERVIS11') > -1 && !checkRedeemedLevel('10')) { 
+                errorMsg = "Aturan Gamifikasi: Tiket Servis 10 pelanggan ini belum di-Klaim/Redeem (Masih Aktif). Wajib diselesaikan dahulu."; 
+            }
 
-                btn.innerHTML = 'Menerbitkan Tiket...';
-                var data = { cabang: sessionUser.cabang, namaSA: document.getElementById('namaSA').value, kodeSA: document.getElementById('kodeSA').value, nama: document.getElementById('nama').value, nohp: document.getElementById('nohp').value, model: document.getElementById('model').value, nopol: document.getElementById('nopol').value.toUpperCase(), noka: nokaRaw, servisKe: targetSvc, booking: bDate }; 
-                
-                fetchAPI('submitData', { customerData: data }).then(function(res) { 
-                    if(res.success) { 
-                        document.getElementById('formSection').classList.add('hidden'); document.getElementById('resultSection').classList.remove('hidden'); document.getElementById('resultSection').classList.add('flex'); 
-                        document.getElementById('cardModel').innerText = res.model; document.getElementById('cardNopolNoka').innerText = res.nopol.toUpperCase() + ' / ' + res.noka.toUpperCase(); 
-                        document.getElementById('cardCode').innerText = res.code; 
-                        document.getElementById('qrCodeImg').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + res.code + '&bgcolor=ffffff'; 
-                        updateBenefitPreview(); loadHistory(res.noka); window.scrollTo({top: 0, behavior: 'smooth'}); 
-                    } else { Swal.fire('Ditolak', res.message, 'warning'); } 
-                    btn.innerHTML = 'Generate Tiket QR'; btn.disabled = false; 
-                });
-            } else { Swal.fire('Error', 'Sistem gagal memverifikasi histori.', 'error'); btn.innerHTML = 'Generate Tiket QR'; btn.disabled = false; }
-        });
+            if (errorMsg) { Swal.fire('Ditolak (Aturan Rantai)', errorMsg, 'error'); btn.innerHTML = 'Generate Tiket QR'; btn.disabled = false; return; }
+
+            btn.innerHTML = 'Menerbitkan Tiket...';
+            var data = { cabang: sessionUser.cabang, namaSA: document.getElementById('namaSA').value, kodeSA: document.getElementById('kodeSA').value, nama: document.getElementById('nama').value, nohp: document.getElementById('nohp').value, model: document.getElementById('model').value, nopol: document.getElementById('nopol').value.toUpperCase(), noka: nokaRaw, servisKe: targetSvc, booking: bDate }; 
+            
+            fetchAPI('submitData', { customerData: data }).then(function(res) { 
+                if(res.success) { 
+                    cachedHistoryData[res.noka] = { history: res.updatedHistory || [], allowBypassS9: historyRes.allowBypassS9 }; 
+
+                    document.getElementById('formSection').classList.add('hidden'); document.getElementById('resultSection').classList.remove('hidden'); document.getElementById('resultSection').classList.add('flex'); 
+                    document.getElementById('cardModel').innerText = res.model; document.getElementById('cardNopolNoka').innerText = res.nopol.toUpperCase() + ' / ' + res.noka.toUpperCase(); 
+                    document.getElementById('cardCode').innerText = res.code; 
+                    document.getElementById('qrCodeImg').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + res.code + '&bgcolor=ffffff'; 
+                    updateBenefitPreview(); 
+                    loadHistory(res.noka, res.updatedHistory);
+                    window.scrollTo({top: 0, behavior: 'smooth'}); 
+                } else { Swal.fire('Ditolak', res.message, 'warning'); } 
+                btn.innerHTML = 'Generate Tiket QR'; btn.disabled = false; 
+            });
+        } else { Swal.fire('Error', 'Sistem gagal memverifikasi histori. Cek koneksi.', 'error'); btn.innerHTML = 'Generate Tiket QR'; btn.disabled = false; }
     }
     
     function downloadPDF() { var element = document.getElementById('loyaltyCard'); var nopol = document.getElementById('nopol').value; html2pdf().set({ margin: 0, filename: 'Voucher-'+nopol+'.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'px', format: [800, 450], orientation: 'landscape' } }).from(element).save(); }
@@ -673,7 +764,6 @@
       var d = new Date(); d.setMonth(d.getMonth() + 6); var maxStr = d.toISOString().split('T')[0];
       var dateInput = document.getElementById('bookingDate'); dateInput.value = maxStr; dateInput.setAttribute('max', maxStr); 
       document.getElementById('kodeSA').value = kode; document.getElementById('namaSA').selectedIndex = 0; 
-      // Reset Default Placeholder
       document.getElementById('cardHistory').innerHTML = defaultHistoryHTML;
       document.getElementById('formSection').classList.remove('hidden'); document.getElementById('resultSection').classList.add('hidden'); document.getElementById('resultSection').classList.remove('flex'); 
     }
