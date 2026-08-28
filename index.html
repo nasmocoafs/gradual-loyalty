@@ -22,11 +22,11 @@
     var globalPortalCode = urlParams.get('code') || '';
     var globalMraDataRaw = [];
     
-    // CACHE SYSTEM UNTUK PERFORMA SUPER CEPAT
+    // CACHE SYSTEM
     var cachedHistoryData = {};
     var isPrefetching = false;
 
-    // Mapping Benefit Gamifikasi
+    // Mapping Benefit
     const bMap = {
       "8": { basic: "Diskon Jasa 15%", ontime: "FREE Wiper Fluid + Diskon Part 5.5%" },
       "9": { basic: "Diskon Jasa 20%", ontime: "FREE Brake Cleaner + Diskon Part 6.0%" },
@@ -34,15 +34,13 @@
       "11": { basic: "Diskon Jasa 30%", ontime: "FREE Injector Clean + Diskon Part 7.0%" }
     };
 
-    // Placeholder Roadmap (Proporsional)
     const defaultHistoryHTML = `
-        <div class="flex-1 text-center border rounded-md py-1.5 bg-gray-800 border-gray-600 text-gray-500 opacity-50 flex items-center justify-center"><p class="text-[10px] font-black tracking-wider">S-8</p></div>
-        <div class="flex-1 text-center border rounded-md py-1.5 bg-gray-800 border-gray-600 text-gray-500 opacity-50 flex items-center justify-center"><p class="text-[10px] font-black tracking-wider">S-9</p></div>
-        <div class="flex-1 text-center border rounded-md py-1.5 bg-gray-800 border-gray-600 text-gray-500 opacity-50 flex items-center justify-center"><p class="text-[10px] font-black tracking-wider">S-10</p></div>
-        <div class="flex-1 text-center border rounded-md py-1.5 bg-gray-800 border-gray-600 text-gray-500 opacity-50 flex items-center justify-center"><p class="text-[10px] font-black tracking-wider">S-11</p></div>
+        <div class="relative flex-1 text-center border rounded-md py-1.5 bg-gray-800 border-gray-700 text-gray-500 opacity-50 flex items-center justify-center"><p class="text-[10px] font-black tracking-wider">S-8</p></div>
+        <div class="relative flex-1 text-center border rounded-md py-1.5 bg-gray-800 border-gray-700 text-gray-500 opacity-50 flex items-center justify-center"><p class="text-[10px] font-black tracking-wider">S-9</p></div>
+        <div class="relative flex-1 text-center border rounded-md py-1.5 bg-gray-800 border-gray-700 text-gray-500 opacity-50 flex items-center justify-center"><p class="text-[10px] font-black tracking-wider">S-10</p></div>
+        <div class="relative flex-1 text-center border rounded-md py-1.5 bg-gray-800 border-gray-700 text-gray-500 opacity-50 flex items-center justify-center"><p class="text-[10px] font-black tracking-wider">S-11</p></div>
     `;
 
-    // Date Formatter ID
     function formatDateID(dateObj) {
         const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
         let d = dateObj.getDate().toString().padStart(2, '0');
@@ -71,9 +69,9 @@
     .nav-item { border-left: 4px solid transparent; transition: all 0.2s; }
     .mobile-nav-item.active { color: #ef4444; }
     .mobile-nav-item { color: #9ca3af; transition: color 0.2s; }
-    .pdf-card { width: 800px; height: 450px; flex-shrink: 0; background-color: #0b0f19 !important; background-image: linear-gradient(135deg, #0b0f19 0%, #1e1b4b 60%, #450a0a 100%) !important; color: #ffffff !important; overflow: hidden; }
-    .bg-tech-lines { background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 15px); }
-    .glass-panel { background: rgba(255, 255, 255, 0.08) !important; border: 1px solid rgba(255, 255, 255, 0.15) !important; }
+    .pdf-card { width: 800px; height: 450px; flex-shrink: 0; background-color: #0b0f19 !important; background-image: linear-gradient(135deg, #0b0f19 0%, #17153a 60%, #450a0a 100%) !important; color: #ffffff !important; overflow: hidden; }
+    .bg-tech-lines { background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 2px, transparent 2px, transparent 15px); }
+    .glass-panel { background: rgba(255, 255, 255, 0.06) !important; border: 1px solid rgba(255, 255, 255, 0.12) !important; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
     input.auto-upper { text-transform: uppercase; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -82,7 +80,7 @@
 <body class="flex flex-col md:flex-row h-screen overflow-hidden text-gray-800 relative">
 
   <!-- ========================================== -->
-  <!-- 1. CUSTOMER PORTAL UI (MINI WEBSITE)       -->
+  <!-- 1. CUSTOMER PORTAL UI                      -->
   <!-- ========================================== -->
   <div id="view-portal" class="fixed inset-0 z-[9999] bg-gray-900 overflow-y-auto" style="display: none;">
     <div id="portal-loading" class="min-h-screen flex flex-col items-center justify-center text-white">
@@ -254,7 +252,7 @@
           </form>
         </div>
         
-        <!-- HASIL GENERATE VOUCHER (FINAL PARIPURNA) -->
+        <!-- HASIL GENERATE VOUCHER (DISEMPURNAKAN KEMBALI) -->
         <div id="resultSection" class="hidden mt-8 flex-col items-center">
           <div class="w-full max-w-[800px] overflow-x-auto no-scrollbar rounded-2xl shadow-2xl bg-gray-900 mb-6 border-4 border-gray-700">
             <!-- PDF CARD - FIXED 800x450 -->
@@ -263,17 +261,17 @@
                 <span class="font-black italic text-lg tracking-tighter">NASMOCO</span><span class="border-l-[3px] border-red-600 pl-3 font-black text-red-600 text-base">REWARD</span>
               </div>
               
-              <!-- WRAPPER UTAMA: p-7 (28px) untuk margin yang lega dan seimbang -->
+              <!-- WRAPPER UTAMA: p-7 (28px) Margin luar yang lebih lega -->
               <div class="flex w-full h-full p-7 relative z-10">
                 
                 <!-- KOLOM KIRI (60%) -->
-                <div class="w-[60%] flex flex-col justify-between pr-6 h-full">
+                <div class="w-[60%] flex flex-col justify-between pr-5 h-full">
                   
                   <div class="space-y-4">
                     <!-- Blok 1: Judul -->
                     <div>
-                      <h1 class="text-[34px] font-black leading-[1.05] text-white tracking-tight">GRADUAL<br><span class="text-red-500">LOYALTY</span><br>VOUCHER</h1>
-                      <p class="text-xs text-gray-300 font-bold mt-2 tracking-widest uppercase">MODEL: <span id="cardModel" class="text-yellow-400 font-black">-</span></p>
+                      <h1 class="text-[36px] font-black leading-[1.05] text-white tracking-tight">GRADUAL<br><span class="text-red-500">LOYALTY</span><br>VOUCHER</h1>
+                      <p class="text-[12px] text-gray-300 font-bold mt-2.5 tracking-widest uppercase">MODEL: <span id="cardModel" class="text-yellow-400 font-black">-</span></p>
                     </div>
                     
                     <!-- Blok 2: Box Benefit -->
@@ -281,8 +279,8 @@
                       <div class="w-[56%]">
                         <p class="text-[9px] text-gray-300 uppercase font-bold tracking-wider mb-0.5">Target Servis Berkala:</p>
                         <p class="text-[18px] font-black text-white leading-none mb-1.5" id="cardServisKe">-</p>
-                        <p class="text-[9px] text-yellow-400 font-bold uppercase tracking-wide mt-1.5">Full Benefit (Jasa, Part & Bonus):</p>
-                        <p class="text-[10px] font-bold text-gray-100 leading-tight mt-0.5 mb-1" id="cardBonusInfo">-</p>
+                        <p class="text-[9px] text-yellow-400 font-bold uppercase tracking-wide mt-2">Full Benefit (Jasa, Part & Bonus):</p>
+                        <p class="text-[10px] font-bold text-gray-100 leading-tight mt-0.5 mb-1.5" id="cardBonusInfo">-</p>
                         <p class="text-[9px] text-blue-300 font-bold uppercase tracking-wide">Basic Benefit (Diskon Jasa Saja):</p>
                         <p class="text-[10px] font-bold text-gray-100 leading-tight mt-0.5" id="cardBasicInfo">-</p>
                       </div>
@@ -308,15 +306,15 @@
                   </div>
                   
                   <!-- Blok 4: Nopol & Rangka -->
-                  <div class="glass-panel px-4 py-2.5 rounded-lg w-full shrink-0">
+                  <div class="glass-panel px-4 py-2.5 rounded-lg w-full shrink-0 mt-3">
                     <p class="text-[9px] text-gray-400 font-bold uppercase mb-0.5">No. Polisi & Rangka</p>
-                    <p class="font-bold text-[12px] uppercase tracking-wide text-white leading-none" id="cardNopolNoka">-</p>
+                    <p class="font-bold text-[13px] uppercase tracking-wide text-white leading-none" id="cardNopolNoka">-</p>
                   </div>
                 </div>
                 
                 <!-- KOLOM KANAN (40%) -->
                 <div class="w-[40%] border-l border-white/20 h-full flex flex-col justify-center items-center pl-6 pr-2 gap-5">
-                  <div class="w-[190px] h-[190px] bg-white p-3 rounded-xl shadow-2xl border-2 border-gray-400 flex justify-center items-center">
+                  <div class="w-[195px] h-[195px] bg-white p-3 rounded-xl shadow-2xl border-2 border-gray-400 flex justify-center items-center">
                     <img id="qrCodeImg" src="" alt="QR" class="w-full h-full object-contain">
                   </div>
                   <div class="text-center w-full max-w-[220px] bg-black/40 p-3.5 rounded-lg border border-white/5 shadow-inner">
@@ -331,8 +329,8 @@
           </div>
           
           <div class="flex flex-col md:flex-row gap-3 w-full max-w-[800px]">
-            <button onclick="downloadPDF()" class="w-full md:w-1/3 bg-gray-900 hover:bg-black text-white font-bold py-3.5 rounded-lg shadow-lg transition">Unduh Tiket PDF</button>
-            <button onclick="shareLinkWA()" class="w-full md:w-1/3 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-3.5 rounded-lg shadow-lg transition">Kirim Link Portal (WA)</button>
+            <button onclick="downloadPDF()" class="w-full md:w-1/3 bg-gray-900 hover:bg-black text-white font-bold py-3.5 rounded-lg shadow-lg transition flex justify-center gap-2 items-center"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>Unduh Tiket PDF</button>
+            <button onclick="shareLinkWA()" class="w-full md:w-1/3 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-3.5 rounded-lg shadow-lg transition flex justify-center gap-2 items-center"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>Unduh PDF & Kirim WA</button>
             <button onclick="resetRegisterForm()" class="w-full md:w-1/3 bg-white hover:bg-gray-100 text-red-600 border border-gray-300 font-bold py-3.5 rounded-lg shadow-sm transition">Buat Form Baru</button>
           </div>
         </div>
@@ -394,10 +392,30 @@
 
       <!-- TAB: DATA MRA -->
       <div id="view-mra" class="w-full max-w-[1500px] mx-auto fade-in hidden">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
-          <div><h2 class="text-xl font-bold text-gray-900">Modul CRM & Retensi Cabang (Single VIN)</h2><p class="text-sm text-gray-500 mt-1">Satu No. Rangka hanya muncul satu kali beserta tanggal jatuh tempo terdekat.</p></div>
-          <button onclick="downloadMraExcel()" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-4 rounded-lg shadow flex items-center justify-center gap-2 h-fit md:mt-auto">Export ke .XLSX</button>
+        <div class="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-gray-900">Modul CRM & Retensi Cabang (Single VIN)</h2>
+            <p class="text-sm text-gray-500 mt-1">Satu No. Rangka hanya muncul satu kali beserta tanggal jatuh tempo terdekat.</p>
+          </div>
+          
+          <!-- FILTER & SEARCH MRA -->
+          <div class="flex flex-col sm:flex-row gap-3 w-full xl:w-auto mt-4 xl:mt-0 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+            <div class="relative w-full sm:w-auto">
+               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+               </div>
+               <input type="text" id="mraSearchVin" placeholder="Cari No. Rangka (VIN)..." class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 auto-upper" oninput="filterMraData()">
+            </div>
+            <div class="relative w-full sm:w-auto">
+                <span class="absolute -top-2 left-2 bg-white px-1 text-[10px] font-bold text-gray-500">Filter Jatuh Tempo</span>
+                <input type="month" id="mraFilterBulan" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500" onchange="filterMraData()">
+            </div>
+            <button onclick="resetMraFilter()" class="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-4 py-2 rounded-lg border border-gray-300 text-sm transition">Reset</button>
+            <div class="hidden sm:block border-l border-gray-200 mx-1"></div>
+            <button onclick="downloadMraExcel()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center justify-center gap-2 transition text-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>Export .XLSX</button>
+          </div>
         </div>
+
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div class="overflow-x-auto max-h-[65vh]">
              <table class="min-w-full divide-y divide-gray-200 text-sm">
@@ -658,12 +676,21 @@
             var html = '';
             timeline.forEach(function(step) {
                 var found = data.find(function(item) { var sClean = item.servisKe.toUpperCase().replace(/\s/g, ''); return sClean.indexOf('SERVIS' + step.id) > -1; });
-                var bgClass = 'bg-gray-800 border-gray-600 text-gray-500 opacity-50'; var statusText = '';
+                var bgClass = 'bg-gray-800 border-gray-700 text-gray-500 opacity-50'; var statusText = '';
+                
                 if (found) { 
-                    bgClass = 'bg-gray-800 border-gray-600 text-gray-500'; 
-                    if (found.status === 'REDEEMED') { bgClass = 'bg-gray-500 border-gray-400 text-white'; statusText = '<span class="absolute -top-1.5 -right-1.5 bg-gray-200 text-gray-800 text-[6px] font-black px-1 py-0.5 rounded shadow transform rotate-12 border border-gray-400">REDEEMED</span>'; } 
-                    else if (found.status === 'ACTIVE') { bgClass = 'bg-green-500 border-green-400 text-white shadow-[0_0_6px_rgba(34,197,94,0.6)]'; } 
-                    else if (found.status === 'EXPIRED') { bgClass = 'bg-red-600 border-red-500 text-white'; statusText = '<span class="absolute -top-1.5 -right-1.5 bg-red-900 text-white text-[6px] font-black px-1 py-0.5 rounded shadow transform rotate-12">EXPIRED</span>'; } 
+                    bgClass = 'bg-gray-800 border-gray-600 text-gray-400'; 
+                    if (found.status === 'REDEEMED') { 
+                        bgClass = 'bg-gray-700 border-gray-600 text-white'; 
+                        statusText = '<span class="absolute -top-1.5 -right-1.5 bg-gray-200 text-gray-900 text-[6px] font-black px-1.5 py-0.5 rounded shadow-md transform rotate-[15deg] border border-gray-400 tracking-wider">REDEEMED</span>'; 
+                    } 
+                    else if (found.status === 'ACTIVE') { 
+                        bgClass = 'bg-green-600 border-green-500 text-white shadow-[0_0_8px_rgba(34,197,94,0.6)] font-bold'; 
+                    } 
+                    else if (found.status === 'EXPIRED') { 
+                        bgClass = 'bg-red-700 border-red-600 text-white'; 
+                        statusText = '<span class="absolute -top-1.5 -right-1.5 bg-red-900 text-white text-[6px] font-black px-1.5 py-0.5 rounded shadow-md transform rotate-[15deg] tracking-wider border border-red-500">EXPIRED</span>'; 
+                    } 
                 }
                 html += '<div class="relative flex-1 text-center border rounded-md py-1.5 ' + bgClass + ' transition-all flex items-center justify-center"><p class="text-[10px] font-black tracking-wider">' + step.name + '</p>' + statusText + '</div>';
             }); historyDiv.innerHTML = html;
@@ -764,12 +791,26 @@
       document.getElementById('formSection').classList.remove('hidden'); document.getElementById('resultSection').classList.add('hidden'); document.getElementById('resultSection').classList.remove('flex'); 
     }
 
+    // MODIFIKASI TERBARU: AUTO-DOWNLOAD PDF & INTEGRASI WHATSAPP 
     function shareLinkWA() {
       var nohpRaw = document.getElementById('nohp').value; var nama = document.getElementById('nama').value; var code = document.getElementById('cardCode').innerText;
       if (!nohpRaw || !code) { return Swal.fire('Error', 'Data tiket tidak lengkap.', 'error'); }
+      
+      // Karena WA Web tidak mendukung attach file via URL, kita trigger download terlebih dahulu.
+      downloadPDF();
+      
       var portalLink = window.location.href.split('?')[0] + "?code=" + code;
-      var text = "Halo *" + nama + "*,\n\nTerima kasih atas kepercayaannya pada Nasmoco. Cek hadiah *Loyalty Reward* dan progres servis kendaraan Anda melalui tautan portal pribadi Anda di bawah ini:\n\n👉 " + portalLink + "\n\nTunjukkan halaman tersebut kepada Service Advisor kami saat Anda berkunjung ke bengkel.\n\n*Nasmoco*";
-      window.open("https://wa.me/" + formatWAPhone(nohpRaw) + "?text=" + encodeURIComponent(text), '_blank');
+      var text = "Halo *" + nama + "*,\n\nTerima kasih atas kepercayaannya pada Nasmoco. Berikut kami lampirkan *e-Voucher PDF* beserta tautan portal pribadi untuk memantau progres hadiah Loyalty Reward Anda:\n\n👉 " + portalLink + "\n\nTunjukkan voucher ini kepada Service Advisor kami saat Anda berkunjung ke bengkel.\n\n*Nasmoco*";
+      
+      Swal.fire({
+          title: 'Kirim WhatsApp',
+          text: 'Voucher sedang diunduh (PDF). Jangan lupa untuk melampirkan file PDF tersebut di ruang obrolan WhatsApp pelanggan.',
+          icon: 'info',
+          confirmButtonText: 'Lanjut Buka WA',
+          confirmButtonColor: '#16a34a'
+      }).then(() => {
+          window.open("https://wa.me/" + formatWAPhone(nohpRaw) + "?text=" + encodeURIComponent(text), '_blank');
+      });
     }
 
     function startLiveScanner() { document.getElementById('live-reader').classList.remove('hidden'); document.getElementById('btnLiveScan').classList.add('hidden'); document.getElementById('scanFeedback').innerText = "MENYALAKAN KAMERA..."; if (!html5QrCode) { html5QrCode = new Html5Qrcode("live-reader"); } html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, function(decodedText) { document.getElementById('uniqueCode').value = decodedText; document.getElementById('scanFeedback').innerText = "QR CODE TERBACA!"; html5QrCode.stop().then(function() { document.getElementById('live-reader').classList.add('hidden'); document.getElementById('btnLiveScan').classList.remove('hidden'); handleCheck(); }); }, function(err) { }).catch(function(err) { document.getElementById('live-reader').classList.add('hidden'); document.getElementById('btnLiveScan').classList.remove('hidden'); Swal.fire('Kamera Terblokir', 'Gunakan opsi Buka Foto/Kamera HP.', 'warning'); }); }
@@ -840,24 +881,68 @@
     }
 
     function loadMraData() {
-      document.getElementById('mraLoading').classList.remove('hidden'); document.getElementById('mraTableBody').innerHTML = '';
+      document.getElementById('mraLoading').classList.remove('hidden'); 
+      document.getElementById('mraTableBody').innerHTML = '';
       fetchAPI('getMraData', { userCabang: sessionUser.cabang }).then(function(res) {
           document.getElementById('mraLoading').classList.add('hidden'); 
           if (!res.success) { document.getElementById('mraTableBody').innerHTML = '<tr><td colspan="7" class="text-center py-10 text-red-600 font-bold">Terjadi Kesalahan: ' + res.message + '</td></tr>'; return; }
           if (!res.rows || res.rows.length === 0) { document.getElementById('mraTableBody').innerHTML = '<tr><td colspan="7" class="text-center py-10 text-gray-500 font-bold tracking-wide">Belum ada data tiket untuk cabang Anda.</td></tr>'; return; }
-          globalMraDataRaw = res.rows; var tbodyHtml = '';
-          res.rows.forEach(function(row) { 
-            var cell8 = buildBadgeCell(row.history['S8']); var cell9 = buildBadgeCell(row.history['S9']); var cell10 = buildBadgeCell(row.history['S10']); var cell11 = buildBadgeCell(row.history['S11']);
-            var activeSvc = null; for(var key in row.history) { if(row.history[key].status === 'ACTIVE') activeSvc = row.history[key]; }
-            var btnWA = '-';
-            if (activeSvc) { 
-              var waFormat = formatWAPhone(row.nohp);
-              var waText = encodeURIComponent("Halo *" + row.nama + "*, ini tim Nasmoco. Mengingatkan bahwa tiket hadiah untuk *" + activeSvc.servisFull + "* mobil " + row.model + " Anda akan segera hangus pada *" + activeSvc.validUntil + "*. Jangan sampai kehilangan bonus loyaltinya ya Kak! Kapan rencana bisa merapat ke bengkel Nasmoco?");
-              btnWA = '<a href="https://wa.me/' + waFormat + '?text=' + waText + '" target="_blank" class="bg-[#25D366] hover:bg-green-600 text-white text-[10px] px-3 py-1.5 rounded font-bold shadow flex justify-center items-center gap-1 transition whitespace-nowrap"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Kirim Reminder WA</a>';
-            }
-            tbodyHtml += '<tr class="hover:bg-gray-50 border-b border-gray-100 text-xs"><td class="px-4 py-3 border-r border-gray-100"><p class="font-bold text-gray-900 uppercase">' + row.nama + '</p><p class="text-gray-600 font-medium mt-0.5">' + row.model + ' (' + row.nopol + ')</p><p class="font-mono text-[9px] text-gray-400 mt-1">' + row.noka + ' | 📞 ' + formatWAPhone(row.nohp) + '</p></td><td class="px-4 py-3 text-center border-r border-gray-100 font-mono font-bold text-red-600 whitespace-nowrap">' + row.jatuhTempoTerdekat + '</td><td class="px-2 py-3 text-center align-middle border-r border-gray-100">' + cell8 + '</td><td class="px-2 py-3 text-center align-middle border-r border-gray-100">' + cell9 + '</td><td class="px-2 py-3 text-center align-middle border-r border-gray-100">' + cell10 + '</td><td class="px-2 py-3 text-center align-middle border-r border-gray-100">' + cell11 + '</td><td class="px-4 py-3 text-center align-middle flex justify-center items-center h-full">' + btnWA + '</td></tr>';
-          }); document.getElementById('mraTableBody').innerHTML = tbodyHtml;
+          
+          globalMraDataRaw = res.rows; 
+          renderMraTable(globalMraDataRaw); // Panggil fungsi render
       });
+    }
+
+    // MODIFIKASI TERBARU: FITUR FILTER MRA
+    function filterMraData() {
+        var searchVin = document.getElementById('mraSearchVin').value.toUpperCase();
+        var filterBulan = document.getElementById('mraFilterBulan').value; // Format input type=month: "YYYY-MM"
+        
+        var filteredData = globalMraDataRaw.filter(function(row) {
+            var matchVin = row.noka.toUpperCase().includes(searchVin);
+            var matchBulan = true;
+            
+            if (filterBulan && row.jatuhTempoTerdekat) {
+                // Parsing jatuhTempoTerdekat (contoh: "28 Feb 2027") ke "YYYY-MM"
+                var parts = row.jatuhTempoTerdekat.split(' ');
+                var months = {"Jan":"01", "Feb":"02", "Mar":"03", "Apr":"04", "Mei":"05", "Jun":"06", "Jul":"07", "Agu":"08", "Sep":"09", "Okt":"10", "Nov":"11", "Des":"12"};
+                
+                if (parts.length === 3) {
+                    var rowBulanFormat = parts[2] + "-" + months[parts[1]]; // Menjadi "2027-02"
+                    matchBulan = (rowBulanFormat === filterBulan);
+                }
+            }
+            return matchVin && matchBulan;
+        });
+
+        renderMraTable(filteredData);
+    }
+
+    function resetMraFilter() {
+        document.getElementById('mraSearchVin').value = '';
+        document.getElementById('mraFilterBulan').value = '';
+        renderMraTable(globalMraDataRaw);
+    }
+
+    // Ekstrak render ke fungsi terpisah agar bisa dipanggil saat filter
+    function renderMraTable(dataRows) {
+        var tbodyHtml = '';
+        if (dataRows.length === 0) {
+            tbodyHtml = '<tr><td colspan="7" class="text-center py-10 text-gray-500 font-bold tracking-wide italic">Data tidak ditemukan.</td></tr>';
+        } else {
+            dataRows.forEach(function(row) { 
+                var cell8 = buildBadgeCell(row.history['S8']); var cell9 = buildBadgeCell(row.history['S9']); var cell10 = buildBadgeCell(row.history['S10']); var cell11 = buildBadgeCell(row.history['S11']);
+                var activeSvc = null; for(var key in row.history) { if(row.history[key].status === 'ACTIVE') activeSvc = row.history[key]; }
+                var btnWA = '-';
+                if (activeSvc) { 
+                  var waFormat = formatWAPhone(row.nohp);
+                  var waText = encodeURIComponent("Halo *" + row.nama + "*, ini tim Nasmoco. Mengingatkan bahwa tiket hadiah untuk *" + activeSvc.servisFull + "* mobil " + row.model + " Anda akan segera hangus pada *" + activeSvc.validUntil + "*. Jangan sampai kehilangan bonus loyaltinya ya Kak! Kapan rencana bisa merapat ke bengkel Nasmoco?");
+                  btnWA = '<a href="https://wa.me/' + waFormat + '?text=' + waText + '" target="_blank" class="bg-[#25D366] hover:bg-green-600 text-white text-[10px] px-3 py-1.5 rounded font-bold shadow flex justify-center items-center gap-1 transition whitespace-nowrap"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Kirim Reminder WA</a>';
+                }
+                tbodyHtml += '<tr class="hover:bg-gray-50 border-b border-gray-100 text-xs"><td class="px-4 py-3 border-r border-gray-100"><p class="font-bold text-gray-900 uppercase">' + row.nama + '</p><p class="text-gray-600 font-medium mt-0.5">' + row.model + ' (' + row.nopol + ')</p><p class="font-mono text-[9px] text-gray-400 mt-1">' + row.noka + ' | 📞 ' + formatWAPhone(row.nohp) + '</p></td><td class="px-4 py-3 text-center border-r border-gray-100 font-mono font-bold text-red-600 whitespace-nowrap">' + row.jatuhTempoTerdekat + '</td><td class="px-2 py-3 text-center align-middle border-r border-gray-100">' + cell8 + '</td><td class="px-2 py-3 text-center align-middle border-r border-gray-100">' + cell9 + '</td><td class="px-2 py-3 text-center align-middle border-r border-gray-100">' + cell10 + '</td><td class="px-2 py-3 text-center align-middle border-r border-gray-100">' + cell11 + '</td><td class="px-4 py-3 text-center align-middle flex justify-center items-center h-full">' + btnWA + '</td></tr>';
+            }); 
+        }
+        document.getElementById('mraTableBody').innerHTML = tbodyHtml;
     }
 
     function downloadMraExcel() {
