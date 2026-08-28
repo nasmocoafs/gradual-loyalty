@@ -265,51 +265,48 @@
               <div class="flex w-full h-full p-7 relative z-10">
                 
                 <!-- KOLOM KIRI (60%) -->
-                <div class="w-[60%] flex flex-col justify-between pr-5 h-full">
+                <div class="w-[60%] flex flex-col justify-between pr-5 h-full pb-1">
                   
-                  <div class="space-y-4">
-                    <!-- Blok 1: Judul -->
-                    <div>
-                      <h1 class="text-[36px] font-black leading-[1.05] text-white tracking-tight">GRADUAL<br><span class="text-red-500">LOYALTY</span><br>VOUCHER</h1>
-                      <p class="text-[12px] text-gray-300 font-bold mt-2.5 tracking-widest uppercase">MODEL: <span id="cardModel" class="text-yellow-400 font-black">-</span></p>
-                    </div>
-                    
-                    <!-- Blok 2: Box Benefit -->
-                    <div class="glass-panel p-3.5 rounded-xl border-l-4 border-l-red-500 shadow-md flex items-center gap-3">
-                      <div class="w-[56%]">
-                        <p class="text-[9px] text-gray-300 uppercase font-bold tracking-wider mb-0.5">Target Servis Berkala:</p>
-                        <p class="text-[18px] font-black text-white leading-none mb-1.5" id="cardServisKe">-</p>
-                        <p class="text-[9px] text-yellow-400 font-bold uppercase tracking-wide mt-2">Full Benefit (Jasa, Part & Bonus):</p>
-                        <p class="text-[10px] font-bold text-gray-100 leading-tight mt-0.5 mb-1.5" id="cardBonusInfo">-</p>
-                        <p class="text-[9px] text-blue-300 font-bold uppercase tracking-wide">Basic Benefit (Diskon Jasa Saja):</p>
-                        <p class="text-[10px] font-bold text-gray-100 leading-tight mt-0.5" id="cardBasicInfo">-</p>
-                      </div>
-                      <div class="w-[44%] flex flex-col gap-2 border-l border-white/20 pl-3">
-                         <div class="bg-blue-900/60 p-2 rounded border border-blue-400/30">
-                            <p class="text-[8px] text-blue-200 font-bold uppercase tracking-wide">Batas Max 6 Bln (Full):</p>
-                            <p class="text-[12px] font-black text-white mt-0.5 leading-none" id="cardMax6">-</p>
-                         </div>
-                         <div class="bg-red-900/60 p-2 rounded border border-red-400/30">
-                            <p class="text-[8px] text-red-200 font-bold uppercase tracking-wide">Batas Max 7 Bln (Basic):</p>
-                            <p class="text-[12px] font-black text-white mt-0.5 leading-none" id="cardMax7">-</p>
-                         </div>
-                      </div>
-                    </div>
-                    
-                    <!-- Blok 3: Roadmap -->
-                    <div class="bg-black/30 p-3 rounded-lg border border-white/5">
-                      <p class="text-[9px] text-gray-400 font-bold uppercase mb-1.5">Roadmap Riwayat Loyalti:</p>
-                      <div id="cardHistory" class="flex items-center gap-2 w-full h-[30px]">
-                        <!-- Placeholder -->
-                      </div>
+                  <!-- Blok 1: Judul & Info Kendaraan Terpadu -->
+                  <div>
+                    <h1 class="text-[38px] font-black leading-[1.05] text-white tracking-tight mb-3">GRADUAL <span class="text-red-500">LOYALTY</span><br>VOUCHER</h1>
+                    <div class="glass-panel px-4 py-2.5 rounded-lg w-full shrink-0">
+                      <p class="text-[9px] text-gray-400 font-bold uppercase mb-0.5">No. Polisi & Rangka</p>
+                      <p class="font-bold text-[13px] uppercase tracking-wide text-white leading-none mb-1.5" id="cardNopolNoka">-</p>
+                      <p class="text-[10px] text-gray-300 font-bold tracking-widest uppercase">MODEL: <span id="cardModel" class="text-yellow-400 font-black">-</span></p>
                     </div>
                   </div>
                   
-                  <!-- Blok 4: Nopol & Rangka -->
-                  <div class="glass-panel px-4 py-2.5 rounded-lg w-full shrink-0 mt-3">
-                    <p class="text-[9px] text-gray-400 font-bold uppercase mb-0.5">No. Polisi & Rangka</p>
-                    <p class="font-bold text-[13px] uppercase tracking-wide text-white leading-none" id="cardNopolNoka">-</p>
+                  <!-- Blok 2: Box Benefit -->
+                  <div class="glass-panel p-3.5 rounded-xl border-l-4 border-l-red-500 shadow-md flex items-center gap-3">
+                    <div class="w-[56%]">
+                      <p class="text-[9px] text-gray-300 uppercase font-bold tracking-wider mb-0.5">Target Servis Berkala:</p>
+                      <p class="text-[18px] font-black text-white leading-none mb-1.5" id="cardServisKe">-</p>
+                      <p class="text-[9px] text-yellow-400 font-bold uppercase tracking-wide mt-2">Full Benefit (Jasa, Part & Bonus):</p>
+                      <p class="text-[10px] font-bold text-gray-100 leading-tight mt-0.5 mb-1.5" id="cardBonusInfo">-</p>
+                      <p class="text-[9px] text-blue-300 font-bold uppercase tracking-wide">Basic Benefit (Diskon Jasa Saja):</p>
+                      <p class="text-[10px] font-bold text-gray-100 leading-tight mt-0.5" id="cardBasicInfo">-</p>
+                    </div>
+                    <div class="w-[44%] flex flex-col gap-2 border-l border-white/20 pl-3">
+                       <div class="bg-blue-900/60 p-2 rounded border border-blue-400/30">
+                          <p class="text-[8px] text-blue-200 font-bold uppercase tracking-wide">Batas Max 6 Bln (Full):</p>
+                          <p class="text-[12px] font-black text-white mt-0.5 leading-none" id="cardMax6">-</p>
+                       </div>
+                       <div class="bg-red-900/60 p-2 rounded border border-red-400/30">
+                          <p class="text-[8px] text-red-200 font-bold uppercase tracking-wide">Batas Max 7 Bln (Basic):</p>
+                          <p class="text-[12px] font-black text-white mt-0.5 leading-none" id="cardMax7">-</p>
+                       </div>
+                    </div>
                   </div>
+                  
+                  <!-- Blok 3: Roadmap -->
+                  <div class="bg-black/30 p-3 rounded-lg border border-white/5">
+                    <p class="text-[9px] text-gray-400 font-bold uppercase mb-1.5">Roadmap Riwayat Loyalti:</p>
+                    <div id="cardHistory" class="flex items-center gap-2 w-full h-[30px]">
+                      <!-- Placeholder -->
+                    </div>
+                  </div>
+                  
                 </div>
                 
                 <!-- KOLOM KANAN (40%) -->
@@ -791,12 +788,10 @@
       document.getElementById('formSection').classList.remove('hidden'); document.getElementById('resultSection').classList.add('hidden'); document.getElementById('resultSection').classList.remove('flex'); 
     }
 
-    // MODIFIKASI TERBARU: AUTO-DOWNLOAD PDF & INTEGRASI WHATSAPP 
     function shareLinkWA() {
       var nohpRaw = document.getElementById('nohp').value; var nama = document.getElementById('nama').value; var code = document.getElementById('cardCode').innerText;
       if (!nohpRaw || !code) { return Swal.fire('Error', 'Data tiket tidak lengkap.', 'error'); }
       
-      // Karena WA Web tidak mendukung attach file via URL, kita trigger download terlebih dahulu.
       downloadPDF();
       
       var portalLink = window.location.href.split('?')[0] + "?code=" + code;
@@ -889,26 +884,24 @@
           if (!res.rows || res.rows.length === 0) { document.getElementById('mraTableBody').innerHTML = '<tr><td colspan="7" class="text-center py-10 text-gray-500 font-bold tracking-wide">Belum ada data tiket untuk cabang Anda.</td></tr>'; return; }
           
           globalMraDataRaw = res.rows; 
-          renderMraTable(globalMraDataRaw); // Panggil fungsi render
+          renderMraTable(globalMraDataRaw); 
       });
     }
 
-    // MODIFIKASI TERBARU: FITUR FILTER MRA
     function filterMraData() {
         var searchVin = document.getElementById('mraSearchVin').value.toUpperCase();
-        var filterBulan = document.getElementById('mraFilterBulan').value; // Format input type=month: "YYYY-MM"
+        var filterBulan = document.getElementById('mraFilterBulan').value; 
         
         var filteredData = globalMraDataRaw.filter(function(row) {
             var matchVin = row.noka.toUpperCase().includes(searchVin);
             var matchBulan = true;
             
             if (filterBulan && row.jatuhTempoTerdekat) {
-                // Parsing jatuhTempoTerdekat (contoh: "28 Feb 2027") ke "YYYY-MM"
                 var parts = row.jatuhTempoTerdekat.split(' ');
                 var months = {"Jan":"01", "Feb":"02", "Mar":"03", "Apr":"04", "Mei":"05", "Jun":"06", "Jul":"07", "Agu":"08", "Sep":"09", "Okt":"10", "Nov":"11", "Des":"12"};
                 
                 if (parts.length === 3) {
-                    var rowBulanFormat = parts[2] + "-" + months[parts[1]]; // Menjadi "2027-02"
+                    var rowBulanFormat = parts[2] + "-" + months[parts[1]]; 
                     matchBulan = (rowBulanFormat === filterBulan);
                 }
             }
@@ -924,7 +917,6 @@
         renderMraTable(globalMraDataRaw);
     }
 
-    // Ekstrak render ke fungsi terpisah agar bisa dipanggil saat filter
     function renderMraTable(dataRows) {
         var tbodyHtml = '';
         if (dataRows.length === 0) {
