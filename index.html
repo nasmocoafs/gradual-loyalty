@@ -707,22 +707,22 @@
         var btn = document.getElementById('submitBtn'); btn.innerHTML = 'Memvalidasi...'; btn.disabled = true; 
         var nokaRaw = document.getElementById('noka').value.trim().toUpperCase(); var targetSvc = document.getElementById('servisKe').value;
         
-        // PERBAIKAN LOGIKA TANGGAL: Parsing ketat ke Desimal (Base 10)
+        // --- 🔴 LOGIKA PENANGGALAN FINAL (AKURAT & KETAT) 🔴 ---
         var bDate = document.getElementById('bookingDate').value; 
         if(bDate) {
             var bParts = bDate.split('-');
             var bYear = parseInt(bParts[0], 10);
-            var bMonth = parseInt(bParts[1], 10); // 1 sampai 12
+            var bMonth = parseInt(bParts[1], 10); // Menangkap nilai bulan secara akurat (1-12)
             
-            // d6 = Hari terakhir di bulan Rencana Booking (Batas 6 Bulan)
+            // d6 = Hari terakhir di bulan target kedatangan
             var d6 = new Date(bYear, bMonth, 0); 
-            
-            // d7 = Hari terakhir di BULAN BERIKUTNYA (Batas 7 Bulan)
+            // d7 = Hari terakhir di bulan berikutnya
             var d7 = new Date(bYear, bMonth + 1, 0); 
             
             document.getElementById('cardMax6').innerText = formatDateID(d6);
             document.getElementById('cardMax7').innerText = formatDateID(d7);
         }
+        // -------------------------------------------------------
 
         document.getElementById('cardHistory').innerHTML = defaultHistoryHTML;
 
