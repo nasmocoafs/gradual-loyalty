@@ -442,8 +442,16 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
           <div><h2 class="text-xl md:text-2xl font-bold text-gray-900">Dasbor Prediktif & Analitik</h2><p class="text-sm text-gray-500 mt-1">Konversi Siklus Transisi Free Service ke Full Berbayar</p></div>
           <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-            <div class="w-full md:w-auto"><label class="block text-xs font-bold text-gray-600 mb-1">Periode Target</label><input type="month" id="dashBulan" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg font-bold bg-white outline-none" onchange="loadDashboard()"></div>
-            <button id="btnUploadTarget" onclick="openUploadModal()" class="w-full md:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-lg shadow flex items-center justify-center gap-2 h-fit md:mt-auto hidden">Upload Master Excel</button>
+            <!-- 🔴 FILTER RANGE TANGGAL (YTM) -->
+            <div class="w-full md:w-auto">
+              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Periode Analitik (YTD/YTM)</label>
+              <div class="flex items-center gap-2">
+                <input type="date" id="dashStartDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg font-bold bg-white outline-none text-sm" onchange="loadDashboard()">
+                <span class="font-bold text-gray-400">-</span>
+                <input type="date" id="dashEndDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg font-bold bg-white outline-none text-sm" onchange="loadDashboard()">
+              </div>
+            </div>
+            <button id="btnUploadTarget" onclick="openUploadModal()" class="w-full md:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center justify-center gap-2 h-fit md:mt-auto hidden">Upload Master Excel</button>
           </div>
         </div>
         <div id="earlyWarning" class="mb-6 bg-red-100 border-l-4 border-red-600 p-4 rounded shadow-sm hidden animate-pulse">
@@ -470,7 +478,22 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
              <div class="col-span-1 md:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
                 <div class="bg-gray-900 p-4 border-b border-gray-800 flex justify-between items-center"><h3 class="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2">🏆 TOP 5 SA Leaderboard</h3><span class="text-[10px] text-gray-400 font-medium">Berdasarkan Revenue Terbesar</span></div>
-                <div class="p-0 flex-1 overflow-x-auto"><table class="w-full text-sm text-left"><thead class="bg-gray-50 text-xs uppercase text-gray-500 font-bold"><tr><th class="px-4 py-3 border-b">Rank</th><th class="px-4 py-3 border-b">Service Advisor</th><th class="px-4 py-3 border-b text-center">Unit Terselamatkan</th><th class="px-4 py-3 border-b text-right">Revenue (Rp)</th></tr></thead><tbody id="leaderboardBody" class="divide-y divide-gray-100"></tbody></table></div>
+                <div class="p-0 flex-1 overflow-x-auto">
+                  <table class="w-full text-sm text-left">
+                    <thead class="bg-gray-50 text-[10px] uppercase text-gray-500 font-bold">
+                      <tr>
+                        <!-- 🔴 HEADER LEADERBOARD BARU -->
+                        <th class="px-4 py-3 border-b text-center">Rank</th>
+                        <th class="px-4 py-3 border-b">Cabang</th>
+                        <th class="px-4 py-3 border-b">Service Advisor</th>
+                        <th class="px-4 py-3 border-b text-center">Input Potensi</th>
+                        <th class="px-4 py-3 border-b text-center">Redeem</th>
+                        <th class="px-4 py-3 border-b text-right">Revenue Actual</th>
+                      </tr>
+                    </thead>
+                    <tbody id="leaderboardBody" class="divide-y divide-gray-100"></tbody>
+                  </table>
+                </div>
              </div>
              <div class="col-span-1 bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col">
                <div class="bg-gray-900 p-4 border-b border-gray-800"><h3 class="text-white font-bold text-sm uppercase tracking-wider">🎯 Segmentasi Model Retensi</h3></div>
@@ -529,7 +552,12 @@
         var maxStr = d.toISOString().split('T')[0];
         dateInput.value = maxStr; dateInput.setAttribute('max', maxStr); 
       }
-      var now = new Date(); document.getElementById('dashBulan').value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+      
+      // 🔴 DEFAULT FILTER TANGGAL: YTD (Awal Tahun hingga Hari Ini)
+      var now = new Date(); 
+      var firstDay = new Date(now.getFullYear(), 0, 1);
+      document.getElementById('dashStartDate').value = firstDay.toISOString().split('T')[0];
+      document.getElementById('dashEndDate').value = now.toISOString().split('T')[0];
 
       fetchAPI('getBranchList').then(function(res) {
           if(res.success) {
@@ -1073,7 +1101,7 @@
         var ws = XLSX.utils.aoa_to_sheet(exportData); var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Data_MRA"); XLSX.writeFile(wb, "Data_MRA_CRM.xlsx");
     }
 
-    function openUploadModal() { document.getElementById('uploadBulan').value = document.getElementById('dashBulan').value; document.getElementById('uploadModal').classList.remove('hidden'); }
+    function openUploadModal() { document.getElementById('uploadBulan').value = document.getElementById('dashStartDate').value.substring(0,7); document.getElementById('uploadModal').classList.remove('hidden'); }
     function closeUploadModal() { document.getElementById('uploadModal').classList.add('hidden'); document.getElementById('excelFile').value = ''; }
     
     function processUpload() {
@@ -1090,10 +1118,16 @@
       }; reader.readAsArrayBuffer(file);
     }
 
+    // 🔴 PERUBAHAN FUNGSI DASHBOARD (Ambil Start & End Date, Tampilkan Kolom Baru)
     function loadDashboard() {
       document.getElementById('dashContent').classList.add('hidden'); document.getElementById('dashLoading').classList.remove('hidden'); document.getElementById('earlyWarning').classList.add('hidden');
-      var bulanVal = document.getElementById('dashBulan').value;
-      fetchAPI('getDashboardData', { bulanTarget: bulanVal, cabang: sessionUser.cabang }).then(function(res) {
+      
+      // Ambil nilai tanggal dari frontend
+      var sDate = document.getElementById('dashStartDate').value;
+      var eDate = document.getElementById('dashEndDate').value;
+
+      // Kirim parameter startDate dan endDate ke Google Apps Script Anda
+      fetchAPI('getDashboardData', { startDate: sDate, endDate: eDate, cabang: sessionUser.cabang }).then(function(res) {
           document.getElementById('dashLoading').classList.add('hidden'); document.getElementById('dashContent').classList.remove('hidden');
           if(res.success) {
             document.getElementById('kpiLeads').innerText = res.leads; document.getElementById('kpiConverted').innerText = res.converted;
@@ -1101,11 +1135,32 @@
             var formatRp = function(num) { return 'Rp ' + Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); };
             document.getElementById('kpiSaved').innerText = formatRp(res.savedEstimasi); document.getElementById('kpiActual').innerText = formatRp(res.savedActual); document.getElementById('kpiLost').innerText = formatRp(res.lost);
             var today = new Date(); if (today.getDate() >= 15 && parseFloat(res.rate) < 20 && res.leads > 0) { document.getElementById('earlyWarning').classList.remove('hidden'); }
+            
             if(funnelChartInstance) funnelChartInstance.destroy();
             funnelChartInstance = new Chart(document.getElementById('funnelChart').getContext('2d'), { type: 'bar', data: { labels: ['Target', 'Lock-in', 'Redeemed'], datasets: [{ data: [res.leads, res.converted, res.redeemed], backgroundColor: ['#94a3b8', '#3b82f6', '#22c55e'], borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { color: '#ffffff', font: { weight: 'bold', size: 14 }, formatter: function(value) { return value > 0 ? value : ''; } } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } } });
+            
             var lbHtml = '';
-            if (res.leaderboard.length > 0) { res.leaderboard.forEach(function(sa, idx) { var medal = (idx === 0) ? '🥇' : (idx === 1) ? '🥈' : (idx === 2) ? '🥉' : '<span class="text-gray-400">' + (idx + 1) + '</span>'; lbHtml += '<tr class="hover:bg-gray-50"><td class="px-4 py-3 font-black text-center w-10 text-lg border-b border-gray-100">' + medal + '</td><td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">' + sa.nama + '</td><td class="px-4 py-3 text-center font-bold text-blue-600 border-b border-gray-100">' + sa.redeemed + ' <span class="text-[10px] font-normal text-gray-400 uppercase">Unit</span></td><td class="px-4 py-3 text-right font-black text-green-700 border-b border-gray-100">' + formatRp(sa.revenue) + '</td></tr>'; }); } else { lbHtml = '<tr><td colspan="4" class="px-4 py-8 text-center text-gray-400 italic font-medium">Belum ada SA yang mencetak angka.</td></tr>'; }
+            if (res.leaderboard && res.leaderboard.length > 0) { 
+                res.leaderboard.forEach(function(sa, idx) { 
+                    var medal = (idx === 0) ? '🥇' : (idx === 1) ? '🥈' : (idx === 2) ? '🥉' : '<span class="text-gray-400">' + (idx + 1) + '</span>'; 
+                    var cbg = sa.cabang || '-'; // Data Kolom B dari Apps Script
+                    var inputPotensi = sa.inputPotensi || 0; 
+                    var redeemedCount = sa.redeemed || 0;
+
+                    lbHtml += '<tr class="hover:bg-gray-50">' +
+                                '<td class="px-4 py-3 font-black text-center w-10 text-lg border-b border-gray-100">' + medal + '</td>' +
+                                '<td class="px-4 py-3 font-bold text-gray-600 text-xs uppercase border-b border-gray-100">' + cbg + '</td>' +
+                                '<td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">' + sa.nama + '</td>' +
+                                '<td class="px-4 py-3 text-center font-bold text-gray-700 border-b border-gray-100">' + inputPotensi + '</td>' +
+                                '<td class="px-4 py-3 text-center font-bold text-blue-600 border-b border-gray-100">' + redeemedCount + '</td>' +
+                                '<td class="px-4 py-3 text-right font-black text-green-700 border-b border-gray-100">' + formatRp(sa.revenue) + '</td>' +
+                              '</tr>'; 
+                }); 
+            } else { 
+                lbHtml = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400 italic font-medium">Belum ada SA yang mencetak angka pada periode ini.</td></tr>'; 
+            }
             document.getElementById('leaderboardBody').innerHTML = lbHtml;
+
             if(segmentChartInstance) segmentChartInstance.destroy();
             var segLabels = Object.keys(res.segments); var segData = Object.values(res.segments); var totalSeg = segData.reduce(function(a,b){return a+b}, 0);
             segmentChartInstance = new Chart(document.getElementById('segmentChart').getContext('2d'), { type: 'doughnut', data: { labels: segLabels, datasets: [{ data: segData, backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#64748b', '#ec4899', '#14b8a6'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } }, datalabels: { color: '#ffffff', font: { weight: 'bold', size: 11 }, formatter: function(value) { return Math.round((value/totalSeg)*100) + '%'; } } } } });
