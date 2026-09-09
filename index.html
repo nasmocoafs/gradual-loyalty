@@ -165,7 +165,6 @@
 
   <!-- 3. WORKSPACE KARYAWAN -->
   <div id="app-wrapper" class="flex flex-col md:flex-row w-full h-full hidden fade-in">
-    <!-- SIDEBAR -->
     <aside class="hidden md:flex w-64 bg-gray-900 text-gray-300 flex-col shrink-0 relative shadow-xl z-20">
       <div class="h-auto py-5 flex flex-col px-6 border-b border-gray-800 bg-gray-950">
         <h1 class="text-white font-bold text-lg tracking-wide uppercase">Gradual <span class="text-red-600">Loyalty</span></h1>
@@ -483,7 +482,6 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
           <div><h2 class="text-xl md:text-2xl font-bold text-gray-900">Dasbor Prediktif & Analitik</h2><p class="text-sm text-gray-500 mt-1">Konversi Siklus Transisi Free Service ke Full Berbayar</p></div>
           <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-            <!-- FILTER RANGE TANGGAL (YTM) -->
             <div class="w-full md:w-auto">
               <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Periode Analitik (YTD/YTM)</label>
               <div class="flex items-center gap-2">
@@ -510,7 +508,12 @@
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-center"><p class="text-[10px] font-bold text-gray-500 uppercase">Leads JUMP Target</p><p class="text-2xl font-black text-gray-900 mt-1" id="kpiLeads">0</p></div>
             <div class="bg-white p-4 rounded-xl border border-blue-200 shadow-sm border-b-4 border-b-blue-500 text-center"><p class="text-[10px] font-bold text-gray-500 uppercase">Tiket Terbit (Lock-In)</p><p class="text-2xl font-black text-blue-700 mt-1" id="kpiConverted">0</p></div>
             <div class="bg-white p-4 rounded-xl border border-green-200 shadow-sm border-b-4 border-b-green-500 text-center"><p class="text-[10px] font-bold text-gray-500 uppercase">Servis (Redeemed)</p><p class="text-2xl font-black text-green-700 mt-1" id="kpiRedeemed">0</p></div>
-            <div class="bg-white p-4 rounded-xl border border-yellow-200 shadow-sm border-b-4 border-b-yellow-500 text-center"><p class="text-[10px] font-bold text-gray-500 uppercase">Conversion Rate</p><p class="text-2xl font-black text-gray-900 mt-1" id="kpiRate">0%</p></div>
+            <!-- Conversion Rate (Redeem / Lock-In) -->
+            <div class="bg-white p-4 rounded-xl border border-yellow-200 shadow-sm border-b-4 border-b-yellow-500 text-center">
+              <p class="text-[10px] font-bold text-gray-500 uppercase">Conversion Rate</p>
+              <p class="text-2xl font-black text-gray-900 mt-1" id="kpiRate">0%</p>
+              <p class="text-[9px] text-gray-400 mt-0.5">Redeem / Lock-In</p>
+            </div>
           </div>
           
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -569,7 +572,7 @@
              </div>
           </div>
 
-          <!-- TABEL 2: BREAKDOWN CABANG (INTERAKTIF SORTING & SEARCH) -->
+          <!-- TABEL 2: BREAKDOWN CABANG (KOLOM POTENSI DARI DATA EXPIRED) -->
           <div id="hoBreakdownSection" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-col">
             <div class="bg-gray-900 p-4 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div class="flex items-center gap-2">
@@ -590,6 +593,13 @@
                       <div class="flex items-center gap-1.5">
                         <span>Nama Cabang</span>
                         <span id="br-sort-cabang" class="font-mono text-xs">↕</span>
+                      </div>
+                    </th>
+                    <!-- 🔴 KOLOM BARU: POTENSI (TARGET LEADS DARI DATA EXPIRED) -->
+                    <th onclick="sortBranchTable('potensi')" class="px-4 py-3 border-b text-center sortable-th bg-gray-50">
+                      <div class="flex items-center justify-center gap-1.5">
+                        <span>Potensi (Target)</span>
+                        <span id="br-sort-potensi" class="font-mono text-xs">↕</span>
                       </div>
                     </th>
                     <th onclick="sortBranchTable('registrasi')" class="px-4 py-3 border-b text-center sortable-th bg-gray-50">
@@ -1539,7 +1549,6 @@
         return lbSortOrder === 'asc' ? (valA - valB) : (valB - valA);
       });
 
-      // Update icon header
       ['cabang', 'nama', 'inputPotensi', 'redeem', 'revenue'].forEach(function(c) {
         var el = document.getElementById('lb-sort-' + c);
         if (el) {
@@ -1612,7 +1621,7 @@
       });
 
       // Update indikator sort header
-      ['cabang', 'registrasi', 'redeem', 'returRate', 'revenue'].forEach(function(c) {
+      ['cabang', 'potensi', 'registrasi', 'redeem', 'returRate', 'revenue'].forEach(function(c) {
         var el = document.getElementById('br-sort-' + c);
         if (el) {
           if (branchSortCol === c) {
@@ -1627,15 +1636,18 @@
       if (badgeEl) badgeEl.innerText = filtered.length + " Cabang";
 
       var bdHtml = '';
+      var totalPot = 0;
       var totalReg = 0;
       var totalRed = 0;
       var totalRev = 0;
 
       if (filtered.length > 0) {
           filtered.forEach(function(b, idx) {
+              var pot = Number(b.potensi) || 0;
               var reg = Number(b.registrasi) || 0;
               var red = Number(b.redeem) || 0;
               var rev = Number(b.revenue) || 0;
+              totalPot += pot;
               totalReg += reg;
               totalRed += red;
               totalRev += rev;
@@ -1643,6 +1655,7 @@
               bdHtml += '<tr class="hover:bg-gray-50 transition">' +
                           '<td class="px-4 py-3 text-center border-b border-gray-100 font-medium text-gray-500">' + (idx + 1) + '</td>' +
                           '<td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">' + b.cabang + '</td>' +
+                          '<td class="px-4 py-3 text-center font-bold text-purple-700 bg-purple-50/40 border-b border-gray-100">' + pot + '</td>' +
                           '<td class="px-4 py-3 text-center font-bold text-gray-700 border-b border-gray-100">' + reg + '</td>' +
                           '<td class="px-4 py-3 text-center font-bold text-blue-600 border-b border-gray-100">' + red + '</td>' +
                           '<td class="px-4 py-3 text-center font-bold text-yellow-600 border-b border-gray-100">' + b.returRate + '%</td>' +
@@ -1650,7 +1663,7 @@
                         '</tr>';
           });
       } else {
-          bdHtml = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400 italic font-medium">Data cabang tidak ditemukan.</td></tr>';
+          bdHtml = '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400 italic font-medium">Data cabang tidak ditemukan.</td></tr>';
       }
       document.getElementById('hoBreakdownBody').innerHTML = bdHtml;
 
@@ -1658,6 +1671,7 @@
       var avgRate = totalReg > 0 ? ((totalRed / totalReg) * 100).toFixed(1).replace('.', ',') : '0,0';
       var footHtml = '<tr class="bg-gray-100">' +
                        '<td colspan="2" class="px-4 py-3 text-center uppercase tracking-wider text-xs font-black">TOTAL SEMUA CABANG</td>' +
+                       '<td class="px-4 py-3 text-center font-black text-purple-800 bg-purple-100/50">' + totalPot + '</td>' +
                        '<td class="px-4 py-3 text-center font-black text-gray-900">' + totalReg + '</td>' +
                        '<td class="px-4 py-3 text-center font-black text-blue-700">' + totalRed + '</td>' +
                        '<td class="px-4 py-3 text-center font-black text-yellow-700">' + avgRate + '%</td>' +
@@ -1720,11 +1734,11 @@
               } 
             });
             
-            // Simpan data mentah & render Leaderboard
+            // Render Leaderboard SA
             rawLeaderboardData = res.leaderboard || [];
             renderLeaderboard();
 
-            // Simpan data mentah & render Breakdown Cabang (HO Only)
+            // Render Breakdown Cabang (Khusus HO)
             var hoSection = document.getElementById('hoBreakdownSection');
             if (sessionUser && (sessionUser.cabang.toUpperCase() === 'HEAD OFFICE' || sessionUser.cabang.toUpperCase() === 'HEADOFFICE')) {
                 hoSection.classList.remove('hidden');
