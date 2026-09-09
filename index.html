@@ -20,11 +20,24 @@
     
     const urlParams = new URLSearchParams(window.location.search);
     var globalPortalCode = urlParams.get('code') || '';
+    
+    // DATA MRA & CRM STATE
     var globalMraDataRaw = [];
     var mraFilteredData = [];
     var mraCurrentPage = 1;
     var mraPageSize = 10;
-    var mraSortOrder = 'none'; // 'none' | 'asc' | 'desc'
+    var mraSortOrder = 'none';
+
+    // DASBOR ANALITIK STATE (INTERAKTIF & SORTING)
+    var rawLeaderboardData = [];
+    var lbSortCol = 'revenue';
+    var lbSortOrder = 'desc';
+
+    var rawBranchBreakdownData = [];
+    var filteredBranchBreakdown = [];
+    var branchSortCol = 'cabang';
+    var branchSortOrder = 'asc';
+    var branchSearchQuery = '';
     
     // CACHE SYSTEM
     var cachedHistoryData = {};
@@ -82,6 +95,8 @@
     input.auto-upper { text-transform: uppercase; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .sortable-th { cursor: pointer; user-select: none; transition: background-color 0.15s; }
+    .sortable-th:hover { background-color: #1f2937; }
   </style>
 </head>
 <body class="flex flex-col md:flex-row h-screen overflow-hidden text-gray-800 relative">
@@ -260,7 +275,6 @@
         <!-- HASIL GENERATE VOUCHER -->
         <div id="resultSection" class="hidden mt-8 flex-col items-center">
           <div class="w-full max-w-[800px] overflow-x-auto no-scrollbar rounded-2xl shadow-2xl bg-gray-900 mb-6 border-4 border-gray-700">
-            <!-- PDF CARD - FIXED 800x450 -->
             <div id="loyaltyCard" class="pdf-card relative bg-tech-lines flex overflow-hidden">
               <div class="absolute top-0 right-10 bg-white px-5 py-1.5 rounded-b-xl shadow-lg border-b-4 border-red-600 flex items-center gap-3 z-10 text-gray-900">
                 <span class="font-black italic text-lg tracking-tighter">NASMOCO</span><span class="border-l-[3px] border-red-600 pl-3 font-black text-red-600 text-base">REWARD</span>
@@ -318,7 +332,6 @@
                 </div>
               </div>
             </div>
-            <!-- END PDF CARD -->
           </div>
           
           <div class="flex flex-col md:flex-row gap-3 w-full max-w-[800px]">
@@ -432,7 +445,7 @@
              </table>
           </div>
 
-          <!-- FOOTER TABEL: INFORMASI TOTAL DATA & PAGINATION SLIDER -->
+          <!-- FOOTER TABEL: PAGINATION & INFO TOTAL DATA -->
           <div class="px-4 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-700">
              <div class="flex items-center gap-2.5">
                 <span class="font-medium text-gray-500">Tampilkan:</span>
@@ -448,11 +461,11 @@
                 <button id="btnMraFirst" onclick="goToMraPage(1)" class="px-2.5 py-1 border border-gray-300 rounded bg-white font-bold hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">
                    &laquo;
                 </button>
-                <button id="btnMraPrev" onclick="changeMraPage(-1)" class="px-3 py-1 border border-gray-300 rounded bg-white font-bold hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm flex items-center gap-1">
+                <button id="btnMraPrev" onclick="changeMraPage(-1)" class="px-3 py-1 border border-gray-300 rounded bg-white font-bold hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">
                    Prev
                 </button>
                 <span id="mraPageNumber" class="px-3 py-1 font-black text-gray-800 bg-white border border-gray-200 rounded shadow-sm">1 / 1</span>
-                <button id="btnMraNext" onclick="changeMraPage(1)" class="px-3 py-1 border border-gray-300 rounded bg-white font-bold hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm flex items-center gap-1">
+                <button id="btnMraNext" onclick="changeMraPage(1)" class="px-3 py-1 border border-gray-300 rounded bg-white font-bold hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">
                    Next
                 </button>
                 <button id="btnMraLast" onclick="goToMraLastPage()" class="px-2.5 py-1 border border-gray-300 rounded bg-white font-bold hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">
@@ -517,19 +530,33 @@
             </div>
           </div>
           
+          <!-- TABEL 1: LEADERBOARD SA & SEGMENTASI MODEL -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
              <div class="col-span-1 md:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
-                <div class="bg-gray-900 p-4 border-b border-gray-800 flex justify-between items-center"><h3 class="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2">🏆 TOP 5 SA Leaderboard</h3><span class="text-[10px] text-gray-400 font-medium">Berdasarkan Revenue Terbesar</span></div>
+                <div class="bg-gray-900 p-4 border-b border-gray-800 flex justify-between items-center">
+                   <h3 class="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2">🏆 TOP 5 SA Leaderboard</h3>
+                   <span class="text-[10px] text-gray-400 font-medium">Klik header kolom untuk mengurutkan</span>
+                </div>
                 <div class="p-0 flex-1 overflow-x-auto">
                   <table class="w-full text-sm text-left">
                     <thead class="bg-gray-50 text-[10px] uppercase text-gray-500 font-bold">
                       <tr>
                         <th class="px-4 py-3 border-b text-center">Rank</th>
-                        <th class="px-4 py-3 border-b">Cabang</th>
-                        <th class="px-4 py-3 border-b">Service Advisor</th>
-                        <th class="px-4 py-3 border-b text-center">Input Potensi</th>
-                        <th class="px-4 py-3 border-b text-center">Redeem</th>
-                        <th class="px-4 py-3 border-b text-right">Revenue Actual</th>
+                        <th onclick="toggleLeaderboardSort('cabang')" class="px-4 py-3 border-b sortable-th">
+                          <div class="flex items-center gap-1">Cabang <span id="lb-sort-cabang" class="font-mono text-gray-400">↕</span></div>
+                        </th>
+                        <th onclick="toggleLeaderboardSort('nama')" class="px-4 py-3 border-b sortable-th">
+                          <div class="flex items-center gap-1">Service Advisor <span id="lb-sort-nama" class="font-mono text-gray-400">↕</span></div>
+                        </th>
+                        <th onclick="toggleLeaderboardSort('inputPotensi')" class="px-4 py-3 border-b text-center sortable-th">
+                          <div class="flex items-center justify-center gap-1">Input Potensi <span id="lb-sort-inputPotensi" class="font-mono text-gray-400">↕</span></div>
+                        </th>
+                        <th onclick="toggleLeaderboardSort('redeem')" class="px-4 py-3 border-b text-center sortable-th">
+                          <div class="flex items-center justify-center gap-1">Redeem <span id="lb-sort-redeem" class="font-mono text-gray-400">↕</span></div>
+                        </th>
+                        <th onclick="toggleLeaderboardSort('revenue')" class="px-4 py-3 border-b text-right sortable-th">
+                          <div class="flex items-center justify-end gap-1">Revenue Actual <span id="lb-sort-revenue" class="font-mono text-gray-400">↕</span></div>
+                        </th>
                       </tr>
                     </thead>
                     <tbody id="leaderboardBody" class="divide-y divide-gray-100"></tbody>
@@ -542,24 +569,57 @@
              </div>
           </div>
 
-          <!-- BREAKDOWN CABANG (HANYA MUNCUL DI HO) -->
+          <!-- TABEL 2: BREAKDOWN CABANG (INTERAKTIF SORTING & SEARCH) -->
           <div id="hoBreakdownSection" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-col">
-            <div class="bg-gray-900 p-4 border-b border-gray-800 flex justify-between items-center">
-              <h3 class="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2">📊 Breakdown Performa Cabang</h3>
+            <div class="bg-gray-900 p-4 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div class="flex items-center gap-2">
+                <h3 class="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2">📊 Breakdown Performa Cabang</h3>
+                <span id="branchCountBadge" class="bg-gray-800 text-yellow-400 text-xs px-2.5 py-0.5 rounded-full font-bold border border-gray-700">0 Cabang</span>
+              </div>
+              <div class="relative w-full sm:w-64">
+                <input type="text" id="searchBranchInput" oninput="filterBranchBreakdown(this.value)" placeholder="Cari nama cabang..." class="w-full pl-8 pr-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-xs text-white placeholder-gray-400 focus:outline-none focus:border-red-500 auto-upper">
+                <svg class="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              </div>
             </div>
-            <div class="p-0 flex-1 overflow-x-auto">
+            <div class="p-0 flex-1 overflow-x-auto max-h-[60vh]">
               <table class="w-full text-sm text-left whitespace-nowrap">
-                <thead class="bg-gray-50 text-[10px] uppercase text-gray-500 font-bold">
+                <thead class="bg-gray-50 text-[10px] uppercase text-gray-500 font-bold sticky top-0 z-10 shadow-sm">
                   <tr>
-                    <th class="px-4 py-3 border-b text-center w-12">No</th>
-                    <th class="px-4 py-3 border-b">Nama Cabang</th>
-                    <th class="px-4 py-3 border-b text-center">Registrasi Voucher</th>
-                    <th class="px-4 py-3 border-b text-center">Redeem Voucher</th>
-                    <th class="px-4 py-3 border-b text-center">Return Rate</th>
-                    <th class="px-4 py-3 border-b text-right">Revenue Actual</th>
+                    <th class="px-4 py-3 border-b text-center w-12 bg-gray-50">No</th>
+                    <th onclick="sortBranchTable('cabang')" class="px-4 py-3 border-b sortable-th bg-gray-50">
+                      <div class="flex items-center gap-1.5">
+                        <span>Nama Cabang</span>
+                        <span id="br-sort-cabang" class="font-mono text-xs">↕</span>
+                      </div>
+                    </th>
+                    <th onclick="sortBranchTable('registrasi')" class="px-4 py-3 border-b text-center sortable-th bg-gray-50">
+                      <div class="flex items-center justify-center gap-1.5">
+                        <span>Registrasi Voucher</span>
+                        <span id="br-sort-registrasi" class="font-mono text-xs">↕</span>
+                      </div>
+                    </th>
+                    <th onclick="sortBranchTable('redeem')" class="px-4 py-3 border-b text-center sortable-th bg-gray-50">
+                      <div class="flex items-center justify-center gap-1.5">
+                        <span>Redeem Voucher</span>
+                        <span id="br-sort-redeem" class="font-mono text-xs">↕</span>
+                      </div>
+                    </th>
+                    <th onclick="sortBranchTable('returRate')" class="px-4 py-3 border-b text-center sortable-th bg-gray-50">
+                      <div class="flex items-center justify-center gap-1.5">
+                        <span>Return Rate</span>
+                        <span id="br-sort-returRate" class="font-mono text-xs">↕</span>
+                      </div>
+                    </th>
+                    <th onclick="sortBranchTable('revenue')" class="px-4 py-3 border-b text-right sortable-th bg-gray-50">
+                      <div class="flex items-center justify-end gap-1.5">
+                        <span>Revenue Actual</span>
+                        <span id="br-sort-revenue" class="font-mono text-xs">↕</span>
+                      </div>
+                    </th>
                   </tr>
                 </thead>
                 <tbody id="hoBreakdownBody" class="divide-y divide-gray-100"></tbody>
+                <tfoot id="hoBreakdownFoot" class="bg-gray-100 font-bold text-gray-900 border-t-2 border-gray-300"></tfoot>
               </table>
             </div>
           </div>
@@ -617,7 +677,6 @@
         dateInput.value = maxStr; dateInput.setAttribute('max', maxStr); 
       }
       
-      // DEFAULT FILTER TANGGAL: YTD (Awal Tahun hingga Hari Ini)
       var now = new Date(); 
       var firstDay = new Date(now.getFullYear(), 0, 1);
       document.getElementById('dashStartDate').value = firstDay.toISOString().split('T')[0];
@@ -1445,68 +1504,233 @@
       }; reader.readAsArrayBuffer(file);
     }
 
+    // ==========================================
+    // DASBOR ANALITIK & INTERACTIVE SORTING
+    // ==========================================
+    function parseRate(val) {
+      if (!val) return 0;
+      return parseFloat(val.toString().replace('%', '').replace(',', '.').trim()) || 0;
+    }
+
+    function formatRp(num) {
+      return 'Rp ' + Math.round(Number(num) || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    function toggleLeaderboardSort(col) {
+      if (lbSortCol === col) {
+        lbSortOrder = (lbSortOrder === 'asc') ? 'desc' : 'asc';
+      } else {
+        lbSortCol = col;
+        lbSortOrder = (col === 'nama' || col === 'cabang') ? 'asc' : 'desc';
+      }
+      renderLeaderboard();
+    }
+
+    function renderLeaderboard() {
+      var list = rawLeaderboardData.slice();
+      list.sort(function(a, b) {
+        var valA = a[lbSortCol];
+        var valB = b[lbSortCol];
+        if (typeof valA === 'string') {
+          return lbSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        }
+        valA = Number(valA) || 0;
+        valB = Number(valB) || 0;
+        return lbSortOrder === 'asc' ? (valA - valB) : (valB - valA);
+      });
+
+      // Update icon header
+      ['cabang', 'nama', 'inputPotensi', 'redeem', 'revenue'].forEach(function(c) {
+        var el = document.getElementById('lb-sort-' + c);
+        if (el) {
+          if (lbSortCol === c) {
+            el.innerHTML = (lbSortOrder === 'asc') ? '<span class="text-yellow-400 font-bold">▲</span>' : '<span class="text-yellow-400 font-bold">▼</span>';
+          } else {
+            el.innerHTML = '<span class="text-gray-400 font-mono">↕</span>';
+          }
+        }
+      });
+
+      var lbHtml = '';
+      if (list.length > 0) { 
+          list.forEach(function(sa, idx) { 
+              var medal = (idx === 0) ? '🥇' : (idx === 1) ? '🥈' : (idx === 2) ? '🥉' : '<span class="text-gray-400 font-bold">' + (idx + 1) + '</span>'; 
+              var cbg = sa.cabang || '-';
+              var inputPotensi = sa.inputPotensi || 0; 
+              var redeemedCount = sa.redeemed || 0;
+
+              lbHtml += '<tr class="hover:bg-gray-50 transition">' +
+                          '<td class="px-4 py-3 font-black text-center w-10 text-lg border-b border-gray-100">' + medal + '</td>' +
+                          '<td class="px-4 py-3 font-bold text-gray-600 text-xs uppercase border-b border-gray-100">' + cbg + '</td>' +
+                          '<td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">' + sa.nama + '</td>' +
+                          '<td class="px-4 py-3 text-center font-bold text-gray-700 border-b border-gray-100">' + inputPotensi + '</td>' +
+                          '<td class="px-4 py-3 text-center font-bold text-blue-600 border-b border-gray-100">' + redeemedCount + '</td>' +
+                          '<td class="px-4 py-3 text-right font-black text-green-700 border-b border-gray-100">' + formatRp(sa.revenue) + '</td>' +
+                        '</tr>'; 
+          }); 
+      } else { 
+          lbHtml = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400 italic font-medium">Belum ada aktivitas SA pada periode ini.</td></tr>'; 
+      }
+      document.getElementById('leaderboardBody').innerHTML = lbHtml;
+    }
+
+    function sortBranchTable(col) {
+      if (branchSortCol === col) {
+        branchSortOrder = (branchSortOrder === 'asc') ? 'desc' : 'asc';
+      } else {
+        branchSortCol = col;
+        branchSortOrder = (col === 'cabang') ? 'asc' : 'desc';
+      }
+      renderBranchBreakdown();
+    }
+
+    function filterBranchBreakdown(query) {
+      branchSearchQuery = (query || '').toUpperCase().trim();
+      renderBranchBreakdown();
+    }
+
+    function renderBranchBreakdown() {
+      var filtered = rawBranchBreakdownData.filter(function(b) {
+        if (!branchSearchQuery) return true;
+        return (b.cabang || '').toUpperCase().includes(branchSearchQuery);
+      });
+
+      filtered.sort(function(a, b) {
+        var valA = a[branchSortCol];
+        var valB = b[branchSortCol];
+        if (branchSortCol === 'returRate') {
+          valA = parseRate(valA);
+          valB = parseRate(valB);
+          return branchSortOrder === 'asc' ? (valA - valB) : (valB - valA);
+        }
+        if (typeof valA === 'string') {
+          return branchSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        }
+        valA = Number(valA) || 0;
+        valB = Number(valB) || 0;
+        return branchSortOrder === 'asc' ? (valA - valB) : (valB - valA);
+      });
+
+      // Update indikator sort header
+      ['cabang', 'registrasi', 'redeem', 'returRate', 'revenue'].forEach(function(c) {
+        var el = document.getElementById('br-sort-' + c);
+        if (el) {
+          if (branchSortCol === c) {
+            el.innerHTML = (branchSortOrder === 'asc') ? '<span class="text-red-600 font-bold">▲</span>' : '<span class="text-red-600 font-bold">▼</span>';
+          } else {
+            el.innerHTML = '<span class="text-gray-400 font-mono">↕</span>';
+          }
+        }
+      });
+
+      var badgeEl = document.getElementById('branchCountBadge');
+      if (badgeEl) badgeEl.innerText = filtered.length + " Cabang";
+
+      var bdHtml = '';
+      var totalReg = 0;
+      var totalRed = 0;
+      var totalRev = 0;
+
+      if (filtered.length > 0) {
+          filtered.forEach(function(b, idx) {
+              var reg = Number(b.registrasi) || 0;
+              var red = Number(b.redeem) || 0;
+              var rev = Number(b.revenue) || 0;
+              totalReg += reg;
+              totalRed += red;
+              totalRev += rev;
+
+              bdHtml += '<tr class="hover:bg-gray-50 transition">' +
+                          '<td class="px-4 py-3 text-center border-b border-gray-100 font-medium text-gray-500">' + (idx + 1) + '</td>' +
+                          '<td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">' + b.cabang + '</td>' +
+                          '<td class="px-4 py-3 text-center font-bold text-gray-700 border-b border-gray-100">' + reg + '</td>' +
+                          '<td class="px-4 py-3 text-center font-bold text-blue-600 border-b border-gray-100">' + red + '</td>' +
+                          '<td class="px-4 py-3 text-center font-bold text-yellow-600 border-b border-gray-100">' + b.returRate + '%</td>' +
+                          '<td class="px-4 py-3 text-right font-black text-green-700 border-b border-gray-100">' + formatRp(rev) + '</td>' +
+                        '</tr>';
+          });
+      } else {
+          bdHtml = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400 italic font-medium">Data cabang tidak ditemukan.</td></tr>';
+      }
+      document.getElementById('hoBreakdownBody').innerHTML = bdHtml;
+
+      // Render Baris Total di Tfoot
+      var avgRate = totalReg > 0 ? ((totalRed / totalReg) * 100).toFixed(1).replace('.', ',') : '0,0';
+      var footHtml = '<tr class="bg-gray-100">' +
+                       '<td colspan="2" class="px-4 py-3 text-center uppercase tracking-wider text-xs font-black">TOTAL SEMUA CABANG</td>' +
+                       '<td class="px-4 py-3 text-center font-black text-gray-900">' + totalReg + '</td>' +
+                       '<td class="px-4 py-3 text-center font-black text-blue-700">' + totalRed + '</td>' +
+                       '<td class="px-4 py-3 text-center font-black text-yellow-700">' + avgRate + '%</td>' +
+                       '<td class="px-4 py-3 text-right font-black text-green-700 text-base">' + formatRp(totalRev) + '</td>' +
+                     '</tr>';
+      document.getElementById('hoBreakdownFoot').innerHTML = footHtml;
+    }
+
     function loadDashboard() {
-      document.getElementById('dashContent').classList.add('hidden'); document.getElementById('dashLoading').classList.remove('hidden'); document.getElementById('earlyWarning').classList.add('hidden');
+      document.getElementById('dashContent').classList.add('hidden'); 
+      document.getElementById('dashLoading').classList.remove('hidden'); 
+      document.getElementById('earlyWarning').classList.add('hidden');
       
       var sDate = document.getElementById('dashStartDate').value;
       var eDate = document.getElementById('dashEndDate').value;
 
       fetchAPI('getDashboardData', { startDate: sDate, endDate: eDate, cabang: sessionUser.cabang }).then(function(res) {
-          document.getElementById('dashLoading').classList.add('hidden'); document.getElementById('dashContent').classList.remove('hidden');
+          document.getElementById('dashLoading').classList.add('hidden'); 
+          document.getElementById('dashContent').classList.remove('hidden');
+          
           if(res.success) {
-            document.getElementById('kpiLeads').innerText = res.leads; document.getElementById('kpiConverted').innerText = res.converted;
-            document.getElementById('kpiRate').innerText = res.rate + '%'; document.getElementById('kpiRedeemed').innerText = res.redeemed;
-            var formatRp = function(num) { return 'Rp ' + Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); };
-            document.getElementById('kpiSaved').innerText = formatRp(res.savedEstimasi); document.getElementById('kpiActual').innerText = formatRp(res.savedActual); document.getElementById('kpiLost').innerText = formatRp(res.lost);
-            var today = new Date(); if (today.getDate() >= 15 && parseFloat(res.rate) < 20 && res.leads > 0) { document.getElementById('earlyWarning').classList.remove('hidden'); }
+            document.getElementById('kpiLeads').innerText = res.leads; 
+            document.getElementById('kpiConverted').innerText = res.converted;
+            document.getElementById('kpiRate').innerText = res.rate + '%'; 
+            document.getElementById('kpiRedeemed').innerText = res.redeemed;
             
-            if(funnelChartInstance) funnelChartInstance.destroy();
-            funnelChartInstance = new Chart(document.getElementById('funnelChart').getContext('2d'), { type: 'bar', data: { labels: ['Target', 'Lock-in', 'Redeemed'], datasets: [{ data: [res.leads, res.converted, res.redeemed], backgroundColor: ['#94a3b8', '#3b82f6', '#22c55e'], borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { color: '#ffffff', font: { weight: 'bold', size: 14 }, formatter: function(value) { return value > 0 ? value : ''; } } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } } });
+            document.getElementById('kpiSaved').innerText = formatRp(res.savedEstimasi); 
+            document.getElementById('kpiActual').innerText = formatRp(res.savedActual); 
+            document.getElementById('kpiLost').innerText = formatRp(res.lost);
             
-            var lbHtml = '';
-            if (res.leaderboard && res.leaderboard.length > 0) { 
-                res.leaderboard.forEach(function(sa, idx) { 
-                    var medal = (idx === 0) ? '🥇' : (idx === 1) ? '🥈' : (idx === 2) ? '🥉' : '<span class="text-gray-400 font-bold">' + (idx + 1) + '</span>'; 
-                    var cbg = sa.cabang || '-';
-                    var inputPotensi = sa.inputPotensi || 0; 
-                    var redeemedCount = sa.redeemed || 0;
-
-                    lbHtml += '<tr class="hover:bg-gray-50">' +
-                                '<td class="px-4 py-3 font-black text-center w-10 text-lg border-b border-gray-100">' + medal + '</td>' +
-                                '<td class="px-4 py-3 font-bold text-gray-600 text-xs uppercase border-b border-gray-100">' + cbg + '</td>' +
-                                '<td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">' + sa.nama + '</td>' +
-                                '<td class="px-4 py-3 text-center font-bold text-gray-700 border-b border-gray-100">' + inputPotensi + '</td>' +
-                                '<td class="px-4 py-3 text-center font-bold text-blue-600 border-b border-gray-100">' + redeemedCount + '</td>' +
-                                '<td class="px-4 py-3 text-right font-black text-green-700 border-b border-gray-100">' + formatRp(sa.revenue) + '</td>' +
-                              '</tr>'; 
-                }); 
-            } else { 
-                lbHtml = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400 italic font-medium">Belum ada aktivitas SA pada periode ini.</td></tr>'; 
+            var today = new Date(); 
+            if (today.getDate() >= 15 && parseFloat(res.rate) < 20 && res.leads > 0) { 
+              document.getElementById('earlyWarning').classList.remove('hidden'); 
             }
-            document.getElementById('leaderboardBody').innerHTML = lbHtml;
+            
+            // Render Funnel Chart
+            if(funnelChartInstance) funnelChartInstance.destroy();
+            funnelChartInstance = new Chart(document.getElementById('funnelChart').getContext('2d'), { 
+              type: 'bar', 
+              data: { 
+                labels: ['Target', 'Lock-in', 'Redeemed'], 
+                datasets: [{ 
+                  data: [res.leads, res.converted, res.redeemed], 
+                  backgroundColor: ['#94a3b8', '#3b82f6', '#22c55e'], 
+                  borderRadius: 4 
+                }] 
+              }, 
+              options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { 
+                  legend: { display: false }, 
+                  datalabels: { 
+                    color: '#ffffff', 
+                    font: { weight: 'bold', size: 14 }, 
+                    formatter: function(value) { return value > 0 ? value : ''; } 
+                  } 
+                }, 
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } 
+              } 
+            });
+            
+            // Simpan data mentah & render Leaderboard
+            rawLeaderboardData = res.leaderboard || [];
+            renderLeaderboard();
 
-            // RENDER TABEL BREAKDOWN CABANG (Hanya untuk HO)
+            // Simpan data mentah & render Breakdown Cabang (HO Only)
             var hoSection = document.getElementById('hoBreakdownSection');
             if (sessionUser && (sessionUser.cabang.toUpperCase() === 'HEAD OFFICE' || sessionUser.cabang.toUpperCase() === 'HEADOFFICE')) {
                 hoSection.classList.remove('hidden');
                 hoSection.classList.add('flex');
-                
-                var bdHtml = '';
-                if (res.branchBreakdown && res.branchBreakdown.length > 0) {
-                    res.branchBreakdown.forEach(function(b, idx) {
-                        bdHtml += '<tr class="hover:bg-gray-50 transition">' +
-                                    '<td class="px-4 py-3 text-center border-b border-gray-100 font-medium text-gray-500">' + (idx + 1) + '</td>' +
-                                    '<td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">' + b.cabang + '</td>' +
-                                    '<td class="px-4 py-3 text-center font-bold text-gray-700 border-b border-gray-100">' + b.registrasi + '</td>' +
-                                    '<td class="px-4 py-3 text-center font-bold text-blue-600 border-b border-gray-100">' + b.redeem + '</td>' +
-                                    '<td class="px-4 py-3 text-center font-bold text-yellow-600 border-b border-gray-100">' + b.returRate + '%</td>' +
-                                    '<td class="px-4 py-3 text-right font-black text-green-700 border-b border-gray-100">' + formatRp(b.revenue) + '</td>' +
-                                  '</tr>';
-                    });
-                } else {
-                    bdHtml = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400 italic font-medium">Belum ada data cabang pada periode ini.</td></tr>';
-                }
-                document.getElementById('hoBreakdownBody').innerHTML = bdHtml;
+                rawBranchBreakdownData = res.branchBreakdown || [];
+                renderBranchBreakdown();
             } else {
                 if (hoSection) {
                     hoSection.classList.add('hidden');
@@ -1514,8 +1738,11 @@
                 }
             }
 
+            // Render Segment Chart
             if(segmentChartInstance) segmentChartInstance.destroy();
-            var segLabels = Object.keys(res.segments); var segData = Object.values(res.segments); var totalSeg = segData.reduce(function(a,b){return a+b}, 0);
+            var segLabels = Object.keys(res.segments); 
+            var segData = Object.values(res.segments); 
+            var totalSeg = segData.reduce(function(a,b){return a+b}, 0);
             
             if (segData.length > 0) {
                 segmentChartInstance = new Chart(document.getElementById('segmentChart').getContext('2d'), { 
