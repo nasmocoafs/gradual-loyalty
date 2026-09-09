@@ -82,9 +82,7 @@
 </head>
 <body class="flex flex-col md:flex-row h-screen overflow-hidden text-gray-800 relative">
 
-  <!-- ========================================== -->
-  <!-- 1. CUSTOMER PORTAL UI                      -->
-  <!-- ========================================== -->
+  <!-- 1. CUSTOMER PORTAL UI -->
   <div id="view-portal" class="fixed inset-0 z-[9999] bg-gray-900 overflow-y-auto" style="display: none;">
     <div id="portal-loading" class="min-h-screen flex flex-col items-center justify-center text-white">
       <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600 mb-4"></div>
@@ -118,9 +116,7 @@
     </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- 2. LOGIN PANEL                             -->
-  <!-- ========================================== -->
+  <!-- 2. LOGIN PANEL -->
   <div id="view-login" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-95 p-4">
     <div class="bg-white p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-md mx-4 relative">
       <div id="loginLoading" class="absolute inset-0 bg-white bg-opacity-95 z-10 flex flex-col items-center justify-center rounded-2xl">
@@ -148,9 +144,7 @@
     </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- 3. WORKSPACE KARYAWAN                      -->
-  <!-- ========================================== -->
+  <!-- 3. WORKSPACE KARYAWAN -->
   <div id="app-wrapper" class="flex flex-col md:flex-row w-full h-full hidden fade-in">
     <!-- SIDEBAR -->
     <aside class="hidden md:flex w-64 bg-gray-900 text-gray-300 flex-col shrink-0 relative shadow-xl z-20">
@@ -422,7 +416,7 @@
                       <th class="px-4 py-3 text-center font-semibold whitespace-nowrap border-r border-gray-700 w-28">Servis 9</th>
                       <th class="px-4 py-3 text-center font-semibold whitespace-nowrap border-r border-gray-700 w-28">Servis 10</th>
                       <th class="px-4 py-3 text-center font-semibold whitespace-nowrap border-r border-gray-700 w-28">Servis 11</th>
-                      <th class="px-4 py-3 text-center font-semibold whitespace-nowrap">Cetak Voucher</th>
+                      <th class="px-4 py-3 text-center font-semibold whitespace-nowrap">Aksi Voucher & Web</th>
                    </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 bg-white" id="mraTableBody"></tbody>
@@ -539,7 +533,7 @@
     <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center z-50 pb-safe shadow-[0_-4px_10px_rgba(0,0,0,0.08)]">
       <button onclick="switchTab('register')" id="mob-register" class="mobile-nav-item active flex-1 py-2 flex flex-col items-center gap-0.5"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg><span class="text-[9px] font-bold">Register</span></button>
       <button onclick="switchTab('validate')" id="mob-validate" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg><span class="text-[9px] font-bold">Scanner</span></button>
-      <button onclick="switchTab('mra')" id="mob-mra" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg><span class="text-[9px] font-bold">CRM</span></button>
+      <button onclick="switchTab('mra')" id="mob-mra" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg><span class="text-[9px] font-bold">CRM</span></button>
       <button onclick="switchTab('dashboard')" id="mob-dashboard" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg><span class="text-[9px] font-bold">Dasbor</span></button>
       <button onclick="switchTab('panduan')" id="mob-panduan" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100 text-blue-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg><span class="text-[9px] font-bold">Panduan</span></button>
     </nav>
@@ -865,7 +859,7 @@
       
       downloadPDF();
       
-      var portalLink = window.location.href.split('?')[0] + "?code=" + code;
+      var portalLink = window.location.origin + window.location.pathname + "?code=" + code;
       var text = "Halo *" + nama + "*,\n\nTerima kasih atas kepercayaannya pada Nasmoco. Berikut kami lampirkan *e-Voucher PDF* beserta tautan portal pribadi untuk memantau progres hadiah Loyalty Reward Anda:\n\n👉 " + portalLink + "\n\nTunjukkan voucher ini kepada Service Advisor kami saat Anda berkunjung ke bengkel.\n\n*Nasmoco*";
       
       Swal.fire({
@@ -957,7 +951,6 @@
           var btn = document.getElementById('redeemBtn'); btn.innerText = 'Memproses...'; btn.disabled = true; 
           fetchAPI('redeemCode', { rowNumber: document.getElementById('currentRow').value, noWo: result.value.wo, actualRevenue: result.value.rev }).then(function(res) { 
             if (res.success) { 
-              // MEMUNCULKAN OPSI GENERATE VOUCHER BERIKUTNYA
               Swal.fire({
                 title: 'Klaim Berhasil!',
                 text: 'Revenue aktual berhasil dicatat. Apakah Anda ingin langsung men-generate voucher tahap selanjutnya untuk pelanggan ini?',
@@ -981,7 +974,6 @@
       }); 
     }
 
-    // FUNGSI: OTOMATIS MENGISI FORM & GENERATE TIKET SELANJUTNYA
     function autoGenerateNextVoucher() {
       var data = window.currentScannedData;
       if (!data) return;
@@ -1110,11 +1102,10 @@
                 var cell10 = buildBadgeCell(row.history['S10']); 
                 var cell11 = buildBadgeCell(row.history['S11']);
                 
-                // Cari tiket yang paling relevan untuk diunduh (Prioritas: ACTIVE, jika tidak ada cari yang memiliki kode)
                 var downloadSvc = null;
                 var downloadKey = null;
                 
-                // 1. Cek yang aktif
+                // Prioritaskan tiket aktif
                 ['S11', 'S10', 'S9', 'S8'].forEach(function(k) {
                     if (!downloadSvc && row.history[k] && row.history[k].status === 'ACTIVE' && row.history[k].code && row.history[k].code !== '-') {
                         downloadSvc = row.history[k];
@@ -1122,7 +1113,7 @@
                     }
                 });
 
-                // 2. Jika tidak ada yang aktif, ambil level tiket tertinggi yang memiliki kode
+                // Jika tidak ada tiket aktif, ambil tiket terakhir yang memiliki kode unik
                 if (!downloadSvc) {
                     ['S11', 'S10', 'S9', 'S8'].forEach(function(k) {
                         if (!downloadSvc && row.history[k] && row.history[k].code && row.history[k].code !== '-') {
@@ -1132,13 +1123,18 @@
                     });
                 }
 
-                // 🔴 GANTI TOMBOL WA DENGAN TOMBOL UNDUH VOUCHER
                 var btnAksi = '-';
                 if (downloadSvc) {
-                    btnAksi = '<button onclick="downloadVoucherFromMra(\'' + row.noka + '\', \'' + downloadKey + '\')" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] px-3 py-1.5 rounded font-bold shadow flex justify-center items-center gap-1.5 transition whitespace-nowrap">' +
-                                '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>' +
-                                'Unduh Voucher' +
-                              '</button>';
+                    btnAksi = '<div class="flex flex-col gap-1.5 items-center justify-center py-1">' +
+                                '<button onclick="downloadVoucherFromMra(\'' + row.noka + '\', \'' + downloadKey + '\')" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-[10px] px-2.5 py-1.5 rounded font-bold shadow flex items-center justify-center gap-1 transition whitespace-nowrap">' +
+                                  '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>' +
+                                  'Unduh Voucher' +
+                                '</button>' +
+                                '<button onclick="copyCustomerPortalLink(\'' + downloadSvc.code + '\')" class="w-full bg-gray-800 hover:bg-gray-900 text-white text-[10px] px-2.5 py-1 rounded font-bold border border-gray-700 shadow-sm flex items-center justify-center gap-1 transition whitespace-nowrap">' +
+                                  '<svg class="w-3 h-3 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>' +
+                                  'Salin Link Web' +
+                                '</button>' +
+                              '</div>';
                 }
 
                 tbodyHtml += '<tr class="hover:bg-gray-50 border-b border-gray-100 text-xs">' +
@@ -1152,14 +1148,13 @@
                                 '<td class="px-2 py-3 text-center align-middle border-r border-gray-100">' + cell9 + '</td>' +
                                 '<td class="px-2 py-3 text-center align-middle border-r border-gray-100">' + cell10 + '</td>' +
                                 '<td class="px-2 py-3 text-center align-middle border-r border-gray-100">' + cell11 + '</td>' +
-                                '<td class="px-4 py-3 text-center align-middle flex justify-center items-center h-full">' + btnAksi + '</td>' +
+                                '<td class="px-3 py-2 text-center align-middle flex justify-center items-center h-full">' + btnAksi + '</td>' +
                               '</tr>';
             }); 
         }
         document.getElementById('mraTableBody').innerHTML = tbodyHtml;
     }
 
-    // 🔴 FUNGSI RE-GENERATE & DOWNLOAD VOUCHER DARI MENU MRA (CRM)
     function downloadVoucherFromMra(noka, svcKey) {
         var row = globalMraDataRaw.find(function(r) { return r.noka === noka; });
         if (!row || !row.history[svcKey]) {
@@ -1177,7 +1172,6 @@
             didOpen: () => { Swal.showLoading(); }
         });
 
-        // Isi data ke elemen kartu voucher
         document.getElementById('cardModel').innerText = row.model || '-';
         document.getElementById('cardNopolNoka').innerText = (row.nopol || '').toUpperCase() + ' / ' + (row.noka || '').toUpperCase();
         document.getElementById('cardCode').innerText = svc.code;
@@ -1203,7 +1197,6 @@
         var qrImg = document.getElementById('qrCodeImg');
         qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(svc.code) + '&bgcolor=ffffff';
 
-        // Render roadmap pada kartu voucher
         var historyDiv = document.getElementById('cardHistory');
         historyDiv.innerHTML = '';
         var timeline = [ { id: '8', name: 'S-8', key: 'S8' }, { id: '9', name: 'S-9', key: 'S9' }, { id: '10', name: 'S-10', key: 'S10' }, { id: '11', name: 'S-11', key: 'S11' } ];
@@ -1228,7 +1221,6 @@
         });
         historyDiv.innerHTML = hHtml;
 
-        // Beri waktu sejenak agar gambar QR ter-load, lalu download PDF
         setTimeout(function() {
             var element = document.getElementById('loyaltyCard');
             var filename = 'Voucher-' + (row.nopol || noka) + '-' + svcName.replace(/\s+/g, '_') + '.pdf';
@@ -1252,6 +1244,31 @@
                 Swal.fire('Error', 'Gagal mengunduh file PDF.', 'error');
             });
         }, 700);
+    }
+
+    function copyCustomerPortalLink(code) {
+        if (!code || code === '-') {
+            return Swal.fire('Error', 'Kode voucher tidak ditemukan.', 'warning');
+        }
+        
+        var portalUrl = window.location.origin + window.location.pathname + '?code=' + encodeURIComponent(code);
+        
+        navigator.clipboard.writeText(portalUrl).then(function() {
+            Swal.fire({
+                icon: 'success',
+                title: 'Link Web Tersalin!',
+                html: '<p class="text-xs text-gray-500 mb-2">Tautan mini-web pelanggan siap dibagikan:</p><input type="text" readonly value="' + portalUrl + '" class="w-full p-2 text-xs border rounded bg-gray-50 text-center font-mono select-all">',
+                timer: 2500,
+                showConfirmButton: false
+            });
+        }).catch(function() {
+            Swal.fire({
+                icon: 'info',
+                title: 'Tautan Web Pelanggan',
+                html: '<input type="text" value="' + portalUrl + '" class="w-full p-2 text-xs border rounded bg-gray-50 text-center font-mono select-all" id="manualCopyInput">',
+                confirmButtonText: 'Tutup'
+            });
+        });
     }
 
     function downloadMraExcel() {
