@@ -21,6 +21,10 @@
     const urlParams = new URLSearchParams(window.location.search);
     var globalPortalCode = urlParams.get('code') || '';
     var globalMraDataRaw = [];
+    var mraFilteredData = [];
+    var mraCurrentPage = 1;
+    var mraPageSize = 10;
+    var mraSortOrder = 'none'; // 'none' | 'asc' | 'desc'
     
     // CACHE SYSTEM
     var cachedHistoryData = {};
@@ -411,7 +415,12 @@
                 <thead class="bg-gray-900 text-white sticky top-0 z-10" id="mraTableHead">
                    <tr>
                       <th class="px-4 py-3 text-left font-semibold whitespace-nowrap border-r border-gray-700">Pelanggan & Unit</th>
-                      <th class="px-4 py-3 text-center font-semibold whitespace-nowrap border-r border-gray-700 text-red-400">Jatuh Tempo (Batas 6 Bln)</th>
+                      <th onclick="toggleMraSort()" class="px-4 py-3 text-center font-semibold whitespace-nowrap border-r border-gray-700 text-red-400 cursor-pointer hover:bg-gray-800 transition select-none" title="Klik untuk mengurutkan tanggal">
+                         <div class="flex items-center justify-center gap-1.5">
+                            <span>Jatuh Tempo (Batas 6 Bln)</span>
+                            <span id="sortJatuhTempoIcon" class="text-xs font-mono">↕</span>
+                         </div>
+                      </th>
                       <th class="px-4 py-3 text-center font-semibold whitespace-nowrap border-r border-gray-700 w-28">Servis 8</th>
                       <th class="px-4 py-3 text-center font-semibold whitespace-nowrap border-r border-gray-700 w-28">Servis 9</th>
                       <th class="px-4 py-3 text-center font-semibold whitespace-nowrap border-r border-gray-700 w-28">Servis 10</th>
@@ -422,6 +431,36 @@
                 <tbody class="divide-y divide-gray-200 bg-white" id="mraTableBody"></tbody>
              </table>
           </div>
+
+          <!-- FOOTER TABEL: INFORMASI TOTAL DATA & PAGINATION SLIDER -->
+          <div class="px-4 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-700">
+             <div class="flex items-center gap-2.5">
+                <span class="font-medium text-gray-500">Tampilkan:</span>
+                <select id="mraPageSize" onchange="changeMraPageSize(this.value)" class="border border-gray-300 rounded px-2.5 py-1 bg-white font-bold outline-none shadow-sm focus:border-red-500">
+                   <option value="10">10</option>
+                   <option value="25">25</option>
+                   <option value="50">50</option>
+                   <option value="100">100</option>
+                </select>
+                <span id="mraPaginationInfo" class="font-bold text-gray-700 ml-1">Menampilkan 0 - 0 dari 0 data</span>
+             </div>
+             <div class="flex items-center gap-1.5">
+                <button id="btnMraFirst" onclick="goToMraPage(1)" class="px-2.5 py-1 border border-gray-300 rounded bg-white font-bold hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">
+                   &laquo;
+                </button>
+                <button id="btnMraPrev" onclick="changeMraPage(-1)" class="px-3 py-1 border border-gray-300 rounded bg-white font-bold hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm flex items-center gap-1">
+                   Prev
+                </button>
+                <span id="mraPageNumber" class="px-3 py-1 font-black text-gray-800 bg-white border border-gray-200 rounded shadow-sm">1 / 1</span>
+                <button id="btnMraNext" onclick="changeMraPage(1)" class="px-3 py-1 border border-gray-300 rounded bg-white font-bold hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm flex items-center gap-1">
+                   Next
+                </button>
+                <button id="btnMraLast" onclick="goToMraLastPage()" class="px-2.5 py-1 border border-gray-300 rounded bg-white font-bold hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">
+                   &raquo;
+                </button>
+             </div>
+          </div>
+
           <div id="mraLoading" class="text-center py-12 text-gray-500 font-medium hidden">Menyusun Data Kendaraan...</div>
         </div>
       </div>
@@ -1049,6 +1088,44 @@
         return '-';
     }
 
+    function parseJatuhTempoTimestamp(dateStr) {
+        if (!dateStr || dateStr === '-' || dateStr === '') return 0;
+        var parts = dateStr.trim().split(' ');
+        if (parts.length < 3) return 0;
+        var day = parseInt(parts[0], 10);
+        var monthMap = {
+            'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'Mei': 4, 'May': 4,
+            'Jun': 5, 'Jul': 6, 'Agu': 7, 'Aug': 7, 'Sep': 8, 'Okt': 9,
+            'Oct': 9, 'Nov': 10, 'Des': 11, 'Dec': 11
+        };
+        var month = monthMap[parts[1]] !== undefined ? monthMap[parts[1]] : 0;
+        var year = parseInt(parts[2], 10);
+        return new Date(year, month, day).getTime();
+    }
+
+    function toggleMraSort() {
+        if (mraSortOrder === 'none' || mraSortOrder === 'desc') {
+            mraSortOrder = 'asc';
+        } else {
+            mraSortOrder = 'desc';
+        }
+        updateMraSortIcon();
+        mraCurrentPage = 1;
+        filterMraData();
+    }
+
+    function updateMraSortIcon() {
+        var iconEl = document.getElementById('sortJatuhTempoIcon');
+        if (!iconEl) return;
+        if (mraSortOrder === 'asc') {
+            iconEl.innerHTML = '▲ (Terdekat)';
+        } else if (mraSortOrder === 'desc') {
+            iconEl.innerHTML = '▼ (Terjauh)';
+        } else {
+            iconEl.innerHTML = '↕';
+        }
+    }
+
     function loadMraData() {
       document.getElementById('mraLoading').classList.remove('hidden'); 
       document.getElementById('mraTableBody').innerHTML = '';
@@ -1057,8 +1134,9 @@
           if (!res.success) { document.getElementById('mraTableBody').innerHTML = '<tr><td colspan="7" class="text-center py-10 text-red-600 font-bold">Terjadi Kesalahan: ' + res.message + '</td></tr>'; return; }
           if (!res.rows || res.rows.length === 0) { document.getElementById('mraTableBody').innerHTML = '<tr><td colspan="7" class="text-center py-10 text-gray-500 font-bold tracking-wide">Belum ada data tiket untuk cabang Anda.</td></tr>'; return; }
           
-          globalMraDataRaw = res.rows; 
-          renderMraTable(globalMraDataRaw); 
+          globalMraDataRaw = res.rows;
+          mraCurrentPage = 1;
+          filterMraData(); 
       });
     }
 
@@ -1066,7 +1144,7 @@
         var searchVin = document.getElementById('mraSearchVin').value.toUpperCase();
         var filterBulan = document.getElementById('mraFilterBulan').value; 
         
-        var filteredData = globalMraDataRaw.filter(function(row) {
+        mraFilteredData = globalMraDataRaw.filter(function(row) {
             var matchVin = row.noka.toUpperCase().includes(searchVin);
             var matchBulan = true;
             
@@ -1082,21 +1160,95 @@
             return matchVin && matchBulan;
         });
 
-        renderMraTable(filteredData);
+        if (mraSortOrder !== 'none') {
+            mraFilteredData.sort(function(a, b) {
+                var timeA = parseJatuhTempoTimestamp(a.jatuhTempoTerdekat);
+                var timeB = parseJatuhTempoTimestamp(b.jatuhTempoTerdekat);
+                
+                if (timeA === 0 && timeB !== 0) return 1;
+                if (timeB === 0 && timeA !== 0) return -1;
+                
+                return mraSortOrder === 'asc' ? (timeA - timeB) : (timeB - timeA);
+            });
+        }
+
+        renderMraTable();
     }
 
     function resetMraFilter() {
         document.getElementById('mraSearchVin').value = '';
         document.getElementById('mraFilterBulan').value = '';
-        renderMraTable(globalMraDataRaw);
+        mraSortOrder = 'none';
+        updateMraSortIcon();
+        mraCurrentPage = 1;
+        filterMraData();
     }
 
-    function renderMraTable(dataRows) {
+    function changeMraPageSize(val) {
+        mraPageSize = parseInt(val, 10);
+        mraCurrentPage = 1;
+        renderMraTable();
+    }
+
+    function changeMraPage(delta) {
+        var totalPages = Math.ceil(mraFilteredData.length / mraPageSize) || 1;
+        var targetPage = mraCurrentPage + delta;
+        if (targetPage >= 1 && targetPage <= totalPages) {
+            mraCurrentPage = targetPage;
+            renderMraTable();
+        }
+    }
+
+    function goToMraPage(page) {
+        mraCurrentPage = page;
+        renderMraTable();
+    }
+
+    function goToMraLastPage() {
+        var totalPages = Math.ceil(mraFilteredData.length / mraPageSize) || 1;
+        mraCurrentPage = totalPages;
+        renderMraTable();
+    }
+
+    function renderMraTable() {
+        var totalData = mraFilteredData.length;
+        var totalPages = Math.ceil(totalData / mraPageSize) || 1;
+        
+        if (mraCurrentPage > totalPages) mraCurrentPage = totalPages;
+        if (mraCurrentPage < 1) mraCurrentPage = 1;
+
+        var startIdx = (mraCurrentPage - 1) * mraPageSize;
+        var endIdx = Math.min(startIdx + mraPageSize, totalData);
+        var pageData = mraFilteredData.slice(startIdx, endIdx);
+
+        var paginationInfoEl = document.getElementById('mraPaginationInfo');
+        var pageNumberEl = document.getElementById('mraPageNumber');
+        var btnPrev = document.getElementById('btnMraPrev');
+        var btnNext = document.getElementById('btnMraNext');
+        var btnFirst = document.getElementById('btnMraFirst');
+        var btnLast = document.getElementById('btnMraLast');
+
+        if (totalData === 0) {
+            paginationInfoEl.innerText = "Menampilkan 0 - 0 dari 0 data";
+            pageNumberEl.innerText = "1 / 1";
+            btnPrev.disabled = true;
+            btnNext.disabled = true;
+            btnFirst.disabled = true;
+            btnLast.disabled = true;
+        } else {
+            paginationInfoEl.innerText = "Menampilkan " + (startIdx + 1) + " - " + endIdx + " dari " + totalData + " data";
+            pageNumberEl.innerText = mraCurrentPage + " / " + totalPages;
+            btnPrev.disabled = (mraCurrentPage === 1);
+            btnFirst.disabled = (mraCurrentPage === 1);
+            btnNext.disabled = (mraCurrentPage === totalPages);
+            btnLast.disabled = (mraCurrentPage === totalPages);
+        }
+
         var tbodyHtml = '';
-        if (dataRows.length === 0) {
+        if (pageData.length === 0) {
             tbodyHtml = '<tr><td colspan="7" class="text-center py-10 text-gray-500 font-bold tracking-wide italic">Data tidak ditemukan.</td></tr>';
         } else {
-            dataRows.forEach(function(row) { 
+            pageData.forEach(function(row) { 
                 var cell8 = buildBadgeCell(row.history['S8']); 
                 var cell9 = buildBadgeCell(row.history['S9']); 
                 var cell10 = buildBadgeCell(row.history['S10']); 
@@ -1105,7 +1257,6 @@
                 var downloadSvc = null;
                 var downloadKey = null;
                 
-                // Prioritaskan tiket aktif
                 ['S11', 'S10', 'S9', 'S8'].forEach(function(k) {
                     if (!downloadSvc && row.history[k] && row.history[k].status === 'ACTIVE' && row.history[k].code && row.history[k].code !== '-') {
                         downloadSvc = row.history[k];
@@ -1113,7 +1264,6 @@
                     }
                 });
 
-                // Jika tidak ada tiket aktif, ambil tiket terakhir yang memiliki kode unik
                 if (!downloadSvc) {
                     ['S11', 'S10', 'S9', 'S8'].forEach(function(k) {
                         if (!downloadSvc && row.history[k] && row.history[k].code && row.history[k].code !== '-') {
