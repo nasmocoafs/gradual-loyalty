@@ -280,7 +280,6 @@
               </div>
               
               <div class="flex w-full h-full p-7 relative z-10">
-                <!-- KOLOM KIRI (60%) -->
                 <div class="w-[60%] flex flex-col justify-between pr-5 h-full pb-1">
                   <div>
                     <h1 class="text-[38px] font-black leading-[1.05] text-white tracking-tight mb-3">GRADUAL <span class="text-red-500">LOYALTY</span><br>VOUCHER</h1>
@@ -319,7 +318,6 @@
                   </div>
                 </div>
                 
-                <!-- KOLOM KANAN (40%) -->
                 <div class="w-[40%] border-l border-white/20 h-full flex flex-col justify-center items-center pl-6 pr-2 gap-5">
                   <div class="w-[195px] h-[195px] bg-white p-3 rounded-xl shadow-2xl border-2 border-gray-400 flex justify-center items-center">
                     <img id="qrCodeImg" src="" alt="QR" class="w-full h-full object-contain">
@@ -403,7 +401,6 @@
             <p class="text-sm text-gray-500 mt-1">Satu No. Rangka hanya muncul satu kali beserta tanggal jatuh tempo terdekat.</p>
           </div>
           
-          <!-- FILTER & SEARCH MRA -->
           <div class="flex flex-col sm:flex-row gap-3 w-full xl:w-auto mt-4 xl:mt-0 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
             <div class="relative w-full sm:w-auto">
                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -444,7 +441,6 @@
              </table>
           </div>
 
-          <!-- FOOTER TABEL: PAGINATION & INFO TOTAL DATA -->
           <div class="px-4 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-700">
              <div class="flex items-center gap-2.5">
                 <span class="font-medium text-gray-500">Tampilkan:</span>
@@ -497,7 +493,7 @@
         <div id="earlyWarning" class="mb-6 bg-red-100 border-l-4 border-red-600 p-4 rounded shadow-sm hidden animate-pulse">
            <div class="flex">
              <div class="flex-shrink-0"><svg class="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg></div>
-             <div class="ml-3"><p class="text-sm text-red-700 font-bold uppercase tracking-widest">Early Warning System Actived!</p><p class="text-xs text-red-600 mt-1">Tingkat konversi di bawah 20%. Diperlukan WA Blasting segera.</p></div>
+             <div class="ml-3"><p class="text-sm text-red-700 font-bold uppercase tracking-widest">Early Warning System Actived!</p><p class="text-xs text-red-600 mt-1">Tingkat konversi di bawah 20%. Diperlukan evaluasi operasional.</p></div>
            </div>
         </div>
         
@@ -505,14 +501,39 @@
         
         <div id="dashContent" class="hidden space-y-6">
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-center"><p class="text-[10px] font-bold text-gray-500 uppercase">Leads JUMP Target</p><p class="text-2xl font-black text-gray-900 mt-1" id="kpiLeads">0</p></div>
-            <div class="bg-white p-4 rounded-xl border border-blue-200 shadow-sm border-b-4 border-b-blue-500 text-center"><p class="text-[10px] font-bold text-gray-500 uppercase">Tiket Terbit (Lock-In)</p><p class="text-2xl font-black text-blue-700 mt-1" id="kpiConverted">0</p></div>
-            <div class="bg-white p-4 rounded-xl border border-green-200 shadow-sm border-b-4 border-b-green-500 text-center"><p class="text-[10px] font-bold text-gray-500 uppercase">Servis (Redeemed)</p><p class="text-2xl font-black text-green-700 mt-1" id="kpiRedeemed">0</p></div>
-            <!-- Conversion Rate (Redeem / Lock-In) -->
-            <div class="bg-white p-4 rounded-xl border border-yellow-200 shadow-sm border-b-4 border-b-yellow-500 text-center">
-              <p class="text-[10px] font-bold text-gray-500 uppercase">Conversion Rate</p>
-              <p class="text-2xl font-black text-gray-900 mt-1" id="kpiRate">0%</p>
-              <p class="text-[9px] text-gray-400 mt-0.5">Redeem / Lock-In</p>
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-center">
+              <p class="text-[10px] font-bold text-gray-500 uppercase">Leads JUMP Target</p>
+              <p class="text-2xl font-black text-gray-900 mt-1" id="kpiLeads">0</p>
+            </div>
+            
+            <!-- 🔴 KARTU TIKET TERBIT LOCK-IN (DENGAN BREAKDOWN MATCHED VS UNMATCHED) -->
+            <div class="bg-white p-4 rounded-xl border border-blue-200 shadow-sm border-b-4 border-b-blue-500 text-center flex flex-col justify-between">
+              <div>
+                <p class="text-[10px] font-bold text-gray-500 uppercase">Tiket Terbit (Lock-In)</p>
+                <p class="text-2xl font-black text-blue-700 mt-1" id="kpiConverted">0</p>
+              </div>
+              <div class="flex items-center justify-center gap-1.5 mt-2 pt-2 border-t border-gray-100 text-[10px]">
+                <span class="bg-blue-50 text-blue-700 font-bold px-1.5 py-0.5 rounded border border-blue-200" title="VIN Cocok dengan Database Target Expired">
+                  🎯 Target: <b id="kpiConvertedTarget" class="font-black">0</b>
+                </span>
+                <span class="bg-amber-50 text-amber-700 font-bold px-1.5 py-0.5 rounded border border-amber-200" title="VIN Tidak Terdaftar di Target Expired">
+                  ⚠️ Non-Target: <b id="kpiConvertedNonTarget" class="font-black">0</b>
+                </span>
+              </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl border border-green-200 shadow-sm border-b-4 border-b-green-500 text-center">
+              <p class="text-[10px] font-bold text-gray-500 uppercase">Servis (Redeemed)</p>
+              <p class="text-2xl font-black text-green-700 mt-1" id="kpiRedeemed">0</p>
+            </div>
+
+            <!-- 🔴 CONVERSION RATE: REDEEM / TIKET TERBIT (LOCK-IN) -->
+            <div class="bg-white p-4 rounded-xl border border-yellow-200 shadow-sm border-b-4 border-b-yellow-500 text-center flex flex-col justify-between">
+              <div>
+                <p class="text-[10px] font-bold text-gray-500 uppercase">Conversion Rate</p>
+                <p class="text-2xl font-black text-gray-900 mt-1" id="kpiRate">0%</p>
+              </div>
+              <p class="text-[9px] text-gray-400 mt-1 font-semibold">Redeem / Lock-In</p>
             </div>
           </div>
           
@@ -572,7 +593,7 @@
              </div>
           </div>
 
-          <!-- TABEL 2: BREAKDOWN CABANG (KOLOM POTENSI DARI DATA EXPIRED) -->
+          <!-- TABEL 2: BREAKDOWN CABANG (LENGKAP: POTENSI, REG TARGET, REG NON-TARGET) -->
           <div id="hoBreakdownSection" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-col">
             <div class="bg-gray-900 p-4 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div class="flex items-center gap-2">
@@ -595,16 +616,27 @@
                         <span id="br-sort-cabang" class="font-mono text-xs">↕</span>
                       </div>
                     </th>
-                    <!-- 🔴 KOLOM BARU: POTENSI (TARGET LEADS DARI DATA EXPIRED) -->
                     <th onclick="sortBranchTable('potensi')" class="px-4 py-3 border-b text-center sortable-th bg-gray-50">
                       <div class="flex items-center justify-center gap-1.5">
                         <span>Potensi (Target)</span>
                         <span id="br-sort-potensi" class="font-mono text-xs">↕</span>
                       </div>
                     </th>
+                    <th onclick="sortBranchTable('regTarget')" class="px-4 py-3 border-b text-center sortable-th bg-gray-50 text-blue-700">
+                      <div class="flex items-center justify-center gap-1.5">
+                        <span>Reg. Target (VIN)</span>
+                        <span id="br-sort-regTarget" class="font-mono text-xs">↕</span>
+                      </div>
+                    </th>
+                    <th onclick="sortBranchTable('regNonTarget')" class="px-4 py-3 border-b text-center sortable-th bg-gray-50 text-amber-700">
+                      <div class="flex items-center justify-center gap-1.5">
+                        <span>Reg. Non-Target</span>
+                        <span id="br-sort-regNonTarget" class="font-mono text-xs">↕</span>
+                      </div>
+                    </th>
                     <th onclick="sortBranchTable('registrasi')" class="px-4 py-3 border-b text-center sortable-th bg-gray-50">
                       <div class="flex items-center justify-center gap-1.5">
-                        <span>Registrasi Voucher</span>
+                        <span>Total Registrasi</span>
                         <span id="br-sort-registrasi" class="font-mono text-xs">↕</span>
                       </div>
                     </th>
@@ -1620,8 +1652,8 @@
         return branchSortOrder === 'asc' ? (valA - valB) : (valB - valA);
       });
 
-      // Update indikator sort header
-      ['cabang', 'potensi', 'registrasi', 'redeem', 'returRate', 'revenue'].forEach(function(c) {
+      // Update indikator sorting header
+      ['cabang', 'potensi', 'regTarget', 'regNonTarget', 'registrasi', 'redeem', 'returRate', 'revenue'].forEach(function(c) {
         var el = document.getElementById('br-sort-' + c);
         if (el) {
           if (branchSortCol === c) {
@@ -1637,6 +1669,8 @@
 
       var bdHtml = '';
       var totalPot = 0;
+      var totalRegT = 0;
+      var totalRegNT = 0;
       var totalReg = 0;
       var totalRed = 0;
       var totalRev = 0;
@@ -1644,10 +1678,15 @@
       if (filtered.length > 0) {
           filtered.forEach(function(b, idx) {
               var pot = Number(b.potensi) || 0;
+              var regT = Number(b.regTarget) || 0;
+              var regNT = Number(b.regNonTarget) || 0;
               var reg = Number(b.registrasi) || 0;
               var red = Number(b.redeem) || 0;
               var rev = Number(b.revenue) || 0;
+
               totalPot += pot;
+              totalRegT += regT;
+              totalRegNT += regNT;
               totalReg += reg;
               totalRed += red;
               totalRev += rev;
@@ -1655,25 +1694,29 @@
               bdHtml += '<tr class="hover:bg-gray-50 transition">' +
                           '<td class="px-4 py-3 text-center border-b border-gray-100 font-medium text-gray-500">' + (idx + 1) + '</td>' +
                           '<td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">' + b.cabang + '</td>' +
-                          '<td class="px-4 py-3 text-center font-bold text-purple-700 bg-purple-50/40 border-b border-gray-100">' + pot + '</td>' +
-                          '<td class="px-4 py-3 text-center font-bold text-gray-700 border-b border-gray-100">' + reg + '</td>' +
-                          '<td class="px-4 py-3 text-center font-bold text-blue-600 border-b border-gray-100">' + red + '</td>' +
+                          '<td class="px-4 py-3 text-center font-bold text-purple-700 bg-purple-50/30 border-b border-gray-100">' + pot + '</td>' +
+                          '<td class="px-4 py-3 text-center font-bold text-blue-700 bg-blue-50/30 border-b border-gray-100">' + regT + '</td>' +
+                          '<td class="px-4 py-3 text-center font-bold text-amber-700 bg-amber-50/30 border-b border-gray-100">' + regNT + '</td>' +
+                          '<td class="px-4 py-3 text-center font-bold text-gray-800 border-b border-gray-100">' + reg + '</td>' +
+                          '<td class="px-4 py-3 text-center font-bold text-green-600 border-b border-gray-100">' + red + '</td>' +
                           '<td class="px-4 py-3 text-center font-bold text-yellow-600 border-b border-gray-100">' + b.returRate + '%</td>' +
                           '<td class="px-4 py-3 text-right font-black text-green-700 border-b border-gray-100">' + formatRp(rev) + '</td>' +
                         '</tr>';
           });
       } else {
-          bdHtml = '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400 italic font-medium">Data cabang tidak ditemukan.</td></tr>';
+          bdHtml = '<tr><td colspan="9" class="px-4 py-8 text-center text-gray-400 italic font-medium">Data cabang tidak ditemukan.</td></tr>';
       }
       document.getElementById('hoBreakdownBody').innerHTML = bdHtml;
 
-      // Render Baris Total di Tfoot
+      // Baris Akumulasi Total
       var avgRate = totalReg > 0 ? ((totalRed / totalReg) * 100).toFixed(1).replace('.', ',') : '0,0';
       var footHtml = '<tr class="bg-gray-100">' +
                        '<td colspan="2" class="px-4 py-3 text-center uppercase tracking-wider text-xs font-black">TOTAL SEMUA CABANG</td>' +
                        '<td class="px-4 py-3 text-center font-black text-purple-800 bg-purple-100/50">' + totalPot + '</td>' +
+                       '<td class="px-4 py-3 text-center font-black text-blue-800 bg-blue-100/50">' + totalRegT + '</td>' +
+                       '<td class="px-4 py-3 text-center font-black text-amber-800 bg-amber-100/50">' + totalRegNT + '</td>' +
                        '<td class="px-4 py-3 text-center font-black text-gray-900">' + totalReg + '</td>' +
-                       '<td class="px-4 py-3 text-center font-black text-blue-700">' + totalRed + '</td>' +
+                       '<td class="px-4 py-3 text-center font-black text-green-700">' + totalRed + '</td>' +
                        '<td class="px-4 py-3 text-center font-black text-yellow-700">' + avgRate + '%</td>' +
                        '<td class="px-4 py-3 text-right font-black text-green-700 text-base">' + formatRp(totalRev) + '</td>' +
                      '</tr>';
@@ -1695,6 +1738,9 @@
           if(res.success) {
             document.getElementById('kpiLeads').innerText = res.leads; 
             document.getElementById('kpiConverted').innerText = res.converted;
+            document.getElementById('kpiConvertedTarget').innerText = res.convertedTarget || 0;
+            document.getElementById('kpiConvertedNonTarget').innerText = res.convertedNonTarget || 0;
+            
             document.getElementById('kpiRate').innerText = res.rate + '%'; 
             document.getElementById('kpiRedeemed').innerText = res.redeemed;
             
@@ -1738,7 +1784,7 @@
             rawLeaderboardData = res.leaderboard || [];
             renderLeaderboard();
 
-            // Render Breakdown Cabang (Khusus HO)
+            // Render Breakdown Cabang
             var hoSection = document.getElementById('hoBreakdownSection');
             if (sessionUser && (sessionUser.cabang.toUpperCase() === 'HEAD OFFICE' || sessionUser.cabang.toUpperCase() === 'HEADOFFICE')) {
                 hoSection.classList.remove('hidden');
