@@ -47,6 +47,11 @@
     var currentTicketTab = 'all';
     var ticketSearchQuery = '';
     
+    // DATA AUDIT NIS
+    var rawAuditData = [];
+    var currentAuditFilterTab = 'ALL';
+    var auditSearchQuery = '';
+
     var cachedHistoryData = {};
     var isPrefetching = false;
     var currentScannedData = null;
@@ -181,6 +186,7 @@
         <button onclick="switchTab('validate')" id="nav-validate" class="nav-item w-full flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white text-left font-medium">Scanner Validasi</button>
         <button onclick="switchTab('mra')" id="nav-mra" class="nav-item w-full flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white text-left font-medium">Data MRA (CRM)</button>
         <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white text-left font-medium text-yellow-400">Dasbor Analitik</button>
+        <button onclick="switchTab('audit')" id="nav-audit" class="nav-item w-full flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white text-left font-medium text-purple-400">Audit & Validasi NIS</button>
         <button onclick="switchTab('panduan')" id="nav-panduan" class="nav-item w-full flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white text-left font-medium text-blue-400 mt-4 border-t border-gray-800">Buku Panduan</button>
       </nav>
       <div class="p-4 border-t border-gray-800">
@@ -512,14 +518,12 @@
                 <p class="text-2xl md:text-3xl font-black text-white mt-1" id="kpiLeads">0</p>
               </div>
               
-              <!-- TIKET TERBIT TARGET DENGAN TOMBOL DRILL-DOWN -->
               <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center relative group">
                 <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Tiket Terbit Target</p>
                 <p class="text-2xl md:text-3xl font-black text-blue-300 mt-1" id="kpiTargetConverted">0</p>
                 <button onclick="openTicketModal('target')" class="mt-2 text-[10px] font-bold bg-blue-500/30 hover:bg-blue-500 text-white px-2.5 py-1 rounded-lg border border-blue-400/40 transition shadow-sm">🔍 Rincian Tiket</button>
               </div>
 
-              <!-- SERVIS TARGET (REDEEM) DENGAN TOMBOL DRILL-DOWN -->
               <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center relative group">
                 <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Servis Target (Redeem)</p>
                 <p class="text-2xl md:text-3xl font-black text-emerald-400 mt-1" id="kpiTargetRedeemed">0</p>
@@ -639,19 +643,13 @@
                     <th class="px-3 py-3 border-b text-center w-10 bg-gray-50">No</th>
                     <th onclick="sortBranchTable('cabang')" class="px-4 py-3 border-b sortable-th bg-gray-50">Nama Cabang <span id="br-sort-cabang">↕</span></th>
                     <th onclick="sortBranchTable('potensi')" class="px-3 py-3 border-b text-center sortable-th bg-gray-50 text-purple-700">Potensi Leads <span id="br-sort-potensi">↕</span></th>
-                    
-                    <!-- KANAL TARGET -->
                     <th onclick="sortBranchTable('regTarget')" class="px-3 py-3 border-b text-center sortable-th bg-blue-50/50 text-blue-700">Tiket Target <span id="br-sort-regTarget">↕</span></th>
                     <th onclick="sortBranchTable('redeemTarget')" class="px-3 py-3 border-b text-center sortable-th bg-blue-50/50 text-emerald-700">Redeem Target <span id="br-sort-redeemTarget">↕</span></th>
                     <th onclick="sortBranchTable('convRateTarget')" class="px-3 py-3 border-b text-center sortable-th bg-blue-50/50 text-indigo-700">Konversi Target <span id="br-sort-convRateTarget">↕</span></th>
                     <th onclick="sortBranchTable('revTarget')" class="px-4 py-3 border-b text-right sortable-th bg-blue-50/50 text-emerald-800">Revenue Target <span id="br-sort-revTarget">↕</span></th>
-
-                    <!-- KANAL NON-TARGET AUDIT -->
                     <th onclick="sortBranchTable('regNonTarget')" class="px-3 py-3 border-b text-center sortable-th bg-amber-50/40 text-amber-700">Tiket Non-Target <span id="br-sort-regNonTarget">↕</span></th>
                     <th onclick="sortBranchTable('redeemNonTarget')" class="px-3 py-3 border-b text-center sortable-th bg-amber-50/40 text-amber-800">Redeem Non-Target <span id="br-sort-redeemNonTarget">↕</span></th>
                     <th onclick="sortBranchTable('revNonTarget')" class="px-4 py-3 border-b text-right sortable-th bg-amber-50/40 text-amber-900">Revenue Non-Target <span id="br-sort-revNonTarget">↕</span></th>
-
-                    <!-- TOTAL -->
                     <th onclick="sortBranchTable('revenue')" class="px-4 py-3 border-b text-right sortable-th bg-gray-100 font-black">Total Revenue <span id="br-sort-revenue">↕</span></th>
                   </tr>
                 </thead>
@@ -663,6 +661,101 @@
 
         </div>
       </div>
+
+      <!-- 🔴 TAB: AUDIT & REKONSILIASI NIS -->
+      <div id="view-audit" class="w-full max-w-7xl mx-auto fade-in hidden">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
+          <div>
+            <h2 class="text-xl md:text-2xl font-bold text-gray-900">Audit & Rekonsiliasi NIS</h2>
+            <p class="text-sm text-gray-500 mt-1">Cross-check Penggunaan Diskon Program di NIS vs Tiket Sah Web App</p>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <div class="w-full sm:w-auto">
+              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Periode WO Kasir</label>
+              <div class="flex items-center gap-2">
+                <input type="date" id="auditStartDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg font-bold bg-white outline-none text-sm">
+                <span class="font-bold text-gray-400">-</span>
+                <input type="date" id="auditEndDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg font-bold bg-white outline-none text-sm">
+                <button onclick="loadAuditNisData()" class="bg-purple-700 hover:bg-purple-800 text-white font-bold px-4 py-2 rounded-lg text-sm transition shadow shrink-0">Audit</button>
+              </div>
+            </div>
+            <button onclick="downloadAuditExcel()" class="bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition shadow flex items-center justify-center gap-2 sm:mt-auto">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              Export Hasil Audit
+            </button>
+          </div>
+        </div>
+
+        <div id="auditLoading" class="text-center py-12 text-gray-500 font-bold hidden">Memverifikasi Faktur NIS dengan Database Loyalty...</div>
+
+        <div id="auditContent" class="space-y-6">
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-center">
+              <p class="text-[10px] font-bold text-gray-500 uppercase">Total Transaksi NIS</p>
+              <p class="text-2xl font-black text-gray-900 mt-1" id="kpiAuditTotal">0</p>
+            </div>
+            <div class="bg-green-50 p-4 rounded-xl border border-green-200 shadow-sm text-center">
+              <p class="text-[10px] font-bold text-green-700 uppercase">SOP Compliant (Sah)</p>
+              <p class="text-2xl font-black text-green-700 mt-1" id="kpiAuditCompliant">0</p>
+              <p class="text-[9px] text-green-600 font-bold mt-0.5"><span id="kpiAuditRate">0%</span> Kepatuhan</p>
+            </div>
+            <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-200 shadow-sm text-center">
+              <p class="text-[10px] font-bold text-yellow-700 uppercase">Salah Pekerjaan</p>
+              <p class="text-2xl font-black text-yellow-700 mt-1" id="kpiAuditSalahJob">0</p>
+              <p class="text-[9px] text-yellow-600 font-bold mt-0.5">Bukan SB 70-100k</p>
+            </div>
+            <div class="bg-red-50 p-4 rounded-xl border border-red-200 shadow-sm text-center">
+              <p class="text-[10px] font-bold text-red-700 uppercase">Klaim Liar / Bypass</p>
+              <p class="text-2xl font-black text-red-700 mt-1" id="kpiAuditKlaimLiar">0</p>
+              <p class="text-[9px] text-red-600 font-bold mt-0.5">Tanpa Tiket Web</p>
+            </div>
+            <div class="bg-rose-50 p-4 rounded-xl border border-rose-300 shadow-sm text-center col-span-2 md:col-span-1">
+              <p class="text-[10px] font-bold text-rose-700 uppercase">Kebocoran Diskon</p>
+              <p class="text-xl md:text-lg font-black text-rose-800 mt-1" id="kpiAuditLeakage">Rp 0</p>
+              <p class="text-[9px] text-rose-600 font-bold mt-0.5">Potensi Margin Loss</p>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+              <button id="btn-audit-ALL" onclick="filterAuditTable('ALL')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm">Semua</button>
+              <button id="btn-audit-COMPLIANT" onclick="filterAuditTable('COMPLIANT')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-green-700 border border-green-300 hover:bg-green-50">✔ Compliant</button>
+              <button id="btn-audit-SALAH_PEKERJAAN" onclick="filterAuditTable('SALAH_PEKERJAAN')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-yellow-700 border border-yellow-300 hover:bg-yellow-50">⚠️ Salah Job</button>
+              <button id="btn-audit-KLAIM_LIAR" onclick="filterAuditTable('KLAIM_LIAR')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-red-700 border border-red-300 hover:bg-red-50">❌ Klaim Liar</button>
+              <button id="btn-audit-REDEEM_FIKTIF" onclick="filterAuditTable('REDEEM_FIKTIF')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-100">❓ Fiktif</button>
+            </div>
+            <div class="w-full md:w-80">
+              <input type="text" id="searchAuditInput" oninput="searchAuditTable(this.value)" placeholder="Cari No. Rangka, No. WO, Cabang, atau SA..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs bg-white outline-none focus:border-purple-500 auto-upper">
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto max-h-[65vh]">
+              <table class="w-full text-xs text-left whitespace-nowrap">
+                <thead class="bg-gray-900 text-white uppercase text-[10px] font-bold sticky top-0 z-10">
+                  <tr>
+                    <th class="px-3 py-3 text-center w-8">No</th>
+                    <th class="px-4 py-3">No. WO & Tgl</th>
+                    <th class="px-4 py-3">Cabang & SA</th>
+                    <th class="px-4 py-3">No. Rangka & Model</th>
+                    <th class="px-4 py-3">Pekerjaan di NIS</th>
+                    <th class="px-4 py-3 text-right">Diskon Jasa</th>
+                    <th class="px-4 py-3 text-right font-black">Total Invoice</th>
+                    <th class="px-3 py-3 text-center">Status Audit</th>
+                    <th class="px-4 py-3">Keterangan / Temuan Deviasi</th>
+                  </tr>
+                </thead>
+                <tbody id="auditTableBody" class="divide-y divide-gray-100 bg-white">
+                  <tr><td colspan="9" class="px-4 py-12 text-center text-gray-400 font-medium italic">Klik tombol "Audit" untuk memulai verifikasi faktur NIS.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="p-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center text-xs font-bold text-gray-700">
+              <span id="auditFooterCount">Menampilkan 0 data</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
 
     <!-- MOBILE NAVIGATION -->
@@ -671,137 +764,8 @@
       <button onclick="switchTab('validate')" id="mob-validate" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg><span class="text-[9px] font-bold">Scanner</span></button>
       <button onclick="switchTab('mra')" id="mob-mra" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg><span class="text-[9px] font-bold">CRM</span></button>
       <button onclick="switchTab('dashboard')" id="mob-dashboard" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg><span class="text-[9px] font-bold">Dasbor</span></button>
-      <button onclick="switchTab('panduan')" id="mob-panduan" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100 text-blue-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg><span class="text-[9px] font-bold">Panduan</span></button>
+      <button onclick="switchTab('audit')" id="mob-audit" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100 text-purple-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="text-[9px] font-bold">Audit NIS</span></button>
     </nav>
-  </div>
-
-  <!-- 🔴 MODAL 1: DETAIL TIKET TERBIT (LOCK-IN DRILLDOWN) -->
-  <div id="modalTicketDetail" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900 bg-opacity-80 p-4 hidden">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-6xl flex flex-col max-h-[90vh] overflow-hidden">
-      <div class="bg-gray-900 p-5 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-        <div>
-          <h3 class="text-white font-black text-base uppercase tracking-wider flex items-center gap-2">
-            <span>🎫 Rincian Tiket Terbit (Lock-In)</span>
-          </h3>
-          <p class="text-xs text-gray-400 mt-0.5">Daftar seluruh tiket terbit untuk kohor target / tanggal input yang dipilih.</p>
-        </div>
-        <div class="flex items-center gap-2 w-full sm:w-auto">
-          <button onclick="downloadTicketExcel()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center gap-1.5 shadow transition">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-            Export .XLSX
-          </button>
-          <button onclick="closeTicketModal()" class="text-gray-400 hover:text-white p-1 rounded-lg">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="p-4 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3">
-        <div class="flex items-center gap-2 w-full sm:w-auto">
-          <button id="tab-tk-all" onclick="switchTicketTab('all')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm">Semua (<span id="tk-count-all">0</span>)</button>
-          <button id="tab-tk-target" onclick="switchTicketTab('target')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300">🎯 Target Retensi (<span id="tk-count-target">0</span>)</button>
-          <button id="tab-tk-nontarget" onclick="switchTicketTab('nontarget')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300">⚠️ Non-Target (<span id="tk-count-nontarget">0</span>)</button>
-        </div>
-        <div class="w-full sm:w-72">
-          <input type="text" id="searchTicketInput" oninput="filterTicketTable(this.value)" placeholder="Cari nama, nopol, VIN, atau SA..." class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none focus:border-red-500 auto-upper">
-        </div>
-      </div>
-
-      <div class="p-0 flex-1 overflow-x-auto overflow-y-auto">
-        <table class="w-full text-xs text-left whitespace-nowrap">
-          <thead class="bg-gray-100 text-[10px] uppercase text-gray-600 font-bold sticky top-0 z-10 shadow-sm">
-            <tr>
-              <th class="px-3 py-2.5 text-center w-8">No</th>
-              <th class="px-4 py-2.5">Pelanggan & Unit</th>
-              <th class="px-4 py-2.5">No. Rangka (VIN)</th>
-              <th class="px-4 py-2.5">Cabang & SA</th>
-              <th class="px-3 py-2.5 text-center">Tahapan</th>
-              <th class="px-3 py-2.5 text-center">Tgl Terbit</th>
-              <th class="px-3 py-2.5 text-center">Status Tiket</th>
-              <th class="px-3 py-2.5 text-center">Klasifikasi</th>
-            </tr>
-          </thead>
-          <tbody id="ticketTableBody" class="divide-y divide-gray-200 bg-white"></tbody>
-        </table>
-      </div>
-
-      <div class="p-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center text-xs font-bold text-gray-700">
-        <span id="ticketTotalFooterText">Total Terfilter: 0 Tiket</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- 🔴 MODAL 2: DETAIL PELANGGAN REDEEM (KASIR DRILLDOWN) -->
-  <div id="modalRedeemDetail" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900 bg-opacity-80 p-4 hidden">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-6xl flex flex-col max-h-[90vh] overflow-hidden">
-      <div class="bg-gray-900 p-5 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-        <div>
-          <h3 class="text-white font-black text-base uppercase tracking-wider flex items-center gap-2">
-            <span>📋 Rincian Pelanggan Selesai Servis (Redeem)</span>
-          </h3>
-          <p class="text-xs text-gray-400 mt-0.5">Daftar transaksi kasir aktual yang berhasil di-redeem.</p>
-        </div>
-        <div class="flex items-center gap-2 w-full sm:w-auto">
-          <button onclick="downloadRedeemExcel()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center gap-1.5 shadow transition">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-            Export .XLSX
-          </button>
-          <button onclick="closeRedeemModal()" class="text-gray-400 hover:text-white p-1 rounded-lg">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="p-4 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3">
-        <div class="flex items-center gap-2 w-full sm:w-auto">
-          <button id="tab-rd-all" onclick="switchRedeemTab('all')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm">Semua (<span id="rd-count-all">0</span>)</button>
-          <button id="tab-rd-target" onclick="switchRedeemTab('target')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300">🎯 Target Retensi (<span id="rd-count-target">0</span>)</button>
-          <button id="tab-rd-nontarget" onclick="switchRedeemTab('nontarget')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300">⚠️ Non-Target (<span id="rd-count-nontarget">0</span>)</button>
-        </div>
-        <div class="w-full sm:w-72">
-          <input type="text" id="searchRedeemInput" oninput="filterRedeemTable(this.value)" placeholder="Cari nama, nopol, VIN, atau SA..." class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none focus:border-red-500 auto-upper">
-        </div>
-      </div>
-
-      <div class="p-0 flex-1 overflow-x-auto overflow-y-auto">
-        <table class="w-full text-xs text-left whitespace-nowrap">
-          <thead class="bg-gray-100 text-[10px] uppercase text-gray-600 font-bold sticky top-0 z-10 shadow-sm">
-            <tr>
-              <th class="px-3 py-2.5 text-center w-8">No</th>
-              <th class="px-4 py-2.5">Pelanggan & Unit</th>
-              <th class="px-4 py-2.5">No. Rangka (VIN)</th>
-              <th class="px-4 py-2.5">Cabang & SA</th>
-              <th class="px-3 py-2.5 text-center">Tahapan Servis</th>
-              <th class="px-3 py-2.5 text-center">No. WO</th>
-              <th class="px-3 py-2.5 text-center">Tgl Kasir (Redeem)</th>
-              <th class="px-4 py-2.5 text-right font-black">Actual Revenue</th>
-              <th class="px-3 py-2.5 text-center">Klasifikasi</th>
-            </tr>
-          </thead>
-          <tbody id="redeemTableBody" class="divide-y divide-gray-200 bg-white"></tbody>
-        </table>
-      </div>
-
-      <div class="p-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center text-xs font-bold text-gray-700">
-        <span id="redeemTotalFooterText">Total Transaksi: 0 Unit</span>
-        <span id="redeemTotalRevenueText" class="text-green-700 text-sm font-black">Total Revenue: Rp 0</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- UPLOAD MODAL -->
-  <div id="uploadModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900 bg-opacity-80 p-4 hidden">
-    <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-md">
-      <h3 class="text-lg font-bold text-gray-900 mb-2">Upload Master Target Retensi</h3>
-      <div class="space-y-4 mb-6">
-        <div><label class="block text-sm font-bold text-gray-700 mb-1">Bulan Data Periode</label><input type="month" id="uploadBulan" required class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 outline-none"></div>
-        <div><label class="block text-sm font-bold text-gray-700 mb-1">Pilih File Excel (.xlsx)</label><input type="file" id="excelFile" accept=".xlsx, .xls" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50"></div>
-      </div>
-      <div class="flex justify-end gap-3">
-        <button onclick="closeUploadModal()" class="px-5 py-2 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition text-sm">Batal</button>
-        <button id="btnProsesExcel" onclick="processUpload()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2 rounded-lg shadow transition text-sm">Proses Excel</button>
-      </div>
-    </div>
   </div>
 
   <script>
@@ -835,6 +799,8 @@
 
       document.getElementById('dashStartDate').value = yyyy + '-01-01';
       document.getElementById('dashEndDate').value = yyyy + '-' + mm + '-' + dd;
+      document.getElementById('auditStartDate').value = yyyy + '-01-01';
+      document.getElementById('auditEndDate').value = yyyy + '-' + mm + '-' + dd;
 
       fetchAPI('getBranchList').then(function(res) {
           if(res.success) {
@@ -956,7 +922,9 @@
         var btnUpload = document.getElementById('btnUploadTarget'); if (btnUpload) btnUpload.classList.add('hidden'); 
         document.getElementById('panduan-ho').classList.add('hidden'); document.getElementById('panduan-cabang').classList.remove('hidden'); 
       }
-      if(tabId === 'mra') loadMraData(); if(tabId === 'dashboard') loadDashboard();
+      if(tabId === 'mra') loadMraData(); 
+      if(tabId === 'dashboard') loadDashboard();
+      if(tabId === 'audit') loadAuditNisData();
     }
 
     function formatWAPhone(number) { var str = number.toString().replace(/[^0-9]/g, ''); if (str.startsWith('0')) return '62' + str.substring(1); if (str.startsWith('8')) return '62' + str; return str; }
@@ -1019,19 +987,7 @@
         event.preventDefault(); 
         var btn = document.getElementById('submitBtn'); btn.innerHTML = 'Memvalidasi...'; btn.disabled = true; 
         var nokaRaw = document.getElementById('noka').value.trim().toUpperCase(); var targetSvc = document.getElementById('servisKe').value;
-        
         var bDate = document.getElementById('bookingDate').value; 
-        if(bDate) {
-            var bParts = bDate.split('-');
-            var bYear = parseInt(bParts[0], 10);
-            var bMonth = parseInt(bParts[1], 10); 
-            
-            var d6 = new Date(bYear, bMonth, 0); 
-            var d7 = new Date(bYear, bMonth + 1, 0); 
-            
-            document.getElementById('cardMax6').innerText = formatDateID(d6);
-            document.getElementById('cardMax7').innerText = formatDateID(d7);
-        }
 
         document.getElementById('cardHistory').innerHTML = defaultHistoryHTML;
 
@@ -1081,17 +1037,33 @@
                 if(res.success) { 
                     cachedHistoryData[res.noka] = { history: res.updatedHistory || [], allowBypassS9: historyRes.allowBypassS9 }; 
 
-                    document.getElementById('formSection').classList.add('hidden'); document.getElementById('resultSection').classList.remove('hidden'); document.getElementById('resultSection').classList.add('flex'); 
-                    document.getElementById('cardModel').innerText = res.model; document.getElementById('cardNopolNoka').innerText = res.nopol.toUpperCase() + ' / ' + res.noka.toUpperCase(); 
-                    document.getElementById('cardCode').innerText = res.code; 
-                    document.getElementById('qrCodeImg').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + res.code + '&bgcolor=ffffff'; 
+                    var tData = res.ticket || res;
+                    document.getElementById('cardModel').innerText = tData.model; 
+                    document.getElementById('cardNopolNoka').innerText = tData.nopol.toUpperCase() + ' / ' + tData.noka.toUpperCase(); 
+                    document.getElementById('cardCode').innerText = tData.code; 
+                    document.getElementById('cardServisKe').innerText = tData.servisKe;
+                    document.getElementById('cardMax6').innerText = tData.max6;
+                    document.getElementById('cardMax7').innerText = tData.max7;
+                    document.getElementById('qrCodeImg').src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(tData.code) + '&bgcolor=ffffff'; 
+                    
                     updateBenefitPreview(); 
-                    loadHistory(res.noka, res.updatedHistory);
+                    loadHistory(tData.noka, res.updatedHistory);
+
+                    document.getElementById('formSection').classList.add('hidden'); 
+                    document.getElementById('resultSection').classList.remove('hidden'); 
+                    document.getElementById('resultSection').classList.add('flex'); 
                     window.scrollTo({top: 0, behavior: 'smooth'}); 
-                } else { Swal.fire('Ditolak', res.message, 'warning'); } 
-                btn.innerHTML = 'Generate Tiket QR'; btn.disabled = false; 
+                } else { 
+                    Swal.fire('Ditolak', res.message, 'warning'); 
+                } 
+                btn.innerHTML = 'Generate Tiket QR'; 
+                btn.disabled = false; 
             });
-        } else { Swal.fire('Error', 'Sistem gagal memverifikasi histori. Cek koneksi.', 'error'); btn.innerHTML = 'Generate Tiket QR'; btn.disabled = false; }
+        } else { 
+            Swal.fire('Error', 'Sistem gagal memverifikasi histori. Cek koneksi.', 'error'); 
+            btn.innerHTML = 'Generate Tiket QR'; 
+            btn.disabled = false; 
+        }
     }
     
     function downloadPDF() { var element = document.getElementById('loyaltyCard'); var nopol = document.getElementById('nopol').value; html2pdf().set({ margin: 0, filename: 'Voucher-'+nopol+'.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'px', format: [800, 450], orientation: 'landscape' } }).from(element).save(); }
@@ -1158,12 +1130,10 @@
               if (res.claimType === 'BASIC_ONLY') { 
                   statusEl.innerText = '✔ TIKET VALID (BASIC ONLY)'; 
                   statusEl.className = 'inline-block px-4 py-2 text-sm font-black rounded-lg bg-yellow-100 text-yellow-800 border border-yellow-300'; 
-                  
                   benefitText.innerHTML = `<span class="text-yellow-700">✅ Berhak Atas: <b>${bDetail.basic}</b></span><br><span class="text-red-500 line-through text-xs">❌ Hangus: ${bDetail.ontime}</span>`;
               } else { 
                   statusEl.innerText = '✔ TIKET VALID (FULL BENEFIT)'; 
                   statusEl.className = 'inline-block px-4 py-2 text-sm font-black rounded-lg bg-green-100 text-green-800 border border-green-300'; 
-                  
                   benefitText.innerHTML = `<span class="text-green-700">✅ Berhak Atas: <b>${bDetail.basic}</b></span><br><span class="text-green-700">✅ Berhak Atas: <b>${bDetail.ontime}</b></span>`;
               } 
               redeemBtn.classList.remove('hidden'); 
@@ -1880,11 +1850,9 @@
       ['all', 'target', 'nontarget'].forEach(function(t) {
         var btn = document.getElementById('tab-tk-' + t);
         if (btn) {
-          if (currentTicketTab === t) {
-            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm';
-          } else {
-            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-100';
-          }
+          btn.className = (currentTicketTab === t)
+            ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm'
+            : 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-100';
         }
       });
 
@@ -2009,11 +1977,9 @@
       ['all', 'target', 'nontarget'].forEach(function(t) {
         var btn = document.getElementById('tab-rd-' + t);
         if (btn) {
-          if (currentRedeemTab === t) {
-            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm';
-          } else {
-            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-100';
-          }
+          btn.className = (currentRedeemTab === t)
+            ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm'
+            : 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-100';
         }
       });
 
@@ -2034,7 +2000,6 @@
                        (currentRedeemTab === 'target' && item.tipe === 'TARGET') ||
                        (currentRedeemTab === 'nontarget' && item.tipe === 'NON_TARGET');
         if (!matchTab) return false;
-
         if (redeemSearchQuery) {
           var str = (item.nama + ' ' + item.nopol + ' ' + item.vin + ' ' + item.cabang + ' ' + item.namaSA + ' ' + item.noWo).toUpperCase();
           return str.includes(redeemSearchQuery);
@@ -2044,7 +2009,6 @@
 
       var tbodyHtml = '';
       var totalRev = 0;
-
       if (filtered.length > 0) {
         filtered.forEach(function(r, idx) {
           totalRev += Number(r.revenue) || 0;
@@ -2054,15 +2018,9 @@
 
           tbodyHtml += '<tr class="hover:bg-gray-50 transition">' +
                          '<td class="px-3 py-2 text-center text-gray-500 font-medium">' + (idx + 1) + '</td>' +
-                         '<td class="px-4 py-2">' +
-                           '<p class="font-bold text-gray-900 uppercase">' + r.nama + '</p>' +
-                           '<p class="text-[10px] text-gray-500 font-medium">' + r.model + ' (' + r.nopol + ')</p>' +
-                         '</td>' +
+                         '<td class="px-4 py-2"><p class="font-bold text-gray-900 uppercase">' + r.nama + '</p><p class="text-[10px] text-gray-500 font-medium">' + r.model + ' (' + r.nopol + ')</p></td>' +
                          '<td class="px-4 py-2 font-mono font-bold text-gray-700">' + r.vin + '</td>' +
-                         '<td class="px-4 py-2">' +
-                           '<p class="font-bold text-gray-800 uppercase">' + r.cabang + '</p>' +
-                           '<p class="text-[10px] text-gray-500">SA: ' + r.namaSA + '</p>' +
-                         '</td>' +
+                         '<td class="px-4 py-2"><p class="font-bold text-gray-800 uppercase">' + r.cabang + '</p><p class="text-[10px] text-gray-500">SA: ' + r.namaSA + '</p></td>' +
                          '<td class="px-3 py-2 text-center font-bold text-gray-700">' + r.servisKe + '</td>' +
                          '<td class="px-3 py-2 text-center font-mono font-bold text-indigo-700">' + r.noWo + '</td>' +
                          '<td class="px-3 py-2 text-center font-mono text-gray-600">' + r.tglRedeem + '</td>' +
@@ -2127,19 +2085,16 @@
             globalAllTicketDetails = res.allTicketDetails || [];
             globalRedeemedDetails = res.redeemedDetails || [];
 
-            // Kanal Target Retensi
             document.getElementById('kpiLeads').innerText = res.leads; 
             document.getElementById('kpiTargetConverted').innerText = res.targetConverted || 0;
             document.getElementById('kpiTargetRedeemed').innerText = res.targetRedeemed || 0;
             document.getElementById('kpiTargetConvRate').innerText = (res.targetConvRate || 0) + '%';
             document.getElementById('kpiTargetLockInRate').innerText = (res.targetLockInRate || 0) + '%';
             
-            // Kanal Non-Target (Inisiatif)
             document.getElementById('kpiNonTargetConverted').innerText = res.nonTargetConverted || 0;
             document.getElementById('kpiNonTargetRedeemed').innerText = res.nonTargetRedeemed || 0;
             document.getElementById('kpiNonTargetRevenue').innerText = formatRp(res.nonTargetRevenue || 0);
 
-            // Revenue Total & Komposisi
             document.getElementById('kpiActual').innerText = formatRp(res.totalActualRevenue || 0);
             document.getElementById('kpiTargetRevenueText').innerText = formatRp(res.targetRevenue || 0);
             document.getElementById('kpiNonTargetRevenueText').innerText = formatRp(res.nonTargetRevenue || 0);
@@ -2152,7 +2107,6 @@
               document.getElementById('earlyWarning').classList.remove('hidden'); 
             }
             
-            // Funnel Chart Khusus Target Retensi
             if(funnelChartInstance) funnelChartInstance.destroy();
             funnelChartInstance = new Chart(document.getElementById('funnelChart').getContext('2d'), { 
               type: 'bar', 
@@ -2179,11 +2133,9 @@
               } 
             });
             
-            // Render Leaderboard SA
             rawLeaderboardData = res.leaderboard || [];
             renderLeaderboard();
 
-            // Render Breakdown Cabang
             var hoSection = document.getElementById('hoBreakdownSection');
             if (sessionUser && (sessionUser.cabang.toUpperCase() === 'HEAD OFFICE' || sessionUser.cabang.toUpperCase() === 'HEADOFFICE')) {
                 hoSection.classList.remove('hidden');
@@ -2197,7 +2149,6 @@
                 }
             }
 
-            // Render Segment Chart
             if(segmentChartInstance) segmentChartInstance.destroy();
             var segLabels = Object.keys(res.segments); 
             var segData = Object.values(res.segments); 
@@ -2235,6 +2186,133 @@
             }
           }
       });
+    }
+
+    // ==========================================
+    // 🔴 TAB: AUDIT & REKONSILIASI NIS LOGIC
+    // ==========================================
+    function loadAuditNisData() {
+      var sDate = document.getElementById('auditStartDate').value;
+      var eDate = document.getElementById('auditEndDate').value;
+      document.getElementById('auditLoading').classList.remove('hidden');
+      document.getElementById('auditContent').classList.add('hidden');
+
+      fetchAPI('getAuditNisData', { startDate: sDate, endDate: eDate, cabang: sessionUser.cabang }).then(function(res) {
+        document.getElementById('auditLoading').classList.add('hidden');
+        document.getElementById('auditContent').classList.remove('hidden');
+
+        if (res.success) {
+          rawAuditData = res.data || [];
+          document.getElementById('kpiAuditTotal').innerText = res.summary.total || 0;
+          document.getElementById('kpiAuditCompliant').innerText = res.summary.compliant || 0;
+          document.getElementById('kpiAuditRate').innerText = (res.summary.compliantRate || 0) + '%';
+          document.getElementById('kpiAuditSalahJob').innerText = res.summary.salahJob || 0;
+          document.getElementById('kpiAuditKlaimLiar').innerText = res.summary.klaimLiar || 0;
+          document.getElementById('kpiAuditLeakage').innerText = formatRp(res.summary.potentialLeakage || 0);
+
+          renderAuditTable();
+        } else {
+          Swal.fire('Audit Gagal', res.message, 'warning');
+        }
+      });
+    }
+
+    function filterAuditTable(tab) {
+      currentAuditFilterTab = tab;
+      ['ALL', 'COMPLIANT', 'SALAH_PEKERJAAN', 'KLAIM_LIAR', 'REDEEM_FIKTIF'].forEach(function(t) {
+        var btn = document.getElementById('btn-audit-' + t);
+        if (btn) {
+          if (currentAuditFilterTab === t) {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm';
+          } else {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-50';
+          }
+        }
+      });
+      renderAuditTable();
+    }
+
+    function searchAuditTable(query) {
+      auditSearchQuery = (query || '').toUpperCase().trim();
+      renderAuditTable();
+    }
+
+    function renderAuditTable() {
+      var filtered = rawAuditData.filter(function(row) {
+        var matchTab = (currentAuditFilterTab === 'ALL') || (row.statusAudit === currentAuditFilterTab);
+        if (!matchTab) return false;
+        if (auditSearchQuery) {
+          var str = (row.noWo + ' ' + row.noka + ' ' + row.cabang + ' ' + row.namaSA + ' ' + row.pekerjaan).toUpperCase();
+          return str.includes(auditSearchQuery);
+        }
+        return true;
+      });
+
+      var tbodyHtml = '';
+      if (filtered.length > 0) {
+        filtered.forEach(function(r, idx) {
+          var badge = '';
+          if (r.statusAudit === 'COMPLIANT') {
+            badge = '<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-[10px] font-black border border-green-300">✔ COMPLIANT</span>';
+          } else if (r.statusAudit === 'SALAH_PEKERJAAN') {
+            badge = '<span class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-[10px] font-black border border-yellow-300">⚠️ SALAH JOB</span>';
+          } else if (r.statusAudit === 'KLAIM_LIAR') {
+            badge = '<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-[10px] font-black border border-red-300">❌ KLAIM LIAR</span>';
+          } else {
+            badge = '<span class="bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-[10px] font-black border border-gray-300">❓ FIKTIF</span>';
+          }
+
+          tbodyHtml += '<tr class="hover:bg-gray-50 transition">' +
+                         '<td class="px-3 py-2 text-center text-gray-500 font-medium">' + (idx + 1) + '</td>' +
+                         '<td class="px-4 py-2"><p class="font-bold text-gray-900 font-mono">' + r.noWo + '</p><p class="text-[10px] text-gray-500">' + r.tglWo + '</p></td>' +
+                         '<td class="px-4 py-2"><p class="font-bold text-gray-800 uppercase">' + r.cabang + '</p><p class="text-[10px] text-gray-500">SA: ' + r.namaSA + '</p></td>' +
+                         '<td class="px-4 py-2"><p class="font-mono font-bold text-gray-900">' + r.noka + '</p><p class="text-[10px] text-gray-500">' + r.model + '</p></td>' +
+                         '<td class="px-4 py-2 font-medium text-gray-700 max-w-xs truncate" title="' + r.pekerjaan + '">' + r.pekerjaan + '</td>' +
+                         '<td class="px-4 py-2 text-right font-mono font-bold text-red-600">' + r.discJasa + '</td>' +
+                         '<td class="px-4 py-2 text-right font-black text-gray-900 font-mono">' + formatRp(r.totalInvoice) + '</td>' +
+                         '<td class="px-3 py-2 text-center">' + badge + '</td>' +
+                         '<td class="px-4 py-2 text-[11px] font-semibold text-gray-600">' + r.keterangan + '</td>' +
+                       '</tr>';
+        });
+      } else {
+        tbodyHtml = '<tr><td colspan="9" class="px-4 py-10 text-center text-gray-400 italic font-medium">Tidak ada transaksi audit yang sesuai filter.</td></tr>';
+      }
+
+      document.getElementById('auditTableBody').innerHTML = tbodyHtml;
+      document.getElementById('auditFooterCount').innerText = 'Menampilkan ' + filtered.length + ' dari ' + rawAuditData.length + ' data transaksi';
+    }
+
+    function downloadAuditExcel() {
+      if (!rawAuditData || rawAuditData.length === 0) {
+        return Swal.fire('Kosong', 'Tidak ada data audit untuk diekspor.', 'warning');
+      }
+
+      var exportData = [
+        ["No", "Status Audit", "No. WO", "Tanggal WO", "Cabang Dealer", "Service Advisor", "No. Rangka (VIN)", "Model", "Deskripsi Pekerjaan di NIS", "Diskon Jasa", "Diskon Part", "Total Invoice After Disc.", "Keterangan Deviasi"]
+      ];
+
+      rawAuditData.forEach(function(r, idx) {
+        exportData.push([
+          idx + 1,
+          r.statusAudit,
+          r.noWo,
+          r.tglWo,
+          r.cabang,
+          r.namaSA,
+          r.noka,
+          r.model,
+          r.pekerjaan,
+          r.discJasa,
+          r.discPart,
+          Number(r.totalInvoice) || 0,
+          r.keterangan
+        ]);
+      });
+
+      var ws = XLSX.utils.aoa_to_sheet(exportData);
+      var wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Audit_NIS_Loyalty");
+      XLSX.writeFile(wb, "Hasil_Audit_Rekonsiliasi_NIS.xlsx");
     }
   </script>
 </body>
