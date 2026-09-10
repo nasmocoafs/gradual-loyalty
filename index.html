@@ -30,7 +30,7 @@
 
     // DASBOR ANALITIK STATE (INTERAKTIF & SORTING)
     var rawLeaderboardData = [];
-    var lbSortCol = 'revenue';
+    var lbSortCol = 'redeemTarget';
     var lbSortOrder = 'desc';
 
     var rawBranchBreakdownData = [];
@@ -453,19 +453,11 @@
                 <span id="mraPaginationInfo" class="font-bold text-gray-700 ml-1">Menampilkan 0 - 0 dari 0 data</span>
              </div>
              <div class="flex items-center gap-1.5">
-                <button id="btnMraFirst" onclick="goToMraPage(1)" class="px-2.5 py-1 border border-gray-300 rounded bg-white font-bold hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">
-                   &laquo;
-                </button>
-                <button id="btnMraPrev" onclick="changeMraPage(-1)" class="px-3 py-1 border border-gray-300 rounded bg-white font-bold hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">
-                   Prev
-                </button>
+                <button id="btnMraFirst" onclick="goToMraPage(1)" class="px-2.5 py-1 border border-gray-300 rounded bg-white font-bold hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">&laquo;</button>
+                <button id="btnMraPrev" onclick="changeMraPage(-1)" class="px-3 py-1 border border-gray-300 rounded bg-white font-bold hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">Prev</button>
                 <span id="mraPageNumber" class="px-3 py-1 font-black text-gray-800 bg-white border border-gray-200 rounded shadow-sm">1 / 1</span>
-                <button id="btnMraNext" onclick="changeMraPage(1)" class="px-3 py-1 border border-gray-300 rounded bg-white font-bold hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">
-                   Next
-                </button>
-                <button id="btnMraLast" onclick="goToMraLastPage()" class="px-2.5 py-1 border border-gray-300 rounded bg-white font-bold hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">
-                   &raquo;
-                </button>
+                <button id="btnMraNext" onclick="changeMraPage(1)" class="px-3 py-1 border border-gray-300 rounded bg-white font-bold hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">Next</button>
+                <button id="btnMraLast" onclick="goToMraLastPage()" class="px-2.5 py-1 border border-gray-300 rounded bg-white font-bold hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm">&raquo;</button>
              </div>
           </div>
 
@@ -476,7 +468,7 @@
       <!-- TAB: DASBOR ANALITIK -->
       <div id="view-dashboard" class="w-full max-w-7xl mx-auto fade-in hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
-          <div><h2 class="text-xl md:text-2xl font-bold text-gray-900">Dasbor Prediktif & Analitik</h2><p class="text-sm text-gray-500 mt-1">Konversi Siklus Transisi Free Service ke Full Berbayar</p></div>
+          <div><h2 class="text-xl md:text-2xl font-bold text-gray-900">Dasbor Prediktif & Analitik</h2><p class="text-sm text-gray-500 mt-1">Evaluasi Dual-Track: Target JUMP vs Non-Target Inisiatif</p></div>
           <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
             <div class="w-full md:w-auto">
               <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Periode Analitik (YTD/YTM)</label>
@@ -493,58 +485,88 @@
         <div id="earlyWarning" class="mb-6 bg-red-100 border-l-4 border-red-600 p-4 rounded shadow-sm hidden animate-pulse">
            <div class="flex">
              <div class="flex-shrink-0"><svg class="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg></div>
-             <div class="ml-3"><p class="text-sm text-red-700 font-bold uppercase tracking-widest">Early Warning System Actived!</p><p class="text-xs text-red-600 mt-1">Tingkat konversi di bawah 20%. Diperlukan evaluasi operasional.</p></div>
+             <div class="ml-3"><p class="text-sm text-red-700 font-bold uppercase tracking-widest">Early Warning System Actived!</p><p class="text-xs text-red-600 mt-1">Tingkat konversi target di bawah 20%. Diperlukan intervensi segera.</p></div>
            </div>
         </div>
         
-        <div id="dashLoading" class="text-center py-12 text-gray-500 font-bold hidden">Mesin Analitik Prediktif Sedang Bekerja...</div>
+        <div id="dashLoading" class="text-center py-12 text-gray-500 font-bold hidden">Mesin Analitik Dual-Track Sedang Bekerja...</div>
         
         <div id="dashContent" class="hidden space-y-6">
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-center">
-              <p class="text-[10px] font-bold text-gray-500 uppercase">Leads JUMP Target</p>
-              <p class="text-2xl font-black text-gray-900 mt-1" id="kpiLeads">0</p>
-            </div>
-            
-            <!-- 🔴 KARTU TIKET TERBIT LOCK-IN (DENGAN BREAKDOWN MATCHED VS UNMATCHED) -->
-            <div class="bg-white p-4 rounded-xl border border-blue-200 shadow-sm border-b-4 border-b-blue-500 text-center flex flex-col justify-between">
-              <div>
-                <p class="text-[10px] font-bold text-gray-500 uppercase">Tiket Terbit (Lock-In)</p>
-                <p class="text-2xl font-black text-blue-700 mt-1" id="kpiConverted">0</p>
+
+          <!-- 🔴 SEKSI 1: KANAL UTAMA TARGET JUMP (RAPOR KINERJA RETENSI) -->
+          <div class="bg-gradient-to-r from-blue-900 to-indigo-950 p-5 rounded-2xl shadow-md text-white">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 pb-3 border-b border-blue-800/60">
+              <div class="flex items-center gap-2">
+                <span class="bg-blue-500 text-white text-xs font-black px-2.5 py-1 rounded-md uppercase tracking-wider">Kanal Utama</span>
+                <h3 class="text-base font-black tracking-wide">Kinerja Retensi JUMP (Target VIN Cocok)</h3>
               </div>
-              <div class="flex items-center justify-center gap-1.5 mt-2 pt-2 border-t border-gray-100 text-[10px]">
-                <span class="bg-blue-50 text-blue-700 font-bold px-1.5 py-0.5 rounded border border-blue-200" title="VIN Cocok dengan Database Target Expired">
-                  🎯 Target: <b id="kpiConvertedTarget" class="font-black">0</b>
-                </span>
-                <span class="bg-amber-50 text-amber-700 font-bold px-1.5 py-0.5 rounded border border-amber-200" title="VIN Tidak Terdaftar di Target Expired">
-                  ⚠️ Non-Target: <b id="kpiConvertedNonTarget" class="font-black">0</b>
-                </span>
-              </div>
+              <span class="text-xs text-blue-200 font-medium">Tolok Ukur Utama Evaluasi Cabang</span>
             </div>
 
-            <div class="bg-white p-4 rounded-xl border border-green-200 shadow-sm border-b-4 border-b-green-500 text-center">
-              <p class="text-[10px] font-bold text-gray-500 uppercase">Servis (Redeemed)</p>
-              <p class="text-2xl font-black text-green-700 mt-1" id="kpiRedeemed">0</p>
-            </div>
-
-            <!-- 🔴 CONVERSION RATE: REDEEM / TIKET TERBIT (LOCK-IN) -->
-            <div class="bg-white p-4 rounded-xl border border-yellow-200 shadow-sm border-b-4 border-b-yellow-500 text-center flex flex-col justify-between">
-              <div>
-                <p class="text-[10px] font-bold text-gray-500 uppercase">Conversion Rate</p>
-                <p class="text-2xl font-black text-gray-900 mt-1" id="kpiRate">0%</p>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+              <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center">
+                <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Leads JUMP Target</p>
+                <p class="text-2xl md:text-3xl font-black text-white mt-1" id="kpiLeads">0</p>
               </div>
-              <p class="text-[9px] text-gray-400 mt-1 font-semibold">Redeem / Lock-In</p>
+              <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center">
+                <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Tiket Terbit Target</p>
+                <p class="text-2xl md:text-3xl font-black text-blue-300 mt-1" id="kpiTargetConverted">0</p>
+              </div>
+              <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center">
+                <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Servis Target (Redeem)</p>
+                <p class="text-2xl md:text-3xl font-black text-emerald-400 mt-1" id="kpiTargetRedeemed">0</p>
+              </div>
+              <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center">
+                <p class="text-[10px] font-bold text-yellow-300 uppercase tracking-wider">Konversi Target</p>
+                <p class="text-2xl md:text-3xl font-black text-yellow-400 mt-1" id="kpiTargetConvRate">0%</p>
+                <p class="text-[9px] text-blue-200 mt-0.5">Lock-in Rate: <b id="kpiTargetLockInRate" class="text-white">0%</b></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 🔴 SEKSI 2: KANAL SEKUNDER (INISIATIF / NON-TARGET AUDIT) -->
+          <div class="bg-amber-50/70 border border-amber-200 p-4 rounded-2xl shadow-sm">
+            <div class="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-amber-200">
+              <div class="flex items-center gap-2">
+                <span class="bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">Kanal Sekunder</span>
+                <h4 class="text-xs md:text-sm font-black text-amber-900">Inisiatif & Audit Non-Target VIN</h4>
+              </div>
+              <span class="text-[11px] text-amber-700 font-semibold">Tiket di luar database target (Bahan Verifikasi SA)</span>
+            </div>
+            <div class="grid grid-cols-3 gap-3 text-center">
+              <div class="bg-white p-3 rounded-xl border border-amber-200">
+                <p class="text-[10px] font-bold text-gray-500 uppercase">Tiket Non-Target</p>
+                <p class="text-xl font-black text-amber-700 mt-0.5" id="kpiNonTargetConverted">0</p>
+              </div>
+              <div class="bg-white p-3 rounded-xl border border-amber-200">
+                <p class="text-[10px] font-bold text-gray-500 uppercase">Redeem Non-Target</p>
+                <p class="text-xl font-black text-amber-800 mt-0.5" id="kpiNonTargetRedeemed">0</p>
+              </div>
+              <div class="bg-white p-3 rounded-xl border border-amber-200">
+                <p class="text-[10px] font-bold text-gray-500 uppercase">Revenue Non-Target</p>
+                <p class="text-xl font-black text-amber-900 mt-0.5" id="kpiNonTargetRevenue">Rp 0</p>
+              </div>
             </div>
           </div>
           
+          <!-- SEKSI 3: DAMPAK FINANSIAL & FUNNEL TARGET -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="col-span-1 bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-center"><div class="relative w-full h-52 md:h-64"><canvas id="funnelChart"></canvas></div></div>
+            <div class="col-span-1 bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center items-center">
+              <p class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Funnel Retensi Target JUMP</p>
+              <div class="relative w-full h-52 md:h-60"><canvas id="funnelChart"></canvas></div>
+            </div>
             <div class="col-span-1 md:col-span-2 grid grid-rows-2 gap-4">
-              <div class="bg-green-50 p-5 rounded-xl border border-green-200 shadow-sm flex flex-col justify-center relative overflow-hidden">
+              <div class="bg-green-50 p-5 rounded-xl border border-green-200 shadow-sm flex flex-col justify-between relative overflow-hidden">
                 <div class="absolute top-0 right-0 bg-green-200 text-green-800 text-[9px] font-black px-3 py-1 rounded-bl-lg tracking-wider">CASH IN (KASIR)</div>
-                <p class="text-xs font-bold text-green-700 uppercase tracking-widest">Actual Revenue Diselamatkan</p>
-                <p class="text-3xl font-black text-green-700 mt-1" id="kpiActual">Rp 0</p>
-                <div class="mt-3 flex items-center gap-2"><span class="text-[10px] text-green-600 font-bold uppercase border-r border-green-300 pr-2">Estimasi Potensi:</span><span class="text-[11px] font-black text-green-800" id="kpiSaved">Rp 0</span></div>
+                <div>
+                  <p class="text-xs font-bold text-green-700 uppercase tracking-widest">Total Actual Revenue</p>
+                  <p class="text-3xl font-black text-green-700 mt-1" id="kpiActual">Rp 0</p>
+                </div>
+                <div class="mt-2 pt-2 border-t border-green-200 flex flex-wrap items-center gap-4 text-xs font-bold">
+                  <span class="text-green-800">🎯 Target JUMP: <b id="kpiTargetRevenueText" class="font-black">Rp 0</b></span>
+                  <span class="text-amber-800">⚠️ Non-Target: <b id="kpiNonTargetRevenueText" class="font-black">Rp 0</b></span>
+                  <span class="text-green-600">Estimasi Potensi: <b id="kpiSaved">Rp 0</b></span>
+                </div>
               </div>
               <div class="bg-red-50 p-5 rounded-xl border border-red-200 shadow-sm flex flex-col justify-center relative overflow-hidden">
                 <div class="absolute top-0 right-0 bg-red-200 text-red-800 text-[9px] font-black px-3 py-1 rounded-bl-lg tracking-wider">AT RISK</div>
@@ -554,33 +576,23 @@
             </div>
           </div>
           
-          <!-- TABEL 1: LEADERBOARD SA & SEGMENTASI MODEL -->
+          <!-- TABEL 1: LEADERBOARD SA (FOKUS TARGET JUMP) -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
              <div class="col-span-1 md:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
                 <div class="bg-gray-900 p-4 border-b border-gray-800 flex justify-between items-center">
                    <h3 class="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2">🏆 TOP 5 SA Leaderboard</h3>
-                   <span class="text-[10px] text-gray-400 font-medium">Klik header kolom untuk mengurutkan</span>
+                   <span class="text-[10px] text-gray-400 font-medium">Peringkat diutamakan pada Penyelamatan Target JUMP</span>
                 </div>
                 <div class="p-0 flex-1 overflow-x-auto">
                   <table class="w-full text-sm text-left">
                     <thead class="bg-gray-50 text-[10px] uppercase text-gray-500 font-bold">
                       <tr>
                         <th class="px-4 py-3 border-b text-center">Rank</th>
-                        <th onclick="toggleLeaderboardSort('cabang')" class="px-4 py-3 border-b sortable-th">
-                          <div class="flex items-center gap-1">Cabang <span id="lb-sort-cabang" class="font-mono text-gray-400">↕</span></div>
-                        </th>
-                        <th onclick="toggleLeaderboardSort('nama')" class="px-4 py-3 border-b sortable-th">
-                          <div class="flex items-center gap-1">Service Advisor <span id="lb-sort-nama" class="font-mono text-gray-400">↕</span></div>
-                        </th>
-                        <th onclick="toggleLeaderboardSort('inputPotensi')" class="px-4 py-3 border-b text-center sortable-th">
-                          <div class="flex items-center justify-center gap-1">Input Potensi <span id="lb-sort-inputPotensi" class="font-mono text-gray-400">↕</span></div>
-                        </th>
-                        <th onclick="toggleLeaderboardSort('redeem')" class="px-4 py-3 border-b text-center sortable-th">
-                          <div class="flex items-center justify-center gap-1">Redeem <span id="lb-sort-redeem" class="font-mono text-gray-400">↕</span></div>
-                        </th>
-                        <th onclick="toggleLeaderboardSort('revenue')" class="px-4 py-3 border-b text-right sortable-th">
-                          <div class="flex items-center justify-end gap-1">Revenue Actual <span id="lb-sort-revenue" class="font-mono text-gray-400">↕</span></div>
-                        </th>
+                        <th onclick="toggleLeaderboardSort('cabang')" class="px-4 py-3 border-b sortable-th">Cabang <span id="lb-sort-cabang">↕</span></th>
+                        <th onclick="toggleLeaderboardSort('nama')" class="px-4 py-3 border-b sortable-th">Service Advisor <span id="lb-sort-nama">↕</span></th>
+                        <th onclick="toggleLeaderboardSort('redeemTarget')" class="px-4 py-3 border-b text-center sortable-th text-blue-700">Redeem Target <span id="lb-sort-redeemTarget">↕</span></th>
+                        <th onclick="toggleLeaderboardSort('revTarget')" class="px-4 py-3 border-b text-right sortable-th text-emerald-700">Revenue Target <span id="lb-sort-revTarget">↕</span></th>
+                        <th onclick="toggleLeaderboardSort('revenue')" class="px-4 py-3 border-b text-right sortable-th">Total Revenue <span id="lb-sort-revenue">↕</span></th>
                       </tr>
                     </thead>
                     <tbody id="leaderboardBody" class="divide-y divide-gray-100"></tbody>
@@ -593,7 +605,7 @@
              </div>
           </div>
 
-          <!-- TABEL 2: BREAKDOWN CABANG (LENGKAP: POTENSI, REG TARGET, REG NON-TARGET) -->
+          <!-- TABEL 2: BREAKDOWN PERFORMA CABANG (DUAL-TRACK AUDIT LENGKAP) -->
           <div id="hoBreakdownSection" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-col">
             <div class="bg-gray-900 p-4 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div class="flex items-center gap-2">
@@ -609,55 +621,23 @@
               <table class="w-full text-sm text-left whitespace-nowrap">
                 <thead class="bg-gray-50 text-[10px] uppercase text-gray-500 font-bold sticky top-0 z-10 shadow-sm">
                   <tr>
-                    <th class="px-4 py-3 border-b text-center w-12 bg-gray-50">No</th>
-                    <th onclick="sortBranchTable('cabang')" class="px-4 py-3 border-b sortable-th bg-gray-50">
-                      <div class="flex items-center gap-1.5">
-                        <span>Nama Cabang</span>
-                        <span id="br-sort-cabang" class="font-mono text-xs">↕</span>
-                      </div>
-                    </th>
-                    <th onclick="sortBranchTable('potensi')" class="px-4 py-3 border-b text-center sortable-th bg-gray-50">
-                      <div class="flex items-center justify-center gap-1.5">
-                        <span>Potensi (Target)</span>
-                        <span id="br-sort-potensi" class="font-mono text-xs">↕</span>
-                      </div>
-                    </th>
-                    <th onclick="sortBranchTable('regTarget')" class="px-4 py-3 border-b text-center sortable-th bg-gray-50 text-blue-700">
-                      <div class="flex items-center justify-center gap-1.5">
-                        <span>Reg. Target (VIN)</span>
-                        <span id="br-sort-regTarget" class="font-mono text-xs">↕</span>
-                      </div>
-                    </th>
-                    <th onclick="sortBranchTable('regNonTarget')" class="px-4 py-3 border-b text-center sortable-th bg-gray-50 text-amber-700">
-                      <div class="flex items-center justify-center gap-1.5">
-                        <span>Reg. Non-Target</span>
-                        <span id="br-sort-regNonTarget" class="font-mono text-xs">↕</span>
-                      </div>
-                    </th>
-                    <th onclick="sortBranchTable('registrasi')" class="px-4 py-3 border-b text-center sortable-th bg-gray-50">
-                      <div class="flex items-center justify-center gap-1.5">
-                        <span>Total Registrasi</span>
-                        <span id="br-sort-registrasi" class="font-mono text-xs">↕</span>
-                      </div>
-                    </th>
-                    <th onclick="sortBranchTable('redeem')" class="px-4 py-3 border-b text-center sortable-th bg-gray-50">
-                      <div class="flex items-center justify-center gap-1.5">
-                        <span>Redeem Voucher</span>
-                        <span id="br-sort-redeem" class="font-mono text-xs">↕</span>
-                      </div>
-                    </th>
-                    <th onclick="sortBranchTable('returRate')" class="px-4 py-3 border-b text-center sortable-th bg-gray-50">
-                      <div class="flex items-center justify-center gap-1.5">
-                        <span>Return Rate</span>
-                        <span id="br-sort-returRate" class="font-mono text-xs">↕</span>
-                      </div>
-                    </th>
-                    <th onclick="sortBranchTable('revenue')" class="px-4 py-3 border-b text-right sortable-th bg-gray-50">
-                      <div class="flex items-center justify-end gap-1.5">
-                        <span>Revenue Actual</span>
-                        <span id="br-sort-revenue" class="font-mono text-xs">↕</span>
-                      </div>
-                    </th>
+                    <th class="px-3 py-3 border-b text-center w-10 bg-gray-50">No</th>
+                    <th onclick="sortBranchTable('cabang')" class="px-4 py-3 border-b sortable-th bg-gray-50">Nama Cabang <span id="br-sort-cabang">↕</span></th>
+                    <th onclick="sortBranchTable('potensi')" class="px-3 py-3 border-b text-center sortable-th bg-gray-50 text-purple-700">Potensi Leads <span id="br-sort-potensi">↕</span></th>
+                    
+                    <!-- KANAL TARGET -->
+                    <th onclick="sortBranchTable('regTarget')" class="px-3 py-3 border-b text-center sortable-th bg-blue-50/50 text-blue-700">Tiket Target <span id="br-sort-regTarget">↕</span></th>
+                    <th onclick="sortBranchTable('redeemTarget')" class="px-3 py-3 border-b text-center sortable-th bg-blue-50/50 text-emerald-700">Redeem Target <span id="br-sort-redeemTarget">↕</span></th>
+                    <th onclick="sortBranchTable('convRateTarget')" class="px-3 py-3 border-b text-center sortable-th bg-blue-50/50 text-indigo-700">Konversi Target <span id="br-sort-convRateTarget">↕</span></th>
+                    <th onclick="sortBranchTable('revTarget')" class="px-4 py-3 border-b text-right sortable-th bg-blue-50/50 text-emerald-800">Revenue Target <span id="br-sort-revTarget">↕</span></th>
+
+                    <!-- KANAL NON-TARGET AUDIT -->
+                    <th onclick="sortBranchTable('regNonTarget')" class="px-3 py-3 border-b text-center sortable-th bg-amber-50/40 text-amber-700">Tiket Non-Target <span id="br-sort-regNonTarget">↕</span></th>
+                    <th onclick="sortBranchTable('redeemNonTarget')" class="px-3 py-3 border-b text-center sortable-th bg-amber-50/40 text-amber-800">Redeem Non-Target <span id="br-sort-redeemNonTarget">↕</span></th>
+                    <th onclick="sortBranchTable('revNonTarget')" class="px-4 py-3 border-b text-right sortable-th bg-amber-50/40 text-amber-900">Revenue Non-Target <span id="br-sort-revNonTarget">↕</span></th>
+
+                    <!-- TOTAL -->
+                    <th onclick="sortBranchTable('revenue')" class="px-4 py-3 border-b text-right sortable-th bg-gray-100 font-black">Total Revenue <span id="br-sort-revenue">↕</span></th>
                   </tr>
                 </thead>
                 <tbody id="hoBreakdownBody" class="divide-y divide-gray-100"></tbody>
@@ -674,7 +654,7 @@
     <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center z-50 pb-safe shadow-[0_-4px_10px_rgba(0,0,0,0.08)]">
       <button onclick="switchTab('register')" id="mob-register" class="mobile-nav-item active flex-1 py-2 flex flex-col items-center gap-0.5"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg><span class="text-[9px] font-bold">Register</span></button>
       <button onclick="switchTab('validate')" id="mob-validate" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg><span class="text-[9px] font-bold">Scanner</span></button>
-      <button onclick="switchTab('mra')" id="mob-mra" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg><span class="text-[9px] font-bold">CRM</span></button>
+      <button onclick="switchTab('mra')" id="mob-mra" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg><span class="text-[9px] font-bold">CRM</span></button>
       <button onclick="switchTab('dashboard')" id="mob-dashboard" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg><span class="text-[9px] font-bold">Dasbor</span></button>
       <button onclick="switchTab('panduan')" id="mob-panduan" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100 text-blue-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg><span class="text-[9px] font-bold">Panduan</span></button>
     </nav>
@@ -1581,7 +1561,7 @@
         return lbSortOrder === 'asc' ? (valA - valB) : (valB - valA);
       });
 
-      ['cabang', 'nama', 'inputPotensi', 'redeem', 'revenue'].forEach(function(c) {
+      ['cabang', 'nama', 'redeemTarget', 'revTarget', 'revenue'].forEach(function(c) {
         var el = document.getElementById('lb-sort-' + c);
         if (el) {
           if (lbSortCol === c) {
@@ -1594,19 +1574,20 @@
 
       var lbHtml = '';
       if (list.length > 0) { 
-          list.forEach(function(sa, idx) { 
+          list.slice(0, 5).forEach(function(sa, idx) { 
               var medal = (idx === 0) ? '🥇' : (idx === 1) ? '🥈' : (idx === 2) ? '🥉' : '<span class="text-gray-400 font-bold">' + (idx + 1) + '</span>'; 
               var cbg = sa.cabang || '-';
-              var inputPotensi = sa.inputPotensi || 0; 
-              var redeemedCount = sa.redeemed || 0;
+              var redT = sa.redeemTarget || 0;
+              var revT = sa.revTarget || 0;
+              var revTot = sa.revenue || 0;
 
               lbHtml += '<tr class="hover:bg-gray-50 transition">' +
                           '<td class="px-4 py-3 font-black text-center w-10 text-lg border-b border-gray-100">' + medal + '</td>' +
                           '<td class="px-4 py-3 font-bold text-gray-600 text-xs uppercase border-b border-gray-100">' + cbg + '</td>' +
                           '<td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">' + sa.nama + '</td>' +
-                          '<td class="px-4 py-3 text-center font-bold text-gray-700 border-b border-gray-100">' + inputPotensi + '</td>' +
-                          '<td class="px-4 py-3 text-center font-bold text-blue-600 border-b border-gray-100">' + redeemedCount + '</td>' +
-                          '<td class="px-4 py-3 text-right font-black text-green-700 border-b border-gray-100">' + formatRp(sa.revenue) + '</td>' +
+                          '<td class="px-4 py-3 text-center font-bold text-blue-700 bg-blue-50/20 border-b border-gray-100">' + redT + '</td>' +
+                          '<td class="px-4 py-3 text-right font-black text-emerald-700 border-b border-gray-100">' + formatRp(revT) + '</td>' +
+                          '<td class="px-4 py-3 text-right font-black text-gray-800 border-b border-gray-100">' + formatRp(revTot) + '</td>' +
                         '</tr>'; 
           }); 
       } else { 
@@ -1639,7 +1620,7 @@
       filtered.sort(function(a, b) {
         var valA = a[branchSortCol];
         var valB = b[branchSortCol];
-        if (branchSortCol === 'returRate') {
+        if (branchSortCol === 'convRateTarget' || branchSortCol === 'returRate') {
           valA = parseRate(valA);
           valB = parseRate(valB);
           return branchSortOrder === 'asc' ? (valA - valB) : (valB - valA);
@@ -1652,8 +1633,7 @@
         return branchSortOrder === 'asc' ? (valA - valB) : (valB - valA);
       });
 
-      // Update indikator sorting header
-      ['cabang', 'potensi', 'regTarget', 'regNonTarget', 'registrasi', 'redeem', 'returRate', 'revenue'].forEach(function(c) {
+      ['cabang', 'potensi', 'regTarget', 'redeemTarget', 'convRateTarget', 'revTarget', 'regNonTarget', 'redeemNonTarget', 'revNonTarget', 'revenue'].forEach(function(c) {
         var el = document.getElementById('br-sort-' + c);
         if (el) {
           if (branchSortCol === c) {
@@ -1670,55 +1650,71 @@
       var bdHtml = '';
       var totalPot = 0;
       var totalRegT = 0;
+      var totalRedT = 0;
+      var totalRevT = 0;
       var totalRegNT = 0;
-      var totalReg = 0;
-      var totalRed = 0;
+      var totalRedNT = 0;
+      var totalRevNT = 0;
       var totalRev = 0;
 
       if (filtered.length > 0) {
           filtered.forEach(function(b, idx) {
               var pot = Number(b.potensi) || 0;
               var regT = Number(b.regTarget) || 0;
+              var redT = Number(b.redeemTarget) || 0;
+              var revT = Number(b.revTarget) || 0;
+
               var regNT = Number(b.regNonTarget) || 0;
-              var reg = Number(b.registrasi) || 0;
-              var red = Number(b.redeem) || 0;
+              var redNT = Number(b.redeemNonTarget) || 0;
+              var revNT = Number(b.revNonTarget) || 0;
+
               var rev = Number(b.revenue) || 0;
 
               totalPot += pot;
               totalRegT += regT;
+              totalRedT += redT;
+              totalRevT += revT;
+
               totalRegNT += regNT;
-              totalReg += reg;
-              totalRed += red;
+              totalRedNT += redNT;
+              totalRevNT += revNT;
+
               totalRev += rev;
 
-              bdHtml += '<tr class="hover:bg-gray-50 transition">' +
-                          '<td class="px-4 py-3 text-center border-b border-gray-100 font-medium text-gray-500">' + (idx + 1) + '</td>' +
+              bdHtml += '<tr class="hover:bg-gray-50 transition text-xs">' +
+                          '<td class="px-3 py-3 text-center border-b border-gray-100 font-medium text-gray-500">' + (idx + 1) + '</td>' +
                           '<td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">' + b.cabang + '</td>' +
-                          '<td class="px-4 py-3 text-center font-bold text-purple-700 bg-purple-50/30 border-b border-gray-100">' + pot + '</td>' +
-                          '<td class="px-4 py-3 text-center font-bold text-blue-700 bg-blue-50/30 border-b border-gray-100">' + regT + '</td>' +
-                          '<td class="px-4 py-3 text-center font-bold text-amber-700 bg-amber-50/30 border-b border-gray-100">' + regNT + '</td>' +
-                          '<td class="px-4 py-3 text-center font-bold text-gray-800 border-b border-gray-100">' + reg + '</td>' +
-                          '<td class="px-4 py-3 text-center font-bold text-green-600 border-b border-gray-100">' + red + '</td>' +
-                          '<td class="px-4 py-3 text-center font-bold text-yellow-600 border-b border-gray-100">' + b.returRate + '%</td>' +
-                          '<td class="px-4 py-3 text-right font-black text-green-700 border-b border-gray-100">' + formatRp(rev) + '</td>' +
+                          '<td class="px-3 py-3 text-center font-black text-purple-700 bg-purple-50/20 border-b border-gray-100">' + pot + '</td>' +
+                          
+                          '<td class="px-3 py-3 text-center font-bold text-blue-700 bg-blue-50/30 border-b border-gray-100">' + regT + '</td>' +
+                          '<td class="px-3 py-3 text-center font-black text-emerald-700 bg-blue-50/30 border-b border-gray-100">' + redT + '</td>' +
+                          '<td class="px-3 py-3 text-center font-black text-indigo-700 bg-blue-50/30 border-b border-gray-100">' + b.convRateTarget + '%</td>' +
+                          '<td class="px-4 py-3 text-right font-black text-emerald-800 bg-blue-50/30 border-b border-gray-100">' + formatRp(revT) + '</td>' +
+
+                          '<td class="px-3 py-3 text-center font-bold text-amber-700 bg-amber-50/20 border-b border-gray-100">' + regNT + '</td>' +
+                          '<td class="px-3 py-3 text-center font-bold text-amber-800 bg-amber-50/20 border-b border-gray-100">' + redNT + '</td>' +
+                          '<td class="px-4 py-3 text-right font-black text-amber-900 bg-amber-50/20 border-b border-gray-100">' + formatRp(revNT) + '</td>' +
+
+                          '<td class="px-4 py-3 text-right font-black text-gray-900 bg-gray-50/60 border-b border-gray-100">' + formatRp(rev) + '</td>' +
                         '</tr>';
           });
       } else {
-          bdHtml = '<tr><td colspan="9" class="px-4 py-8 text-center text-gray-400 italic font-medium">Data cabang tidak ditemukan.</td></tr>';
+          bdHtml = '<tr><td colspan="11" class="px-4 py-8 text-center text-gray-400 italic font-medium">Data cabang tidak ditemukan.</td></tr>';
       }
       document.getElementById('hoBreakdownBody').innerHTML = bdHtml;
 
-      // Baris Akumulasi Total
-      var avgRate = totalReg > 0 ? ((totalRed / totalReg) * 100).toFixed(1).replace('.', ',') : '0,0';
-      var footHtml = '<tr class="bg-gray-100">' +
-                       '<td colspan="2" class="px-4 py-3 text-center uppercase tracking-wider text-xs font-black">TOTAL SEMUA CABANG</td>' +
-                       '<td class="px-4 py-3 text-center font-black text-purple-800 bg-purple-100/50">' + totalPot + '</td>' +
-                       '<td class="px-4 py-3 text-center font-black text-blue-800 bg-blue-100/50">' + totalRegT + '</td>' +
-                       '<td class="px-4 py-3 text-center font-black text-amber-800 bg-amber-100/50">' + totalRegNT + '</td>' +
-                       '<td class="px-4 py-3 text-center font-black text-gray-900">' + totalReg + '</td>' +
-                       '<td class="px-4 py-3 text-center font-black text-green-700">' + totalRed + '</td>' +
-                       '<td class="px-4 py-3 text-center font-black text-yellow-700">' + avgRate + '%</td>' +
-                       '<td class="px-4 py-3 text-right font-black text-green-700 text-base">' + formatRp(totalRev) + '</td>' +
+      var avgTargetConv = totalPot > 0 ? ((totalRedT / totalPot) * 100).toFixed(1).replace('.', ',') : '0,0';
+      var footHtml = '<tr class="bg-gray-100 text-xs">' +
+                       '<td colspan="2" class="px-4 py-3 text-center uppercase tracking-wider font-black">TOTAL SEMUA CABANG</td>' +
+                       '<td class="px-3 py-3 text-center font-black text-purple-800 bg-purple-100/50">' + totalPot + '</td>' +
+                       '<td class="px-3 py-3 text-center font-black text-blue-800 bg-blue-100/50">' + totalRegT + '</td>' +
+                       '<td class="px-3 py-3 text-center font-black text-emerald-800 bg-blue-100/50">' + totalRedT + '</td>' +
+                       '<td class="px-3 py-3 text-center font-black text-indigo-800 bg-blue-100/50">' + avgTargetConv + '%</td>' +
+                       '<td class="px-4 py-3 text-right font-black text-emerald-900 bg-blue-100/50">' + formatRp(totalRevT) + '</td>' +
+                       '<td class="px-3 py-3 text-center font-black text-amber-800 bg-amber-100/50">' + totalRegNT + '</td>' +
+                       '<td class="px-3 py-3 text-center font-black text-amber-900 bg-amber-100/50">' + totalRedNT + '</td>' +
+                       '<td class="px-4 py-3 text-right font-black text-amber-950 bg-amber-100/50">' + formatRp(totalRevNT) + '</td>' +
+                       '<td class="px-4 py-3 text-right font-black text-gray-900 text-sm bg-gray-200/60">' + formatRp(totalRev) + '</td>' +
                      '</tr>';
       document.getElementById('hoBreakdownFoot').innerHTML = footHtml;
     }
@@ -1736,32 +1732,40 @@
           document.getElementById('dashContent').classList.remove('hidden');
           
           if(res.success) {
+            // Kanal Target JUMP
             document.getElementById('kpiLeads').innerText = res.leads; 
-            document.getElementById('kpiConverted').innerText = res.converted;
-            document.getElementById('kpiConvertedTarget').innerText = res.convertedTarget || 0;
-            document.getElementById('kpiConvertedNonTarget').innerText = res.convertedNonTarget || 0;
+            document.getElementById('kpiTargetConverted').innerText = res.targetConverted || 0;
+            document.getElementById('kpiTargetRedeemed').innerText = res.targetRedeemed || 0;
+            document.getElementById('kpiTargetConvRate').innerText = (res.targetConvRate || 0) + '%';
+            document.getElementById('kpiTargetLockInRate').innerText = (res.targetLockInRate || 0) + '%';
             
-            document.getElementById('kpiRate').innerText = res.rate + '%'; 
-            document.getElementById('kpiRedeemed').innerText = res.redeemed;
-            
-            document.getElementById('kpiSaved').innerText = formatRp(res.savedEstimasi); 
-            document.getElementById('kpiActual').innerText = formatRp(res.savedActual); 
-            document.getElementById('kpiLost').innerText = formatRp(res.lost);
+            // Kanal Non-Target (Inisiatif)
+            document.getElementById('kpiNonTargetConverted').innerText = res.nonTargetConverted || 0;
+            document.getElementById('kpiNonTargetRedeemed').innerText = res.nonTargetRedeemed || 0;
+            document.getElementById('kpiNonTargetRevenue').innerText = formatRp(res.nonTargetRevenue || 0);
+
+            // Revenue
+            document.getElementById('kpiActual').innerText = formatRp(res.totalActualRevenue || 0);
+            document.getElementById('kpiTargetRevenueText').innerText = formatRp(res.targetRevenue || 0);
+            document.getElementById('kpiNonTargetRevenueText').innerText = formatRp(res.nonTargetRevenue || 0);
+
+            document.getElementById('kpiSaved').innerText = formatRp(res.savedEstimasi || 0); 
+            document.getElementById('kpiLost').innerText = formatRp(res.lost || 0);
             
             var today = new Date(); 
-            if (today.getDate() >= 15 && parseFloat(res.rate) < 20 && res.leads > 0) { 
+            if (today.getDate() >= 15 && parseFloat(res.targetConvRate) < 20 && res.leads > 0) { 
               document.getElementById('earlyWarning').classList.remove('hidden'); 
             }
             
-            // Render Funnel Chart
+            // Funnel Chart Khusus Target JUMP
             if(funnelChartInstance) funnelChartInstance.destroy();
             funnelChartInstance = new Chart(document.getElementById('funnelChart').getContext('2d'), { 
               type: 'bar', 
               data: { 
-                labels: ['Target', 'Lock-in', 'Redeemed'], 
+                labels: ['Leads Target', 'Lock-In Target', 'Redeem Target'], 
                 datasets: [{ 
-                  data: [res.leads, res.converted, res.redeemed], 
-                  backgroundColor: ['#94a3b8', '#3b82f6', '#22c55e'], 
+                  data: [res.leads, res.targetConverted, res.targetRedeemed], 
+                  backgroundColor: ['#94a3b8', '#3b82f6', '#10b981'], 
                   borderRadius: 4 
                 }] 
               }, 
@@ -1772,7 +1776,7 @@
                   legend: { display: false }, 
                   datalabels: { 
                     color: '#ffffff', 
-                    font: { weight: 'bold', size: 14 }, 
+                    font: { weight: 'bold', size: 13 }, 
                     formatter: function(value) { return value > 0 ? value : ''; } 
                   } 
                 }, 
