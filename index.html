@@ -203,7 +203,7 @@
         <div id="panduan-ho" class="hidden bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-200 mb-6">
           <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">Role: Head Office</span> Panduan Eksekutif</h3>
           <ul class="space-y-4 text-gray-600 text-sm">
-            <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">1</span><div><strong class="text-gray-900">Distribusi Target JUMP:</strong> Gunakan menu <i>Dasbor Analitik</i> lalu klik tombol <b class="text-red-600">Upload Target JUMP</b>. Pastikan file dalam format Excel (.XLSX) dengan susunan 3 Kolom: Cabang | No Rangka | Potensi Rupiah.</div></li>
+            <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">1</span><div><strong class="text-gray-900">Distribusi Target Retensi:</strong> Gunakan menu <i>Dasbor Analitik</i> lalu klik tombol <b class="text-red-600">Upload Target Retensi</b>. Pastikan file dalam format Excel (.XLSX) dengan susunan 3 Kolom: Cabang | No Rangka | Potensi Rupiah.</div></li>
           </ul>
         </div>
         <div id="panduan-cabang" class="hidden bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-200">
@@ -470,7 +470,7 @@
       <!-- TAB: DASBOR ANALITIK -->
       <div id="view-dashboard" class="w-full max-w-7xl mx-auto fade-in hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
-          <div><h2 class="text-xl md:text-2xl font-bold text-gray-900">Dasbor Prediktif & Analitik</h2><p class="text-sm text-gray-500 mt-1">Evaluasi Dual-Track: Target JUMP vs Non-Target Inisiatif</p></div>
+          <div><h2 class="text-xl md:text-2xl font-bold text-gray-900">Dasbor Prediktif & Analitik</h2><p class="text-sm text-gray-500 mt-1">Evaluasi Dual-Track: Target Retensi vs Non-Target Inisiatif</p></div>
           <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
             <div class="w-full md:w-auto">
               <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Periode Analitik (YTD/YTM)</label>
@@ -496,12 +496,12 @@
         
         <div id="dashContent" class="hidden space-y-6">
 
-          <!-- 🔴 SEKSI 1: KANAL UTAMA TARGET JUMP -->
+          <!-- 🔴 SEKSI 1: KANAL UTAMA Target Retensi -->
           <div class="bg-gradient-to-r from-blue-900 to-indigo-950 p-5 rounded-2xl shadow-md text-white">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 pb-3 border-b border-blue-800/60">
               <div class="flex items-center gap-2">
                 <span class="bg-blue-500 text-white text-xs font-black px-2.5 py-1 rounded-md uppercase tracking-wider">Kanal Utama</span>
-                <h3 class="text-base font-black tracking-wide">Kinerja Retensi JUMP (Target VIN Cocok)</h3>
+                <h3 class="text-base font-black tracking-wide">Loyalty Evaluation (Target VIN Cocok)</h3>
               </div>
               <span class="text-xs text-blue-200 font-medium">Tolok Ukur Utama Evaluasi Cabang</span>
             </div>
@@ -539,7 +539,7 @@
             <div class="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-amber-200">
               <div class="flex items-center gap-2">
                 <span class="bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">Kanal Sekunder</span>
-                <h4 class="text-xs md:text-sm font-black text-amber-900">Inisiatif & Audit Non-Target VIN</h4>
+                <h4 class="text-xs md:text-sm font-black text-amber-900">Crosscheck Non-Target VIN</h4>
               </div>
               <span class="text-[11px] text-amber-700 font-semibold">Tiket di luar database target (Bahan Evaluasi SA)</span>
             </div>
@@ -564,7 +564,7 @@
           <!-- SEKSI 3: DAMPAK FINANSIAL & FUNNEL TARGET -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="col-span-1 bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center items-center">
-              <p class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Funnel Retensi Target JUMP</p>
+              <p class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Funnel Retensi by Target</p>
               <div class="relative w-full h-52 md:h-60"><canvas id="funnelChart"></canvas></div>
             </div>
             <div class="col-span-1 md:col-span-2 grid grid-rows-2 gap-4">
@@ -578,14 +578,14 @@
                   <button onclick="openRedeemModal('all')" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow transition">🔍 Lihat Semua Redeem</button>
                 </div>
                 <div class="mt-2 pt-2 border-t border-green-200 flex flex-wrap items-center gap-4 text-xs font-bold">
-                  <span class="text-green-800">🎯 Target JUMP: <b id="kpiTargetRevenueText" class="font-black">Rp 0</b></span>
+                  <span class="text-green-800">🎯 Target Retensi: <b id="kpiTargetRevenueText" class="font-black">Rp 0</b></span>
                   <span class="text-amber-800">⚠️ Non-Target: <b id="kpiNonTargetRevenueText" class="font-black">Rp 0</b></span>
                   <span class="text-green-600">Estimasi Potensi: <b id="kpiSaved">Rp 0</b></span>
                 </div>
               </div>
               <div class="bg-red-50 p-5 rounded-xl border border-red-200 shadow-sm flex flex-col justify-center relative overflow-hidden">
                 <div class="absolute top-0 right-0 bg-red-200 text-red-800 text-[9px] font-black px-3 py-1 rounded-bl-lg tracking-wider">AT RISK</div>
-                <p class="text-xs font-bold text-red-700 uppercase tracking-widest">Loss Revenue (Kebocoran Finansial JUMP)</p>
+                <p class="text-xs font-bold text-red-700 uppercase tracking-widest">Loss Revenue (Estimasi Kebocoran Finansial)</p>
                 <p class="text-3xl font-black text-red-700 mt-1" id="kpiLost">Rp 0</p>
               </div>
             </div>
@@ -596,7 +596,7 @@
              <div class="col-span-1 md:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
                 <div class="bg-gray-900 p-4 border-b border-gray-800 flex justify-between items-center">
                    <h3 class="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2">🏆 TOP 5 SA Leaderboard</h3>
-                   <span class="text-[10px] text-gray-400 font-medium">Peringkat diutamakan pada Penyelamatan Target JUMP</span>
+                   <span class="text-[10px] text-gray-400 font-medium">Peringkat diutamakan pada Penyelamatan Target Retensi</span>
                 </div>
                 <div class="p-0 flex-1 overflow-x-auto">
                   <table class="w-full text-sm text-left">
@@ -699,7 +699,7 @@
       <div class="p-4 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3">
         <div class="flex items-center gap-2 w-full sm:w-auto">
           <button id="tab-tk-all" onclick="switchTicketTab('all')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm">Semua (<span id="tk-count-all">0</span>)</button>
-          <button id="tab-tk-target" onclick="switchTicketTab('target')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300">🎯 Target JUMP (<span id="tk-count-target">0</span>)</button>
+          <button id="tab-tk-target" onclick="switchTicketTab('target')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300">🎯 Target Retensi (<span id="tk-count-target">0</span>)</button>
           <button id="tab-tk-nontarget" onclick="switchTicketTab('nontarget')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300">⚠️ Non-Target (<span id="tk-count-nontarget">0</span>)</button>
         </div>
         <div class="w-full sm:w-72">
@@ -755,7 +755,7 @@
       <div class="p-4 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3">
         <div class="flex items-center gap-2 w-full sm:w-auto">
           <button id="tab-rd-all" onclick="switchRedeemTab('all')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm">Semua (<span id="rd-count-all">0</span>)</button>
-          <button id="tab-rd-target" onclick="switchRedeemTab('target')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300">🎯 Target JUMP (<span id="rd-count-target">0</span>)</button>
+          <button id="tab-rd-target" onclick="switchRedeemTab('target')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300">🎯 Target Retensi (<span id="rd-count-target">0</span>)</button>
           <button id="tab-rd-nontarget" onclick="switchRedeemTab('nontarget')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300">⚠️ Non-Target (<span id="rd-count-nontarget">0</span>)</button>
         </div>
         <div class="w-full sm:w-72">
@@ -792,7 +792,7 @@
   <!-- UPLOAD MODAL -->
   <div id="uploadModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900 bg-opacity-80 p-4 hidden">
     <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-md">
-      <h3 class="text-lg font-bold text-gray-900 mb-2">Upload Master Target JUMP</h3>
+      <h3 class="text-lg font-bold text-gray-900 mb-2">Upload Master Target Retensi</h3>
       <div class="space-y-4 mb-6">
         <div><label class="block text-sm font-bold text-gray-700 mb-1">Bulan Data Periode</label><input type="month" id="uploadBulan" required class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 outline-none"></div>
         <div><label class="block text-sm font-bold text-gray-700 mb-1">Pilih File Excel (.xlsx)</label><input type="file" id="excelFile" accept=".xlsx, .xls" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50"></div>
@@ -1917,7 +1917,7 @@
       if (filtered.length > 0) {
         filtered.forEach(function(r, idx) {
           var badgeTipe = (r.tipe === 'TARGET') 
-            ? '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-black border border-blue-300">🎯 TARGET JUMP</span>'
+            ? '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-black border border-blue-300">🎯 Target Retensi</span>'
             : '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-black border border-amber-300">⚠️ NON-TARGET</span>';
 
           var badgeStatus = (r.status === 'REDEEMED')
@@ -1961,7 +1961,7 @@
       globalAllTicketDetails.forEach(function(r, idx) {
         exportData.push([
           idx + 1,
-          r.tipe === 'TARGET' ? 'TARGET JUMP' : 'NON-TARGET',
+          r.tipe === 'TARGET' ? 'Target Retensi' : 'NON-TARGET',
           r.nama,
           r.model,
           r.nopol,
@@ -2049,7 +2049,7 @@
         filtered.forEach(function(r, idx) {
           totalRev += Number(r.revenue) || 0;
           var badgeTipe = (r.tipe === 'TARGET') 
-            ? '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-black border border-blue-300">🎯 TARGET JUMP</span>'
+            ? '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-black border border-blue-300">🎯 Target Retensi</span>'
             : '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-black border border-amber-300">⚠️ NON-TARGET</span>';
 
           tbodyHtml += '<tr class="hover:bg-gray-50 transition">' +
@@ -2091,7 +2091,7 @@
       globalRedeemedDetails.forEach(function(r, idx) {
         exportData.push([
           idx + 1,
-          r.tipe === 'TARGET' ? 'TARGET JUMP' : 'NON-TARGET',
+          r.tipe === 'TARGET' ? 'Target Retensi' : 'NON-TARGET',
           r.nama,
           r.model,
           r.nopol,
@@ -2127,7 +2127,7 @@
             globalAllTicketDetails = res.allTicketDetails || [];
             globalRedeemedDetails = res.redeemedDetails || [];
 
-            // Kanal Target JUMP
+            // Kanal Target Retensi
             document.getElementById('kpiLeads').innerText = res.leads; 
             document.getElementById('kpiTargetConverted').innerText = res.targetConverted || 0;
             document.getElementById('kpiTargetRedeemed').innerText = res.targetRedeemed || 0;
@@ -2152,7 +2152,7 @@
               document.getElementById('earlyWarning').classList.remove('hidden'); 
             }
             
-            // Funnel Chart Khusus Target JUMP
+            // Funnel Chart Khusus Target Retensi
             if(funnelChartInstance) funnelChartInstance.destroy();
             funnelChartInstance = new Chart(document.getElementById('funnelChart').getContext('2d'), { 
               type: 'bar', 
