@@ -38,10 +38,14 @@
     var branchSortOrder = 'asc';
     var branchSearchQuery = '';
 
-    // DATA DRILL-DOWN PELANGGAN REDEEM
+    // DATA DRILL-DOWN PELANGGAN REDEEM & TIKET TERBIT
     var globalRedeemedDetails = [];
     var currentRedeemTab = 'all';
     var redeemSearchQuery = '';
+
+    var globalAllTicketDetails = [];
+    var currentTicketTab = 'all';
+    var ticketSearchQuery = '';
     
     var cachedHistoryData = {};
     var isPrefetching = false;
@@ -126,8 +130,7 @@
 
       <div class="p-4 md:p-6 flex-1 bg-gray-50">
         <h3 class="text-sm font-bold text-gray-800 uppercase tracking-widest mb-6 text-center border-b pb-2">Roadmap Servis & Benefit</h3>
-        <div class="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-300 before:to-transparent" id="cpTimeline">
-        </div>
+        <div class="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-300 before:to-transparent" id="cpTimeline"></div>
       </div>
       <div class="p-6 bg-gray-50 text-center text-[10px] text-gray-400 font-bold uppercase pb-10">
         Tunjukkan halaman ini kepada SA kami saat kedatangan di Nasmoco <span id="cpCabang"></span>.
@@ -313,8 +316,7 @@
                   
                   <div class="bg-black/30 p-3 rounded-lg border border-white/5">
                     <p class="text-[9px] text-gray-400 font-bold uppercase mb-1.5">Roadmap Riwayat Loyalti:</p>
-                    <div id="cardHistory" class="flex items-center gap-2 w-full h-[30px]">
-                    </div>
+                    <div id="cardHistory" class="flex items-center gap-2 w-full h-[30px]"></div>
                   </div>
                 </div>
                 
@@ -486,7 +488,7 @@
         <div id="earlyWarning" class="mb-6 bg-red-100 border-l-4 border-red-600 p-4 rounded shadow-sm hidden animate-pulse">
            <div class="flex">
              <div class="flex-shrink-0"><svg class="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg></div>
-             <div class="ml-3"><p class="text-sm text-red-700 font-bold uppercase tracking-widest">Early Warning System Actived!</p><p class="text-xs text-red-600 mt-1">Tingkat konversi target di bawah 20%. Diperlukan intervensi segera.</p></div>
+             <div class="ml-3"><p class="text-sm text-red-700 font-bold uppercase tracking-widest">Early Warning System Actived!</p><p class="text-xs text-red-600 mt-1">Tingkat konversi target di bawah 20%. Diperlukan evaluasi operasional.</p></div>
            </div>
         </div>
         
@@ -509,15 +511,21 @@
                 <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Leads JUMP Target</p>
                 <p class="text-2xl md:text-3xl font-black text-white mt-1" id="kpiLeads">0</p>
               </div>
-              <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center">
+              
+              <!-- TIKET TERBIT TARGET DENGAN TOMBOL DRILL-DOWN -->
+              <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center relative group">
                 <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Tiket Terbit Target</p>
                 <p class="text-2xl md:text-3xl font-black text-blue-300 mt-1" id="kpiTargetConverted">0</p>
+                <button onclick="openTicketModal('target')" class="mt-2 text-[10px] font-bold bg-blue-500/30 hover:bg-blue-500 text-white px-2.5 py-1 rounded-lg border border-blue-400/40 transition shadow-sm">🔍 Rincian Tiket</button>
               </div>
+
+              <!-- SERVIS TARGET (REDEEM) DENGAN TOMBOL DRILL-DOWN -->
               <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center relative group">
                 <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Servis Target (Redeem)</p>
                 <p class="text-2xl md:text-3xl font-black text-emerald-400 mt-1" id="kpiTargetRedeemed">0</p>
-                <button onclick="openRedeemModal('target')" class="mt-2 text-[10px] font-bold bg-emerald-500/30 hover:bg-emerald-500 text-white px-2.5 py-1 rounded-lg border border-emerald-400/40 transition">🔍 Rincian Pelanggan</button>
+                <button onclick="openRedeemModal('target')" class="mt-2 text-[10px] font-bold bg-emerald-500/30 hover:bg-emerald-500 text-white px-2.5 py-1 rounded-lg border border-emerald-400/40 transition shadow-sm">🔍 Rincian Pelanggan</button>
               </div>
+
               <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center">
                 <p class="text-[10px] font-bold text-yellow-300 uppercase tracking-wider">Konversi Target</p>
                 <p class="text-2xl md:text-3xl font-black text-yellow-400 mt-1" id="kpiTargetConvRate">0%</p>
@@ -539,6 +547,7 @@
               <div class="bg-white p-3 rounded-xl border border-amber-200">
                 <p class="text-[10px] font-bold text-gray-500 uppercase">Tiket Non-Target</p>
                 <p class="text-xl font-black text-amber-700 mt-0.5" id="kpiNonTargetConverted">0</p>
+                <button onclick="openTicketModal('nontarget')" class="mt-1.5 text-[9px] font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 px-2 py-0.5 rounded border border-amber-300 transition">🔍 Rincian Tiket</button>
               </div>
               <div class="bg-white p-3 rounded-xl border border-amber-200">
                 <p class="text-[10px] font-bold text-gray-500 uppercase">Redeem Non-Target</p>
@@ -666,7 +675,63 @@
     </nav>
   </div>
 
-  <!-- 🔴 MODAL DETAIL PELANGGAN REDEEM (DRILLDOWN AUDIT) -->
+  <!-- 🔴 MODAL 1: DETAIL TIKET TERBIT (LOCK-IN DRILLDOWN) -->
+  <div id="modalTicketDetail" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900 bg-opacity-80 p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-6xl flex flex-col max-h-[90vh] overflow-hidden">
+      <div class="bg-gray-900 p-5 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+          <h3 class="text-white font-black text-base uppercase tracking-wider flex items-center gap-2">
+            <span>🎫 Rincian Tiket Terbit (Lock-In)</span>
+          </h3>
+          <p class="text-xs text-gray-400 mt-0.5">Daftar seluruh tiket terbit untuk kohor target / tanggal input yang dipilih.</p>
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button onclick="downloadTicketExcel()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center gap-1.5 shadow transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            Export .XLSX
+          </button>
+          <button onclick="closeTicketModal()" class="text-gray-400 hover:text-white p-1 rounded-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="p-4 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3">
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button id="tab-tk-all" onclick="switchTicketTab('all')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm">Semua (<span id="tk-count-all">0</span>)</button>
+          <button id="tab-tk-target" onclick="switchTicketTab('target')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300">🎯 Target JUMP (<span id="tk-count-target">0</span>)</button>
+          <button id="tab-tk-nontarget" onclick="switchTicketTab('nontarget')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300">⚠️ Non-Target (<span id="tk-count-nontarget">0</span>)</button>
+        </div>
+        <div class="w-full sm:w-72">
+          <input type="text" id="searchTicketInput" oninput="filterTicketTable(this.value)" placeholder="Cari nama, nopol, VIN, atau SA..." class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none focus:border-red-500 auto-upper">
+        </div>
+      </div>
+
+      <div class="p-0 flex-1 overflow-x-auto overflow-y-auto">
+        <table class="w-full text-xs text-left whitespace-nowrap">
+          <thead class="bg-gray-100 text-[10px] uppercase text-gray-600 font-bold sticky top-0 z-10 shadow-sm">
+            <tr>
+              <th class="px-3 py-2.5 text-center w-8">No</th>
+              <th class="px-4 py-2.5">Pelanggan & Unit</th>
+              <th class="px-4 py-2.5">No. Rangka (VIN)</th>
+              <th class="px-4 py-2.5">Cabang & SA</th>
+              <th class="px-3 py-2.5 text-center">Tahapan</th>
+              <th class="px-3 py-2.5 text-center">Tgl Terbit</th>
+              <th class="px-3 py-2.5 text-center">Status Tiket</th>
+              <th class="px-3 py-2.5 text-center">Klasifikasi</th>
+            </tr>
+          </thead>
+          <tbody id="ticketTableBody" class="divide-y divide-gray-200 bg-white"></tbody>
+        </table>
+      </div>
+
+      <div class="p-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center text-xs font-bold text-gray-700">
+        <span id="ticketTotalFooterText">Total Terfilter: 0 Tiket</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔴 MODAL 2: DETAIL PELANGGAN REDEEM (KASIR DRILLDOWN) -->
   <div id="modalRedeemDetail" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900 bg-opacity-80 p-4 hidden">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-6xl flex flex-col max-h-[90vh] overflow-hidden">
       <div class="bg-gray-900 p-5 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -674,7 +739,7 @@
           <h3 class="text-white font-black text-base uppercase tracking-wider flex items-center gap-2">
             <span>📋 Rincian Pelanggan Selesai Servis (Redeem)</span>
           </h3>
-          <p class="text-xs text-gray-400 mt-0.5">Daftar aktual kendaraan yang bertransaksi di kasir sesuai filter tanggal.</p>
+          <p class="text-xs text-gray-400 mt-0.5">Daftar transaksi kasir aktual yang berhasil di-redeem.</p>
         </div>
         <div class="flex items-center gap-2 w-full sm:w-auto">
           <button onclick="downloadRedeemExcel()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center gap-1.5 shadow transition">
@@ -708,7 +773,7 @@
               <th class="px-4 py-2.5">Cabang & SA</th>
               <th class="px-3 py-2.5 text-center">Tahapan Servis</th>
               <th class="px-3 py-2.5 text-center">No. WO</th>
-              <th class="px-3 py-2.5 text-center">Tgl Redeem (Kasir)</th>
+              <th class="px-3 py-2.5 text-center">Tgl Kasir (Redeem)</th>
               <th class="px-4 py-2.5 text-right font-black">Actual Revenue</th>
               <th class="px-3 py-2.5 text-center">Klasifikasi</th>
             </tr>
@@ -764,9 +829,12 @@
       }
       
       var now = new Date(); 
-      var firstDay = new Date(now.getFullYear(), 0, 1);
-      document.getElementById('dashStartDate').value = firstDay.toISOString().split('T')[0];
-      document.getElementById('dashEndDate').value = now.toISOString().split('T')[0];
+      var yyyy = now.getFullYear();
+      var mm = String(now.getMonth() + 1).padStart(2, '0');
+      var dd = String(now.getDate()).padStart(2, '0');
+
+      document.getElementById('dashStartDate').value = yyyy + '-01-01';
+      document.getElementById('dashEndDate').value = yyyy + '-' + mm + '-' + dd;
 
       fetchAPI('getBranchList').then(function(res) {
           if(res.success) {
@@ -1784,7 +1852,136 @@
     }
 
     // ==========================================
-    // MODAL DRILL-DOWN PELANGGAN REDEEM
+    // 🔴 MODAL DRILLDOWN 1: TIKET TERBIT (LOCK-IN)
+    // ==========================================
+    function openTicketModal(tabType) {
+      currentTicketTab = tabType || 'all';
+      document.getElementById('searchTicketInput').value = '';
+      ticketSearchQuery = '';
+      document.getElementById('modalTicketDetail').classList.remove('hidden');
+      updateTicketModalUI();
+    }
+
+    function closeTicketModal() {
+      document.getElementById('modalTicketDetail').classList.add('hidden');
+    }
+
+    function switchTicketTab(tabType) {
+      currentTicketTab = tabType;
+      updateTicketModalUI();
+    }
+
+    function filterTicketTable(query) {
+      ticketSearchQuery = (query || '').toUpperCase().trim();
+      renderTicketTableRows();
+    }
+
+    function updateTicketModalUI() {
+      ['all', 'target', 'nontarget'].forEach(function(t) {
+        var btn = document.getElementById('tab-tk-' + t);
+        if (btn) {
+          if (currentTicketTab === t) {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm';
+          } else {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-100';
+          }
+        }
+      });
+
+      var countAll = globalAllTicketDetails.length;
+      var countTarget = globalAllTicketDetails.filter(function(r) { return r.tipe === 'TARGET'; }).length;
+      var countNonTarget = globalAllTicketDetails.filter(function(r) { return r.tipe === 'NON_TARGET'; }).length;
+
+      document.getElementById('tk-count-all').innerText = countAll;
+      document.getElementById('tk-count-target').innerText = countTarget;
+      document.getElementById('tk-count-nontarget').innerText = countNonTarget;
+
+      renderTicketTableRows();
+    }
+
+    function renderTicketTableRows() {
+      var filtered = globalAllTicketDetails.filter(function(item) {
+        var matchTab = (currentTicketTab === 'all') ||
+                       (currentTicketTab === 'target' && item.tipe === 'TARGET') ||
+                       (currentTicketTab === 'nontarget' && item.tipe === 'NON_TARGET');
+        if (!matchTab) return false;
+
+        if (ticketSearchQuery) {
+          var str = (item.nama + ' ' + item.nopol + ' ' + item.vin + ' ' + item.cabang + ' ' + item.namaSA).toUpperCase();
+          return str.includes(ticketSearchQuery);
+        }
+        return true;
+      });
+
+      var tbodyHtml = '';
+      if (filtered.length > 0) {
+        filtered.forEach(function(r, idx) {
+          var badgeTipe = (r.tipe === 'TARGET') 
+            ? '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-black border border-blue-300">🎯 TARGET JUMP</span>'
+            : '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-black border border-amber-300">⚠️ NON-TARGET</span>';
+
+          var badgeStatus = (r.status === 'REDEEMED')
+            ? '<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-[10px] font-bold">✅ Selesai</span>'
+            : (r.status === 'ACTIVE' ? '<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-[10px] font-bold">🔥 Aktif</span>' : '<span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-bold">✖ Hangus</span>');
+
+          tbodyHtml += '<tr class="hover:bg-gray-50 transition">' +
+                         '<td class="px-3 py-2 text-center text-gray-500 font-medium">' + (idx + 1) + '</td>' +
+                         '<td class="px-4 py-2">' +
+                           '<p class="font-bold text-gray-900 uppercase">' + r.nama + '</p>' +
+                           '<p class="text-[10px] text-gray-500 font-medium">' + r.model + ' (' + r.nopol + ')</p>' +
+                         '</td>' +
+                         '<td class="px-4 py-2 font-mono font-bold text-gray-700">' + r.vin + '</td>' +
+                         '<td class="px-4 py-2">' +
+                           '<p class="font-bold text-gray-800 uppercase">' + r.cabang + '</p>' +
+                           '<p class="text-[10px] text-gray-500">SA: ' + r.namaSA + '</p>' +
+                         '</td>' +
+                         '<td class="px-3 py-2 text-center font-bold text-gray-700">' + r.servisKe + '</td>' +
+                         '<td class="px-3 py-2 text-center font-mono text-gray-600">' + r.tglTerbit + '</td>' +
+                         '<td class="px-3 py-2 text-center">' + badgeStatus + '</td>' +
+                         '<td class="px-3 py-2 text-center">' + badgeTipe + '</td>' +
+                       '</tr>';
+        });
+      } else {
+        tbodyHtml = '<tr><td colspan="8" class="px-4 py-10 text-center text-gray-400 italic font-medium">Tidak ada data tiket yang sesuai filter.</td></tr>';
+      }
+
+      document.getElementById('ticketTableBody').innerHTML = tbodyHtml;
+      document.getElementById('ticketTotalFooterText').innerText = 'Total Terfilter: ' + filtered.length + ' Tiket';
+    }
+
+    function downloadTicketExcel() {
+      if (!globalAllTicketDetails || globalAllTicketDetails.length === 0) {
+        return Swal.fire('Kosong', 'Tidak ada data tiket untuk diekspor.', 'warning');
+      }
+
+      var exportData = [
+        ["No", "Klasifikasi", "Nama Pelanggan", "Model", "No Polisi", "No Rangka (VIN)", "Cabang", "Service Advisor", "Tahapan Servis", "Tgl Terbit", "Status"]
+      ];
+
+      globalAllTicketDetails.forEach(function(r, idx) {
+        exportData.push([
+          idx + 1,
+          r.tipe === 'TARGET' ? 'TARGET JUMP' : 'NON-TARGET',
+          r.nama,
+          r.model,
+          r.nopol,
+          r.vin,
+          r.cabang,
+          r.namaSA,
+          r.servisKe,
+          r.tglTerbit,
+          r.status
+        ]);
+      });
+
+      var ws = XLSX.utils.aoa_to_sheet(exportData);
+      var wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Tiket_Terbit");
+      XLSX.writeFile(wb, "Rincian_Tiket_Terbit.xlsx");
+    }
+
+    // ==========================================
+    // 🔴 MODAL DRILLDOWN 2: PELANGGAN REDEEM (KASIR)
     // ==========================================
     function openRedeemModal(tabType) {
       currentRedeemTab = tabType || 'all';
@@ -1809,7 +2006,6 @@
     }
 
     function updateRedeemModalUI() {
-      // Update Tab Styles
       ['all', 'target', 'nontarget'].forEach(function(t) {
         var btn = document.getElementById('tab-rd-' + t);
         if (btn) {
@@ -1821,7 +2017,6 @@
         }
       });
 
-      // Update Counts
       var countAll = globalRedeemedDetails.length;
       var countTarget = globalRedeemedDetails.filter(function(r) { return r.tipe === 'TARGET'; }).length;
       var countNonTarget = globalRedeemedDetails.filter(function(r) { return r.tipe === 'NON_TARGET'; }).length;
@@ -1929,7 +2124,7 @@
           document.getElementById('dashContent').classList.remove('hidden');
           
           if(res.success) {
-            // Simpan detail pelanggan untuk drill-down
+            globalAllTicketDetails = res.allTicketDetails || [];
             globalRedeemedDetails = res.redeemedDetails || [];
 
             // Kanal Target JUMP
