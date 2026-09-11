@@ -47,10 +47,12 @@
     var currentTicketTab = 'all';
     var ticketSearchQuery = '';
     
-    // DATA MONITORING PROGRAM NIS
+    // DATA MONITORING NIS (GOVERNANCE)
     var rawAuditData = [];
     var currentAuditFilterTab = 'ALL';
     var auditSearchQuery = '';
+    var auditSortCol = 'tglWo';
+    var auditSortOrder = 'desc';
 
     var cachedHistoryData = {};
     var isPrefetching = false;
@@ -87,6 +89,20 @@
         return { success: false, message: "Gagal terhubung ke Database. Cek koneksi Anda." };
       }
     }
+
+    function copyToClipboard(text, label) {
+      if (!text || text === '-') return;
+      navigator.clipboard.writeText(text).then(() => {
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: (label || 'Data') + ' tersalin: ' + text,
+          showConfirmButton: false,
+          timer: 1500
+        });
+      });
+    }
   </script>
 
   <style>
@@ -105,7 +121,7 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .sortable-th { cursor: pointer; user-select: none; transition: background-color 0.15s; }
-    .sortable-th:hover { background-color: #1f2937; }
+    .sortable-th:hover { background-color: #1e293b; }
   </style>
 </head>
 <body class="flex flex-col md:flex-row h-screen overflow-hidden text-gray-800 relative">
@@ -186,7 +202,7 @@
         <button onclick="switchTab('validate')" id="nav-validate" class="nav-item w-full flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white text-left font-medium">Scanner Validasi</button>
         <button onclick="switchTab('mra')" id="nav-mra" class="nav-item w-full flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white text-left font-medium">Data MRA (CRM)</button>
         <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white text-left font-medium text-yellow-400">Dasbor Analitik</button>
-        <button onclick="switchTab('audit')" id="nav-audit" class="nav-item w-full flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white text-left font-medium text-purple-400">Monitoring Program NIS</button>
+        <button onclick="switchTab('audit')" id="nav-audit" class="nav-item w-full flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white text-left font-medium text-purple-400">NIS Program Governance</button>
         <button onclick="switchTab('panduan')" id="nav-panduan" class="nav-item w-full flex items-center px-6 py-3 hover:bg-gray-800 hover:text-white text-left font-medium text-blue-400 mt-4 border-t border-gray-800">Buku Panduan</button>
       </nav>
       <div class="p-4 border-t border-gray-800">
@@ -662,96 +678,103 @@
         </div>
       </div>
 
-      <!-- 🔴 TAB: MONITORING PROGRAM NIS -->
+      <!-- 🔴 TAB: NIS PROGRAM GOVERNANCE & INTEGRITY -->
       <div id="view-audit" class="w-full max-w-7xl mx-auto fade-in hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
           <div>
-            <h2 class="text-xl md:text-2xl font-bold text-gray-900">Monitoring & Penyelarasan Program NIS</h2>
-            <p class="text-sm text-gray-500 mt-1">Kroscek Keselarasan Penggunaan Program di NIS dengan Tiket Sah Web App</p>
+            <h2 class="text-xl md:text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+              <span>NIS Program Governance & Integrity</span>
+            </h2>
+            <p class="text-xs text-gray-500 mt-1">Automated Cross-System Validation & Integrity Tracking (NIS vs. Loyalty Web App)</p>
           </div>
           <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
             <div class="w-full sm:w-auto">
-              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Periode Faktur Kasir</label>
+              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Billing Invoicing Period</label>
               <div class="flex items-center gap-2">
-                <input type="date" id="auditStartDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg font-bold bg-white outline-none text-sm">
+                <input type="date" id="auditStartDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg font-bold bg-white outline-none text-xs">
                 <span class="font-bold text-gray-400">-</span>
-                <input type="date" id="auditEndDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg font-bold bg-white outline-none text-sm">
-                <button onclick="loadAuditNisData()" class="bg-purple-700 hover:bg-purple-800 text-white font-bold px-4 py-2 rounded-lg text-sm transition shadow shrink-0">Kroscek Data</button>
+                <input type="date" id="auditEndDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg font-bold bg-white outline-none text-xs">
+                <button onclick="loadAuditNisData()" class="bg-purple-700 hover:bg-purple-800 text-white font-bold px-4 py-2 rounded-lg text-xs transition shadow shrink-0">Reconcile Data</button>
               </div>
             </div>
-            <button onclick="downloadAuditExcel()" class="bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition shadow flex items-center justify-center gap-2 sm:mt-auto">
+            <button onclick="downloadAuditExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-xs transition shadow flex items-center justify-center gap-2 sm:mt-auto">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-              Export Laporan
+              Export Report
             </button>
           </div>
         </div>
 
-        <div id="auditLoading" class="text-center py-12 text-gray-500 font-bold hidden">Menyelaraskan Data Faktur NIS dengan Database Loyalty...</div>
+        <div id="auditLoading" class="text-center py-12 text-gray-500 font-bold hidden">Synchronizing Invoicing Records with Loyalty Engine...</div>
 
-        <div id="auditContent" class="space-y-6">
+        <div id="auditContent" class="space-y-5">
+          <!-- EXECUTIVE KPI CARDS -->
           <div class="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-center">
-              <p class="text-[10px] font-bold text-gray-500 uppercase">Total Transaksi NIS</p>
+              <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total Invoiced WO</p>
               <p class="text-2xl font-black text-gray-900 mt-1" id="kpiAuditTotal">0</p>
+              <p class="text-[9px] text-gray-400 font-medium mt-0.5">NIS Billing Records</p>
             </div>
-            <div class="bg-green-50 p-4 rounded-xl border border-green-200 shadow-sm text-center">
-              <p class="text-[10px] font-bold text-green-700 uppercase">Tersinkron Program</p>
-              <p class="text-2xl font-black text-green-700 mt-1" id="kpiAuditCompliant">0</p>
-              <p class="text-[9px] text-green-600 font-bold mt-0.5"><span id="kpiAuditRate">0%</span> Keselarasan</p>
+            <div class="bg-emerald-50/80 p-4 rounded-xl border border-emerald-200 shadow-sm text-center">
+              <p class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Verified & Aligned</p>
+              <p class="text-2xl font-black text-emerald-700 mt-1" id="kpiAuditCompliant">0</p>
+              <p class="text-[9px] text-emerald-600 font-bold mt-0.5"><span id="kpiAuditRate">0%</span> Compliance Rate</p>
             </div>
-            <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-200 shadow-sm text-center">
-              <p class="text-[10px] font-bold text-yellow-700 uppercase">Pekerjaan Khusus</p>
-              <p class="text-2xl font-black text-yellow-700 mt-1" id="kpiAuditSalahJob">0</p>
-              <p class="text-[9px] text-yellow-600 font-bold mt-0.5">Perlu Konfirmasi Job</p>
+            <div class="bg-amber-50/80 p-4 rounded-xl border border-amber-200 shadow-sm text-center">
+              <p class="text-[10px] font-bold text-amber-800 uppercase tracking-wider">Scope Exception</p>
+              <p class="text-2xl font-black text-amber-700 mt-1" id="kpiAuditSalahJob">0</p>
+              <p class="text-[9px] text-amber-600 font-bold mt-0.5">Non-Standard Scope</p>
             </div>
-            <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm text-center">
-              <p class="text-[10px] font-bold text-blue-700 uppercase">Belum Terhubung Tiket</p>
+            <div class="bg-blue-50/80 p-4 rounded-xl border border-blue-200 shadow-sm text-center">
+              <p class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Unlinked Invoices</p>
               <p class="text-2xl font-black text-blue-700 mt-1" id="kpiAuditKlaimLiar">0</p>
-              <p class="text-[9px] text-blue-600 font-bold mt-0.5">Perlu Pemadanan Web</p>
+              <p class="text-[9px] text-blue-600 font-bold mt-0.5">Pending Web Redemption</p>
             </div>
-            <div class="bg-purple-50 p-4 rounded-xl border border-purple-300 shadow-sm text-center col-span-2 md:col-span-1">
-              <p class="text-[10px] font-bold text-purple-700 uppercase">Total Nilai Faktur NIS</p>
+            <div class="bg-purple-50/80 p-4 rounded-xl border border-purple-200 shadow-sm text-center col-span-2 md:col-span-1">
+              <p class="text-[10px] font-bold text-purple-800 uppercase tracking-wider">Total Billed Gross</p>
               <p class="text-xl md:text-lg font-black text-purple-900 mt-1" id="kpiAuditLeakage">Rp 0</p>
-              <p class="text-[9px] text-purple-600 font-bold mt-0.5">Realisasi Billing Kasir</p>
+              <p class="text-[9px] text-purple-600 font-bold mt-0.5">Actual Realized Invoicing</p>
             </div>
           </div>
 
-          <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-3">
-            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-              <button id="btn-audit-ALL" onclick="filterAuditTable('ALL')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm">Semua</button>
-              <button id="btn-audit-COMPLIANT" onclick="filterAuditTable('COMPLIANT')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-green-700 border border-green-300 hover:bg-green-50">✔ Tersinkron</button>
-              <button id="btn-audit-SALAH_PEKERJAAN" onclick="filterAuditTable('SALAH_PEKERJAAN')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-yellow-700 border border-yellow-300 hover:bg-yellow-50">⚠️ Pekerjaan Khusus</button>
-              <button id="btn-audit-KLAIM_LIAR" onclick="filterAuditTable('KLAIM_LIAR')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-blue-700 border border-blue-300 hover:bg-blue-50">ℹ️ Belum Terhubung</button>
-              <button id="btn-audit-REDEEM_FIKTIF" onclick="filterAuditTable('REDEEM_FIKTIF')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-100">❓ Belum di NIS</button>
+          <!-- INTERACTIVE TOOLBAR -->
+          <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
+              <button id="btn-audit-ALL" onclick="filterAuditTable('ALL')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm">All Records</button>
+              <button id="btn-audit-COMPLIANT" onclick="filterAuditTable('COMPLIANT')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-50">✔ Verified Match</button>
+              <button id="btn-audit-SALAH_PEKERJAAN" onclick="filterAuditTable('SALAH_PEKERJAAN')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-amber-700 border border-amber-300 hover:bg-amber-50">⚠️ Scope Exception</button>
+              <button id="btn-audit-KLAIM_LIAR" onclick="filterAuditTable('KLAIM_LIAR')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-blue-700 border border-blue-300 hover:bg-blue-50">ℹ️ Unlinked</button>
+              <button id="btn-audit-REDEEM_FIKTIF" onclick="filterAuditTable('REDEEM_FIKTIF')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-100">❓ Unbilled Voucher</button>
             </div>
             <div class="w-full md:w-80">
-              <input type="text" id="searchAuditInput" oninput="searchAuditTable(this.value)" placeholder="Cari No. Rangka, No. WO, Cabang, atau SA..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs bg-white outline-none focus:border-purple-500 auto-upper">
+              <input type="text" id="searchAuditInput" oninput="searchAuditTable(this.value)" placeholder="Search VIN, WO, Dealer, or SA..." class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs bg-gray-50 outline-none focus:bg-white focus:border-purple-500 auto-upper">
             </div>
           </div>
 
+          <!-- USER-FRIENDLY SORTABLE RECONCILIATION TABLE -->
           <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div class="overflow-x-auto max-h-[65vh]">
               <table class="w-full text-xs text-left whitespace-nowrap">
-                <thead class="bg-gray-900 text-white uppercase text-[10px] font-bold sticky top-0 z-10">
+                <thead class="bg-gray-900 text-white uppercase text-[10px] font-bold sticky top-0 z-10 shadow-sm">
                   <tr>
-                    <th class="px-3 py-3 text-center w-8">No</th>
-                    <th class="px-4 py-3">No. WO & Tgl</th>
-                    <th class="px-4 py-3">Cabang & SA</th>
-                    <th class="px-4 py-3">No. Rangka & Model</th>
-                    <th class="px-4 py-3">Pekerjaan di NIS</th>
-                    <th class="px-4 py-3 text-right">Diskon Jasa</th>
-                    <th class="px-4 py-3 text-right font-black">Total Invoice</th>
-                    <th class="px-3 py-3 text-center">Status Keselarasan</th>
-                    <th class="px-4 py-3">Catatan Penyelarasan</th>
+                    <th class="px-3 py-3 text-center w-8 bg-gray-900">#</th>
+                    <th onclick="sortAuditTable('noWo')" class="px-4 py-3 sortable-th bg-gray-900">WO No. & Date <span id="aud-sort-noWo">↕</span></th>
+                    <th onclick="sortAuditTable('cabang')" class="px-4 py-3 sortable-th bg-gray-900">Dealer & SA <span id="aud-sort-cabang">↕</span></th>
+                    <th onclick="sortAuditTable('noka')" class="px-4 py-3 sortable-th bg-gray-900">VIN & Model <span id="aud-sort-noka">↕</span></th>
+                    <th class="px-4 py-3 bg-gray-900">Job Scope (NIS)</th>
+                    <th class="px-4 py-3 text-right bg-gray-900">Labor Discount</th>
+                    <th onclick="sortAuditTable('totalInvoice')" class="px-4 py-3 text-right sortable-th bg-gray-900 font-black">Gross Invoice <span id="aud-sort-totalInvoice">↕</span></th>
+                    <th onclick="sortAuditTable('statusAudit')" class="px-3 py-3 text-center sortable-th bg-gray-900">Compliance Status <span id="aud-sort-statusAudit">↕</span></th>
+                    <th class="px-4 py-3 bg-gray-900">Audit Trail / Remarks</th>
                   </tr>
                 </thead>
                 <tbody id="auditTableBody" class="divide-y divide-gray-100 bg-white">
-                  <tr><td colspan="9" class="px-4 py-12 text-center text-gray-400 font-medium italic">Klik tombol "Kroscek Data" untuk memulai penyelarasan faktur NIS.</td></tr>
+                  <tr><td colspan="9" class="px-4 py-12 text-center text-gray-400 font-medium italic">Click "Reconcile Data" to initialize automated verification.</td></tr>
                 </tbody>
               </table>
             </div>
             <div class="p-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center text-xs font-bold text-gray-700">
-              <span id="auditFooterCount">Menampilkan 0 data</span>
+              <span id="auditFooterCount">Displaying 0 records</span>
+              <span class="text-[10px] text-gray-400">💡 Tip: Klik No. WO atau VIN untuk menyalin instan.</span>
             </div>
           </div>
         </div>
@@ -764,7 +787,7 @@
       <button onclick="switchTab('validate')" id="mob-validate" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg><span class="text-[9px] font-bold">Scanner</span></button>
       <button onclick="switchTab('mra')" id="mob-mra" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg><span class="text-[9px] font-bold">CRM</span></button>
       <button onclick="switchTab('dashboard')" id="mob-dashboard" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg><span class="text-[9px] font-bold">Dasbor</span></button>
-      <button onclick="switchTab('audit')" id="mob-audit" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100 text-purple-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="text-[9px] font-bold">Monitoring NIS</span></button>
+      <button onclick="switchTab('audit')" id="mob-audit" class="mobile-nav-item flex-1 py-2 flex flex-col items-center gap-0.5 border-l border-gray-100 text-purple-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="text-[9px] font-bold">Governance</span></button>
     </nav>
   </div>
 
@@ -1711,7 +1734,7 @@
       reader.onload = function(e) {
         var rows = XLSX.utils.sheet_to_json(XLSX.read(new Uint8Array(e.target.result), {type: 'array'}).Sheets[XLSX.read(new Uint8Array(e.target.result), {type: 'array'}).SheetNames[0]], {header: 1});
         var dataArray = [];
-        for (var i = 1; i < rows.length; i++) { if (rows[i] && rows[i].length >= 3) { var cbg = rows[i][0] ? rows[i][0].toString().trim().replace(/NS\s/i, '') : ''; var nk = rows[i][1] ? rows[i][1].toString().trim().toUpperCase() : ''; var rp = rows[i][2] ? rows[i][2].toString().replace(/[^0-9]/g, '') : '0'; if (cbg !== '' && nk !== '') dataArray.push([cbg, nk, rp]); } }
+        for (var i = 1; i < rows.length; i++) { if (rows[i] && rows[i].length >= 3) { var cbg = rows[i][0] ? rows[i][0].toString().trim().replace(/^NS\s+/i, '') : ''; var nk = rows[i][1] ? rows[i][1].toString().trim().toUpperCase() : ''; var rp = rows[i][2] ? rows[i][2].toString().replace(/[^0-9]/g, '') : '0'; if (cbg !== '' && nk !== '') dataArray.push([cbg, nk, rp]); } }
         if(dataArray.length === 0) { btn.innerText = 'Proses Excel'; btn.disabled = false; return Swal.fire('Gagal', 'Tidak ada data valid.', 'error'); }
         fetchAPI('uploadMasterTarget', { dataArray: dataArray, bulanTarget: bulan }).then(function(res) { if (res.success) { closeUploadModal(); loadDashboard(); Swal.fire('Sukses', res.count + ' Data Terunggah', 'success'); } else { Swal.fire('Error', res.message, 'error'); } btn.innerText = 'Proses Excel'; btn.disabled = false; });
       }; reader.readAsArrayBuffer(file);
@@ -2177,7 +2200,7 @@
     }
 
     // ========================================================
-    // TAB: MONITORING PROGRAM NIS
+    // 🔴 TAB: NIS PROGRAM GOVERNANCE & INTEGRITY LOGIC
     // ========================================================
     function loadAuditNisData() {
       var sDate = document.getElementById('auditStartDate').value;
@@ -2225,15 +2248,50 @@
       renderAuditTable();
     }
 
+    function sortAuditTable(col) {
+      if (auditSortCol === col) {
+        auditSortOrder = (auditSortOrder === 'asc') ? 'desc' : 'asc';
+      } else {
+        auditSortCol = col;
+        auditSortOrder = (col === 'totalInvoice') ? 'desc' : 'asc';
+      }
+      renderAuditTable();
+    }
+
     function renderAuditTable() {
       var filtered = rawAuditData.filter(function(row) {
         var matchTab = (currentAuditFilterTab === 'ALL') || (row.statusAudit === currentAuditFilterTab);
         if (!matchTab) return false;
         if (auditSearchQuery) {
-          var str = (row.noWo + ' ' + row.noka + ' ' + row.cabang + ' ' + row.namaSA + ' ' + row.pekerjaan).toUpperCase();
+          var str = (row.noWo + ' ' + row.noka + ' ' + row.cabang + ' ' + row.namaSA + ' ' + row.pekerjaan + ' ' + (row.model || '')).toUpperCase();
           return str.includes(auditSearchQuery);
         }
         return true;
+      });
+
+      filtered.sort(function(a, b) {
+        var valA = a[auditSortCol];
+        var valB = b[auditSortCol];
+        if (auditSortCol === 'totalInvoice') {
+          valA = Number(valA) || 0;
+          valB = Number(valB) || 0;
+          return auditSortOrder === 'asc' ? (valA - valB) : (valB - valA);
+        }
+        if (typeof valA === 'string') {
+          return auditSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        }
+        return 0;
+      });
+
+      ['noWo', 'cabang', 'noka', 'totalInvoice', 'statusAudit'].forEach(function(c) {
+        var el = document.getElementById('aud-sort-' + c);
+        if (el) {
+          if (auditSortCol === c) {
+            el.innerHTML = (auditSortOrder === 'asc') ? '<span class="text-purple-400 font-bold">▲</span>' : '<span class="text-purple-400 font-bold">▼</span>';
+          } else {
+            el.innerHTML = '<span class="text-gray-400 font-mono">↕</span>';
+          }
+        }
       });
 
       var tbodyHtml = '';
@@ -2241,54 +2299,62 @@
         filtered.forEach(function(r, idx) {
           var badge = '';
           if (r.statusAudit === 'COMPLIANT') {
-            badge = '<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-[10px] font-black border border-green-300">✔ TERSINKRON</span>';
+            badge = '<span class="bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-md text-[10px] font-black border border-emerald-300">✔ VERIFIED MATCH</span>';
           } else if (r.statusAudit === 'SALAH_PEKERJAAN') {
-            badge = '<span class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-[10px] font-black border border-yellow-300">⚠️ PEKERJAAN KHUSUS</span>';
+            badge = '<span class="bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-md text-[10px] font-black border border-amber-300">⚠️ SCOPE EXCEPTION</span>';
           } else if (r.statusAudit === 'KLAIM_LIAR') {
-            badge = '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-black border border-blue-300">ℹ️ BELUM TERHUBUNG</span>';
+            badge = '<span class="bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-md text-[10px] font-black border border-blue-300">ℹ️ UNLINKED INVOICE</span>';
           } else {
-            badge = '<span class="bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-[10px] font-black border border-gray-300">❓ BELUM DI NIS</span>';
+            badge = '<span class="bg-gray-100 text-gray-800 px-2.5 py-0.5 rounded-md text-[10px] font-black border border-gray-300">❓ UNBILLED VOUCHER</span>';
           }
 
-          tbodyHtml += '<tr class="hover:bg-gray-50 transition">' +
-                         '<td class="px-3 py-2 text-center text-gray-500 font-medium">' + (idx + 1) + '</td>' +
-                         '<td class="px-4 py-2"><p class="font-bold text-gray-900 font-mono">' + r.noWo + '</p><p class="text-[10px] text-gray-500">' + r.tglWo + '</p></td>' +
-                         '<td class="px-4 py-2"><p class="font-bold text-gray-800 uppercase">' + r.cabang + '</p><p class="text-[10px] text-gray-500">SA: ' + r.namaSA + '</p></td>' +
-                         '<td class="px-4 py-2"><p class="font-mono font-bold text-gray-900">' + r.noka + '</p><p class="text-[10px] text-gray-500">' + r.model + '</p></td>' +
-                         '<td class="px-4 py-2 font-medium text-gray-700 max-w-xs truncate" title="' + r.pekerjaan + '">' + r.pekerjaan + '</td>' +
-                         '<td class="px-4 py-2 text-right font-mono font-bold text-purple-700">' + r.discJasa + '</td>' +
-                         '<td class="px-4 py-2 text-right font-black text-gray-900 font-mono">' + formatRp(r.totalInvoice) + '</td>' +
-                         '<td class="px-3 py-2 text-center">' + badge + '</td>' +
-                         '<td class="px-4 py-2 text-[11px] font-semibold text-gray-600">' + r.keterangan + '</td>' +
+          var safeWo = r.noWo || '-';
+          var safeNoka = r.noka || '-';
+
+          tbodyHtml += '<tr class="hover:bg-slate-50 transition border-b border-gray-100">' +
+                         '<td class="px-3 py-2.5 text-center text-gray-400 font-medium">' + (idx + 1) + '</td>' +
+                         '<td class="px-4 py-2.5">' +
+                           '<p onclick="copyToClipboard(\'' + safeWo + '\', \'No. WO\')" class="font-bold text-gray-900 font-mono tracking-tight cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Klik untuk salin WO">' + safeWo + ' <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p>' +
+                           '<p class="text-[10px] text-gray-500 font-medium">' + r.tglWo + '</p>' +
+                         '</td>' +
+                         '<td class="px-4 py-2.5"><p class="font-bold text-gray-800 uppercase">' + r.cabang + '</p><p class="text-[10px] text-gray-500">SA: ' + r.namaSA + '</p></td>' +
+                         '<td class="px-4 py-2.5">' +
+                           '<p onclick="copyToClipboard(\'' + safeNoka + '\', \'No. Rangka\')" class="font-mono font-bold text-gray-900 cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Klik untuk salin VIN">' + safeNoka + ' <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p>' +
+                           '<p class="text-[10px] text-gray-500 font-semibold">' + (r.model || '-') + '</p>' +
+                         '</td>' +
+                         '<td class="px-4 py-2.5 font-medium text-gray-800 max-w-xs truncate" title="' + r.pekerjaan + '">' + r.pekerjaan + '</td>' +
+                         '<td class="px-4 py-2.5 text-right font-mono font-bold text-purple-700">' + r.discJasa + '</td>' +
+                         '<td class="px-4 py-2.5 text-right font-black text-gray-900 font-mono">' + formatRp(r.totalInvoice) + '</td>' +
+                         '<td class="px-3 py-2.5 text-center">' + badge + '</td>' +
+                         '<td class="px-4 py-2.5 text-[11px] font-medium text-gray-600 leading-snug max-w-sm whitespace-normal">' + r.keterangan + '</td>' +
                        '</tr>';
         });
       } else {
-        tbodyHtml = '<tr><td colspan="9" class="px-4 py-10 text-center text-gray-400 italic font-medium">Tidak ada transaksi yang sesuai kriteria pencarian.</td></tr>';
+        tbodyHtml = '<tr><td colspan="9" class="px-4 py-10 text-center text-gray-400 italic font-medium">No records match the active criteria.</td></tr>';
       }
 
       document.getElementById('auditTableBody').innerHTML = tbodyHtml;
-      document.getElementById('auditFooterCount').innerText = 'Menampilkan ' + filtered.length + ' dari ' + rawAuditData.length + ' data transaksi';
+      document.getElementById('auditFooterCount').innerText = 'Displaying ' + filtered.length + ' of ' + rawAuditData.length + ' records';
     }
 
     function downloadAuditExcel() {
       if (!rawAuditData || rawAuditData.length === 0) {
-        return Swal.fire('Kosong', 'Tidak ada data untuk diekspor.', 'warning');
+        return Swal.fire('No Data', 'No governance records available for export.', 'warning');
       }
 
       var exportData = [
-        ["No", "Status Keselarasan", "No. WO", "Tanggal Faktur", "Cabang Dealer", "Service Advisor", "No. Rangka (VIN)", "Model", "Deskripsi Pekerjaan NIS", "Diskon Jasa", "Diskon Part", "Total Invoice", "Catatan Penyelarasan"]
+        ["#", "Governance Status", "WO Number", "Invoice Date", "Dealership", "Service Advisor", "VIN Number", "Vehicle Model", "Billed Job Scope (NIS)", "Labor Discount", "Parts Discount", "Total Gross Invoicing", "Audit Trail & Remarks"]
       ];
 
       rawAuditData.forEach(function(r, idx) {
-        var statusClean = r.statusAudit;
-        if (r.statusAudit === 'COMPLIANT') statusClean = 'Tersinkron Sesuai Program';
-        else if (r.statusAudit === 'SALAH_PEKERJAAN') statusClean = 'Pekerjaan Khusus';
-        else if (r.statusAudit === 'KLAIM_LIAR') statusClean = 'Belum Terhubung Tiket';
-        else statusClean = 'Belum Terdata di Faktur NIS';
+        var statusLabel = 'Verified Match';
+        if (r.statusAudit === 'SALAH_PEKERJAAN') statusLabel = 'Scope Exception';
+        else if (r.statusAudit === 'KLAIM_LIAR') statusLabel = 'Unlinked Invoice';
+        else if (r.statusAudit === 'REDEEM_FIKTIF') statusLabel = 'Unbilled Voucher';
 
         exportData.push([
           idx + 1,
-          statusClean,
+          statusLabel,
           r.noWo,
           r.tglWo,
           r.cabang,
@@ -2305,8 +2371,8 @@
 
       var ws = XLSX.utils.aoa_to_sheet(exportData);
       var wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Penyelarasan_Program_NIS");
-      XLSX.writeFile(wb, "Laporan_Penyelarasan_Program_NIS.xlsx");
+      XLSX.utils.book_append_sheet(wb, ws, "NIS_Program_Governance");
+      XLSX.writeFile(wb, "NIS_Program_Governance_Report.xlsx");
     }
   </script>
 </body>
