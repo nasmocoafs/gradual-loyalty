@@ -20,12 +20,14 @@
     const urlParams = new URLSearchParams(window.location.search);
     var globalPortalCode = urlParams.get('code') || '';
     
+    // DATA MRA & CRM STATE
     var globalMraDataRaw = [];
     var mraFilteredData = [];
     var mraCurrentPage = 1;
     var mraPageSize = 10;
     var mraSortOrder = 'none';
 
+    // DASBOR ANALITIK STATE
     var rawLeaderboardData = [];
     var lbSortCol = 'redeemTarget';
     var lbSortOrder = 'desc';
@@ -36,6 +38,7 @@
     var branchSortOrder = 'asc';
     var branchSearchQuery = '';
 
+    // DATA DRILL-DOWN PELANGGAN REDEEM & TIKET TERBIT
     var globalRedeemedDetails = [];
     var currentRedeemTab = 'all';
     var redeemSearchQuery = '';
@@ -44,6 +47,7 @@
     var currentTicketTab = 'all';
     var ticketSearchQuery = '';
     
+    // DATA MONITORING PROGRAM NIS
     var rawAuditData = [];
     var currentAuditFilterTab = 'ALL';
     var auditSearchQuery = '';
@@ -658,7 +662,7 @@
         </div>
       </div>
 
-      <!-- 🔴 TAB: PENYELARASAN & MONITORING PROGRAM NIS -->
+      <!-- 🔴 TAB: MONITORING PROGRAM NIS -->
       <div id="view-audit" class="w-full max-w-7xl mx-auto fade-in hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
           <div>
@@ -706,9 +710,9 @@
               <p class="text-[9px] text-blue-600 font-bold mt-0.5">Perlu Pemadanan Web</p>
             </div>
             <div class="bg-purple-50 p-4 rounded-xl border border-purple-300 shadow-sm text-center col-span-2 md:col-span-1">
-              <p class="text-[10px] font-bold text-purple-700 uppercase">Potensi Selisih Manfaat</p>
+              <p class="text-[10px] font-bold text-purple-700 uppercase">Total Nilai Faktur NIS</p>
               <p class="text-xl md:text-lg font-black text-purple-900 mt-1" id="kpiAuditLeakage">Rp 0</p>
-              <p class="text-[9px] text-purple-600 font-bold mt-0.5">Selisih Alokasi Diskon</p>
+              <p class="text-[9px] text-purple-600 font-bold mt-0.5">Realisasi Billing Kasir</p>
             </div>
           </div>
 
@@ -2192,7 +2196,7 @@
           document.getElementById('kpiAuditRate').innerText = (res.summary.compliantRate || 0) + '%';
           document.getElementById('kpiAuditSalahJob').innerText = res.summary.salahJob || 0;
           document.getElementById('kpiAuditKlaimLiar').innerText = res.summary.klaimLiar || 0;
-          document.getElementById('kpiAuditLeakage').innerText = formatRp(res.summary.potentialLeakage || 0);
+          document.getElementById('kpiAuditLeakage').innerText = formatRp(res.summary.totalRevenueNis || 0);
 
           renderAuditTable();
         } else {
