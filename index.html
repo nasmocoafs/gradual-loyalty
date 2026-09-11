@@ -75,7 +75,7 @@
 
     function formatDateID(dateObj) {
       const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-      return `${dateObj.getDate().toString().padStart(2, '0')} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+      return dateObj.getDate().toString().padStart(2, '0') + " " + months[dateObj.getMonth()] + " " + dateObj.getFullYear();
     }
 
     async function fetchAPI(action, payload = {}) {
@@ -246,7 +246,12 @@
                 <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Model Kendaraan</label>
                 <select id="model" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm md:text-base">
                   <option value="" disabled selected>Pilih Model...</option>
-                  <option value="AGYA">AGYA</option><option value="CALYA">CALYA</option><option value="AVANZA">AVANZA</option><option value="VELOZ">VELOZ</option><option value="RUSH">RUSH</option><option value="RAIZE">RAIZE</option><option value="YARIS">YARIS</option><option value="YARIS CROSS">YARIS CROSS</option><option value="COROLLA CROSS">COROLLA CROSS</option><option value="INNOVA REBORN">INNOVA REBORN</option><option value="INNOVA ZENIX">INNOVA ZENIX</option><option value="FORTUNER">FORTUNER</option><option value="HILUX">HILUX</option><option value="ALPHARD">ALPHARD/VELLFIRE</option><option value="VOXY">VOXY</option><option value="LAINNYA">LAINNYA</option>
+                  <option value="AGYA">AGYA</option><option value="CALYA">CALYA</option><option value="AVANZA">AVANZA</option>
+                  <option value="VELOZ">VELOZ</option><option value="RUSH">RUSH</option><option value="RAIZE">RAIZE</option>
+                  <option value="YARIS">YARIS</option><option value="YARIS CROSS">YARIS CROSS</option><option value="COROLLA CROSS">COROLLA CROSS</option>
+                  <option value="INNOVA REBORN">INNOVA REBORN</option><option value="INNOVA ZENIX">INNOVA ZENIX</option>
+                  <option value="FORTUNER">FORTUNER</option><option value="HILUX">HILUX</option>
+                  <option value="ALPHARD">ALPHARD/VELLFIRE</option><option value="VOXY">VOXY</option><option value="LAINNYA">LAINNYA</option>
                 </select>
               </div>
               <div><label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">No Polisi</label><input type="text" id="nopol" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg auto-upper text-sm md:text-base" oninput="this.value = this.value.toUpperCase()"></div>
@@ -1256,10 +1261,25 @@
 
     function resetValidationForm() { document.getElementById('uniqueCode').value = ''; document.getElementById('validateResultSection').classList.add('hidden'); }
 
+    // 🔴 FUNGSI BADGE CELL CRM LENGKAP & AMAN DARI ERROR RUNTIME
+    function buildBadgeCell(svc) {
+      if (!svc) return '-';
+      if (svc.status === 'REDEEMED') {
+        return '<div class="bg-green-50 border border-green-200 text-green-700 font-bold px-2 py-1.5 rounded shadow-sm flex flex-col justify-center items-center gap-1 leading-tight"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg><span class="text-[9px] uppercase">Selesai</span></div>';
+      }
+      if (svc.status === 'EXPIRED') {
+        return '<div class="bg-gray-100 border border-gray-200 text-gray-500 font-bold px-2 py-1.5 rounded flex flex-col justify-center items-center gap-1 leading-tight"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg><span class="text-[9px] uppercase">Hangus</span></div>';
+      }
+      if (svc.status === 'ACTIVE') {
+        return '<div class="bg-red-50 border border-red-200 text-red-700 font-bold px-2 py-1.5 rounded shadow flex flex-col justify-center items-center gap-0.5 leading-tight animate-pulse"><span class="text-[11px] font-mono whitespace-nowrap">' + (svc.validUntil || '-') + '</span><span class="text-[9px] uppercase bg-red-600 text-white px-1.5 rounded">Aktif</span></div>';
+      }
+      return '-';
+    }
+
     function parseJatuhTempoTimestamp(dateStr) {
       if (!dateStr || dateStr === '-' || dateStr === '') return 0;
       var parts = dateStr.trim().split(' '); if (parts.length < 3) return 0;
-      var monthMap = { 'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'Mei': 4, 'May': 4, 'Jun': 5, 'Jul': 6, 'Agu': 7, 'Aug': 7, 'Sep': 8, 'Okt': 9, 'Oct': 9, 'Nov': 10, 'Des': 11, 'Dec': 11 };
+      var monthMap = { 'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'Mei': 4, 'Jun': 5, 'Jul': 6, 'Agu': 7, 'Sep': 8, 'Okt': 9, 'Nov': 10, 'Des': 11, 'Dec': 11 };
       return new Date(parseInt(parts[2], 10), (monthMap[parts[1]] !== undefined ? monthMap[parts[1]] : 0), parseInt(parts[0], 10)).getTime();
     }
 
@@ -1271,7 +1291,8 @@
     }
 
     function loadMraData() {
-      document.getElementById('mraLoading').classList.remove('hidden'); document.getElementById('mraTableBody').innerHTML = '';
+      document.getElementById('mraLoading').classList.remove('hidden'); 
+      document.getElementById('mraTableBody').innerHTML = '';
       fetchAPI('getMraData', { userCabang: sessionUser.cabang }).then(function(res) {
         document.getElementById('mraLoading').classList.add('hidden'); 
         if (!res.success) { document.getElementById('mraTableBody').innerHTML = '<tr><td colspan="7" class="text-center py-10 text-red-600 font-bold">' + res.message + '</td></tr>'; return; }
@@ -1281,9 +1302,12 @@
     }
 
     function filterMraData() {
-      var searchVin = document.getElementById('mraSearchVin').value.toUpperCase(), filterBulan = document.getElementById('mraFilterBulan').value; 
+      var searchVin = (document.getElementById('mraSearchVin').value || '').toUpperCase().trim();
+      var filterBulan = document.getElementById('mraFilterBulan').value; 
+      
       mraFilteredData = globalMraDataRaw.filter(function(row) {
-        var matchVin = row.noka.toUpperCase().includes(searchVin), matchBulan = true;
+        var matchVin = (row.noka || '').toUpperCase().includes(searchVin);
+        var matchBulan = true;
         if (filterBulan && row.jatuhTempoTerdekat) {
           var parts = row.jatuhTempoTerdekat.split(' ');
           var months = {"Jan":"01", "Feb":"02", "Mar":"03", "Apr":"04", "Mei":"05", "Jun":"06", "Jul":"07", "Agu":"08", "Sep":"09", "Okt":"10", "Nov":"11", "Des":"12"};
@@ -1291,6 +1315,7 @@
         }
         return matchVin && matchBulan;
       });
+
       if (mraSortOrder !== 'none') {
         mraFilteredData.sort((a, b) => {
           var tA = parseJatuhTempoTimestamp(a.jatuhTempoTerdekat), tB = parseJatuhTempoTimestamp(b.jatuhTempoTerdekat);
@@ -1313,10 +1338,16 @@
     function goToMraPage(page) { mraCurrentPage = page; renderMraTable(); }
     function goToMraLastPage() { mraCurrentPage = Math.ceil(mraFilteredData.length / mraPageSize) || 1; renderMraTable(); }
 
+    // 🔴 RENDER TABEL CRM SOLID DAN AMAN DARI SINTAKS ERROR
     function renderMraTable() {
-      var totalData = mraFilteredData.length, totalPages = Math.ceil(totalData / mraPageSize) || 1;
-      if (mraCurrentPage > totalPages) mraCurrentPage = totalPages; if (mraCurrentPage < 1) mraCurrentPage = 1;
-      var startIdx = (mraCurrentPage - 1) * mraPageSize, endIdx = Math.min(startIdx + mraPageSize, totalData), pageData = mraFilteredData.slice(startIdx, endIdx);
+      var totalData = mraFilteredData.length;
+      var totalPages = Math.ceil(totalData / mraPageSize) || 1;
+      if (mraCurrentPage > totalPages) mraCurrentPage = totalPages; 
+      if (mraCurrentPage < 1) mraCurrentPage = 1;
+      
+      var startIdx = (mraCurrentPage - 1) * mraPageSize;
+      var endIdx = Math.min(startIdx + mraPageSize, totalData);
+      var pageData = mraFilteredData.slice(startIdx, endIdx);
       
       document.getElementById('mraPaginationInfo').innerText = totalData === 0 ? "Menampilkan 0 - 0 dari 0 data" : "Menampilkan " + (startIdx + 1) + " - " + endIdx + " dari " + totalData + " data";
       document.getElementById('mraPageNumber').innerText = mraCurrentPage + " / " + totalPages;
@@ -1330,20 +1361,66 @@
         tbodyHtml = '<tr><td colspan="7" class="text-center py-10 text-gray-500 font-bold italic">Data tidak ditemukan.</td></tr>';
       } else {
         pageData.forEach(function(row) { 
-          var cell8 = buildBadgeCell(row.history['S8']), cell9 = buildBadgeCell(row.history['S9']), cell10 = buildBadgeCell(row.history['S10']), cell11 = buildBadgeCell(row.history['S11']);
-          var downloadSvc = null, downloadKey = null;
-          ['S11', 'S10', 'S9', 'S8'].forEach(k => { if (!downloadSvc && row.history[k] && row.history[k].status === 'ACTIVE' && row.history[k].code && row.history[k].code !== '-') { downloadSvc = row.history[k]; downloadKey = k; } });
-          if (!downloadSvc) ['S11', 'S10', 'S9', 'S8'].forEach(k => { if (!downloadSvc && row.history[k] && row.history[k].code && row.history[k].code !== '-') { downloadSvc = row.history[k]; downloadKey = k; } });
-          var btnAksi = downloadSvc ? `<div class="flex flex-col gap-1.5 items-center justify-center py-1"><button onclick="downloadVoucherFromMra('${row.noka}','${downloadKey}')" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-[10px] px-2.5 py-1.5 rounded font-bold shadow flex items-center justify-center gap-1 transition whitespace-nowrap"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>Unduh Voucher</button><button onclick="copyCustomerPortalLink('${downloadSvc.code}')" class="w-full bg-gray-800 hover:bg-gray-900 text-white text-[10px] px-2.5 py-1 rounded font-bold border border-gray-700 shadow-sm flex items-center justify-center gap-1 transition whitespace-nowrap"><svg class="w-3 h-3 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>Salin Link Web</button></div>` : '-';
-          tbodyHtml += `<tr class="hover:bg-gray-50 border-b border-gray-100 text-xs"><td class="px-4 py-3 border-r border-gray-100"><p class="font-bold text-gray-900 uppercase">${row.nama}</p><p class="text-gray-600 font-medium mt-0.5">${row.model} (${row.nopol})</p><p class="font-mono text-[9px] text-gray-400 mt-1">${row.noka} | 📞 ${formatWAPhone(row.nohp)}</p></td><td class="px-4 py-3 text-center border-r border-gray-100 font-mono font-bold text-red-600 whitespace-nowrap">${row.jatuhTempoTerdekat}</td><td class="px-2 py-3 text-center border-r border-gray-100">${cell8}</td><td class="px-2 py-3 text-center border-r border-gray-100">${cell9}</td><td class="px-2 py-3 text-center border-r border-gray-100">${cell10}</td><td class="px-2 py-3 text-center border-r border-gray-100">${cell11}</td><td class="px-3 py-2 text-center align-middle">${btnAksi}</td></tr>`;
+          var h = row.history || {};
+          var cell8 = buildBadgeCell(h['S8']);
+          var cell9 = buildBadgeCell(h['S9']);
+          var cell10 = buildBadgeCell(h['S10']);
+          var cell11 = buildBadgeCell(h['S11']);
+
+          var downloadSvc = null;
+          var downloadKey = null;
+
+          ['S11', 'S10', 'S9', 'S8'].forEach(function(k) {
+            if (!downloadSvc && h[k] && h[k].status === 'ACTIVE' && h[k].code && h[k].code !== '-') {
+              downloadSvc = h[k];
+              downloadKey = k;
+            }
+          });
+
+          if (!downloadSvc) {
+            ['S11', 'S10', 'S9', 'S8'].forEach(function(k) {
+              if (!downloadSvc && h[k] && h[k].code && h[k].code !== '-') {
+                downloadSvc = h[k];
+                downloadKey = k;
+              }
+            });
+          }
+
+          var btnAksi = '-';
+          if (downloadSvc) {
+            btnAksi = '<div class="flex flex-col gap-1.5 items-center justify-center py-1">' +
+                        '<button onclick="downloadVoucherFromMra(\'' + row.noka + '\',\'' + downloadKey + '\')" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-[10px] px-2.5 py-1.5 rounded font-bold shadow flex items-center justify-center gap-1 transition whitespace-nowrap">' +
+                          '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>Unduh Voucher' +
+                        '</button>' +
+                        '<button onclick="copyCustomerPortalLink(\'' + downloadSvc.code + '\')" class="w-full bg-gray-800 hover:bg-gray-900 text-white text-[10px] px-2.5 py-1 rounded font-bold border border-gray-700 shadow-sm flex items-center justify-center gap-1 transition whitespace-nowrap">' +
+                          '<svg class="w-3 h-3 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>Salin Link Web' +
+                        '</button>' +
+                      '</div>';
+          }
+
+          tbodyHtml += '<tr class="hover:bg-gray-50 border-b border-gray-100 text-xs">' +
+                         '<td class="px-4 py-3 border-r border-gray-100">' +
+                           '<p class="font-bold text-gray-900 uppercase">' + (row.nama || '-') + '</p>' +
+                           '<p class="text-gray-600 font-medium mt-0.5">' + (row.model || '-') + ' (' + (row.nopol || '-') + ')</p>' +
+                           '<p class="font-mono text-[9px] text-gray-400 mt-1">' + (row.noka || '-') + ' | 📞 ' + formatWAPhone(row.nohp || '') + '</p>' +
+                         '</td>' +
+                         '<td class="px-4 py-3 text-center border-r border-gray-100 font-mono font-bold text-red-600 whitespace-nowrap">' + (row.jatuhTempoTerdekat || '-') + '</td>' +
+                         '<td class="px-2 py-3 text-center border-r border-gray-100">' + cell8 + '</td>' +
+                         '<td class="px-2 py-3 text-center border-r border-gray-100">' + cell9 + '</td>' +
+                         '<td class="px-2 py-3 text-center border-r border-gray-100">' + cell10 + '</td>' +
+                         '<td class="px-2 py-3 text-center border-r border-gray-100">' + cell11 + '</td>' +
+                         '<td class="px-3 py-2 text-center align-middle">' + btnAksi + '</td>' +
+                       '</tr>';
         });
       }
       document.getElementById('mraTableBody').innerHTML = tbodyHtml;
     }
 
     function downloadVoucherFromMra(noka, svcKey) {
-      var row = globalMraDataRaw.find(r => r.noka === noka); if (!row || !row.history[svcKey]) return Swal.fire('Error', 'Histori tiket tidak ditemukan.', 'error');
-      var svc = row.history[svcKey]; if (!svc.code || svc.code === '-') return Swal.fire('Peringatan', 'Tiket tidak memiliki kode voucher valid.', 'warning');
+      var row = globalMraDataRaw.find(r => r.noka === noka); 
+      if (!row || !row.history || !row.history[svcKey]) return Swal.fire('Error', 'Histori tiket tidak ditemukan.', 'error');
+      var svc = row.history[svcKey]; 
+      if (!svc.code || svc.code === '-') return Swal.fire('Peringatan', 'Tiket tidak memiliki kode voucher valid.', 'warning');
       Swal.fire({ title: 'Menyiapkan Voucher...', text: 'Merender e-Voucher PDF', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
       document.getElementById('cardModel').innerText = row.model || '-';
@@ -1392,7 +1469,10 @@
     function downloadMraExcel() {
       if (!globalMraDataRaw || globalMraDataRaw.length === 0) return Swal.fire('Kosong', 'Tidak ada data untuk diekspor.', 'warning');
       var exportData = [ ["Nama Pelanggan", "Model Unit", "No Polisi", "No Rangka", "No WhatsApp", "Cabang", "Jatuh Tempo Terdekat", "Status Servis 8", "Status Servis 9", "Status Servis 10", "Status Servis 11"] ];
-      globalMraDataRaw.forEach(r => exportData.push([r.nama, r.model, r.nopol, r.noka, formatWAPhone(r.nohp), r.cabang, r.jatuhTempoTerdekat, r.history['S8']?.status || '-', r.history['S9']?.status || '-', r.history['S10']?.status || '-', r.history['S11']?.status || '-']));
+      globalMraDataRaw.forEach(r => {
+        var h = r.history || {};
+        exportData.push([r.nama, r.model, r.nopol, r.noka, formatWAPhone(r.nohp), r.cabang, r.jatuhTempoTerdekat, h['S8'] ? h['S8'].status : '-', h['S9'] ? h['S9'].status : '-', h['S10'] ? h['S10'].status : '-', h['S11'] ? h['S11'].status : '-']);
+      });
       var ws = XLSX.utils.aoa_to_sheet(exportData), wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Data_MRA");
       XLSX.writeFile(wb, "Data_MRA_CRM.xlsx");
@@ -1451,7 +1531,14 @@
       if (list.length > 0) { 
         list.slice(0, 5).forEach(function(sa, idx) { 
           var medal = (idx === 0) ? '🥇' : (idx === 1) ? '🥈' : (idx === 2) ? '🥉' : '<span class="text-gray-400 font-bold">' + (idx + 1) + '</span>'; 
-          lbHtml += `<tr class="hover:bg-gray-50 transition"><td class="px-4 py-3 font-black text-center w-10 text-lg border-b border-gray-100">${medal}</td><td class="px-4 py-3 font-bold text-gray-600 text-xs uppercase border-b border-gray-100">${sa.cabang || '-'}</td><td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">${sa.nama}</td><td class="px-4 py-3 text-center font-bold text-blue-700 bg-blue-50/20 border-b border-gray-100">${sa.redeemTarget || 0}</td><td class="px-4 py-3 text-right font-black text-emerald-700 border-b border-gray-100">${formatRp(sa.revTarget || 0)}</td><td class="px-4 py-3 text-right font-black text-gray-800 border-b border-gray-100">${formatRp(sa.revenue || 0)}</td></tr>`; 
+          lbHtml += '<tr class="hover:bg-gray-50 transition">' +
+                      '<td class="px-4 py-3 font-black text-center w-10 text-lg border-b border-gray-100">' + medal + '</td>' +
+                      '<td class="px-4 py-3 font-bold text-gray-600 text-xs uppercase border-b border-gray-100">' + (sa.cabang || '-') + '</td>' +
+                      '<td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">' + sa.nama + '</td>' +
+                      '<td class="px-4 py-3 text-center font-bold text-blue-700 bg-blue-50/20 border-b border-gray-100">' + (sa.redeemTarget || 0) + '</td>' +
+                      '<td class="px-4 py-3 text-right font-black text-emerald-700 border-b border-gray-100">' + formatRp(sa.revTarget || 0) + '</td>' +
+                      '<td class="px-4 py-3 text-right font-black text-gray-800 border-b border-gray-100">' + formatRp(sa.revenue || 0) + '</td>' +
+                    '</tr>'; 
         }); 
       } else { 
         lbHtml = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400 italic font-medium">No recorded Service Advisor performance in this period.</td></tr>'; 
@@ -1498,19 +1585,44 @@
           totalRegNT += Number(b.regNonTarget) || 0; totalRedNT += Number(b.redeemNonTarget) || 0; totalRevNT += Number(b.revNonTarget) || 0;
           totalRev += Number(b.revenue) || 0;
 
-          var inS2Cell = dashIsJanJun ? `<td class="px-3 py-3 text-center font-bold text-emerald-800 bg-emerald-50/40 border-b border-gray-100">${b.inS2Count || 0} <span class="text-[10px] text-gray-500 font-normal">(${b.inS2Rate || '0,0'}%)</span></td>` : '';
-          bdHtml += `<tr class="hover:bg-gray-50 transition text-xs"><td class="px-3 py-3 text-center border-b border-gray-100 font-medium text-gray-500">${idx + 1}</td><td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">${b.cabang}</td><td class="px-3 py-3 text-center font-black text-purple-700 bg-purple-50/20 border-b border-gray-100">${b.potensi || 0}</td>${inS2Cell}<td class="px-3 py-3 text-center font-bold text-blue-700 bg-blue-50/30 border-b border-gray-100">${b.regTarget || 0}</td><td class="px-3 py-3 text-center font-black text-emerald-700 bg-blue-50/30 border-b border-gray-100">${b.redeemTarget || 0}</td><td class="px-3 py-3 text-center font-black text-indigo-700 bg-blue-50/30 border-b border-gray-100">${b.convRateTarget || '0,0'}%</td><td class="px-4 py-3 text-right font-black text-emerald-800 bg-blue-50/30 border-b border-gray-100">${formatRp(b.revTarget || 0)}</td><td class="px-3 py-3 text-center font-bold text-amber-700 bg-amber-50/20 border-b border-gray-100">${b.regNonTarget || 0}</td><td class="px-3 py-3 text-center font-bold text-amber-800 bg-amber-50/20 border-b border-gray-100">${b.redeemNonTarget || 0}</td><td class="px-4 py-3 text-right font-black text-amber-900 bg-amber-50/20 border-b border-gray-100">${formatRp(b.revNonTarget || 0)}</td><td class="px-4 py-3 text-right font-black text-gray-900 bg-gray-50/60 border-b border-gray-100">${formatRp(b.revenue || 0)}</td></tr>`;
+          var inS2Cell = dashIsJanJun ? '<td class="px-3 py-3 text-center font-bold text-emerald-800 bg-emerald-50/40 border-b border-gray-100">' + (b.inS2Count || 0) + ' <span class="text-[10px] text-gray-500 font-normal">(' + (b.inS2Rate || '0,0') + '%)</span></td>' : '';
+          bdHtml += '<tr class="hover:bg-gray-50 transition text-xs">' +
+                      '<td class="px-3 py-3 text-center border-b border-gray-100 font-medium text-gray-500">' + (idx + 1) + '</td>' +
+                      '<td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">' + b.cabang + '</td>' +
+                      '<td class="px-3 py-3 text-center font-black text-purple-700 bg-purple-50/20 border-b border-gray-100">' + (b.potensi || 0) + '</td>' +
+                      inS2Cell +
+                      '<td class="px-3 py-3 text-center font-bold text-blue-700 bg-blue-50/30 border-b border-gray-100">' + (b.regTarget || 0) + '</td>' +
+                      '<td class="px-3 py-3 text-center font-black text-emerald-700 bg-blue-50/30 border-b border-gray-100">' + (b.redeemTarget || 0) + '</td>' +
+                      '<td class="px-3 py-3 text-center font-black text-indigo-700 bg-blue-50/30 border-b border-gray-100">' + (b.convRateTarget || '0,0') + '%</td>' +
+                      '<td class="px-4 py-3 text-right font-black text-emerald-800 bg-blue-50/30 border-b border-gray-100">' + formatRp(b.revTarget || 0) + '</td>' +
+                      '<td class="px-3 py-3 text-center font-bold text-amber-700 bg-amber-50/20 border-b border-gray-100">' + (b.regNonTarget || 0) + '</td>' +
+                      '<td class="px-3 py-3 text-center font-bold text-amber-800 bg-amber-50/20 border-b border-gray-100">' + (b.redeemNonTarget || 0) + '</td>' +
+                      '<td class="px-4 py-3 text-right font-black text-amber-900 bg-amber-50/20 border-b border-gray-100">' + formatRp(b.revNonTarget || 0) + '</td>' +
+                      '<td class="px-4 py-3 text-right font-black text-gray-900 bg-gray-50/60 border-b border-gray-100">' + formatRp(b.revenue || 0) + '</td>' +
+                    '</tr>';
         });
       } else {
-        bdHtml = `<tr><td colspan="${dashIsJanJun ? 12 : 11}" class="px-4 py-8 text-center text-gray-400 italic font-medium">No dealership performance data available.</td></tr>`;
+        bdHtml = '<tr><td colspan="' + (dashIsJanJun ? 12 : 11) + '" class="px-4 py-8 text-center text-gray-400 italic font-medium">No dealership performance data available.</td></tr>';
       }
       document.getElementById('hoBreakdownBody').innerHTML = bdHtml;
 
       var avgTargetConv = totalPot > 0 ? ((totalRedT / totalPot) * 100).toFixed(1).replace('.', ',') : '0,0';
       var avgInS2Ratio = totalPot > 0 ? ((totalInS2 / totalPot) * 100).toFixed(1).replace('.', ',') : '0,0';
-      var footInS2 = dashIsJanJun ? `<td class="px-3 py-3 text-center font-black text-emerald-900 bg-emerald-100/70">${totalInS2} <span class="text-[10px] font-normal">(${avgInS2Ratio}%)</span></td>` : '';
+      var footInS2 = dashIsJanJun ? '<td class="px-3 py-3 text-center font-black text-emerald-900 bg-emerald-100/70">' + totalInS2 + ' <span class="text-[10px] font-normal">(' + avgInS2Ratio + '%)</span></td>' : '';
       
-      document.getElementById('hoBreakdownFoot').innerHTML = `<tr class="bg-gray-100 text-xs"><td colspan="2" class="px-4 py-3 text-center uppercase tracking-wider font-black">TOTAL ALL BRANCHES</td><td class="px-3 py-3 text-center font-black text-purple-800 bg-purple-100/50">${totalPot}</td>${footInS2}<td class="px-3 py-3 text-center font-black text-blue-800 bg-blue-100/50">${totalRegT}</td><td class="px-3 py-3 text-center font-black text-emerald-800 bg-blue-100/50">${totalRedT}</td><td class="px-3 py-3 text-center font-black text-indigo-800 bg-blue-100/50">${avgTargetConv}%</td><td class="px-4 py-3 text-right font-black text-emerald-900 bg-blue-100/50">${formatRp(totalRevT)}</td><td class="px-3 py-3 text-center font-black text-amber-800 bg-amber-100/50">${totalRegNT}</td><td class="px-3 py-3 text-center font-black text-amber-900 bg-amber-100/50">${totalRedNT}</td><td class="px-4 py-3 text-right font-black text-amber-950 bg-amber-100/50">${formatRp(totalRevNT)}</td><td class="px-4 py-3 text-right font-black text-gray-900 text-sm bg-gray-200/60">${formatRp(totalRev)}</td></tr>`;
+      document.getElementById('hoBreakdownFoot').innerHTML = '<tr class="bg-gray-100 text-xs">' +
+        '<td colspan="2" class="px-4 py-3 text-center uppercase tracking-wider font-black">TOTAL ALL BRANCHES</td>' +
+        '<td class="px-3 py-3 text-center font-black text-purple-800 bg-purple-100/50">' + totalPot + '</td>' +
+        footInS2 +
+        '<td class="px-3 py-3 text-center font-black text-blue-800 bg-blue-100/50">' + totalRegT + '</td>' +
+        '<td class="px-3 py-3 text-center font-black text-emerald-800 bg-blue-100/50">' + totalRedT + '</td>' +
+        '<td class="px-3 py-3 text-center font-black text-indigo-800 bg-blue-100/50">' + avgTargetConv + '%</td>' +
+        '<td class="px-4 py-3 text-right font-black text-emerald-900 bg-blue-100/50">' + formatRp(totalRevT) + '</td>' +
+        '<td class="px-3 py-3 text-center font-black text-amber-800 bg-amber-100/50">' + totalRegNT + '</td>' +
+        '<td class="px-3 py-3 text-center font-black text-amber-900 bg-amber-100/50">' + totalRedNT + '</td>' +
+        '<td class="px-4 py-3 text-right font-black text-amber-950 bg-amber-100/50">' + formatRp(totalRevNT) + '</td>' +
+        '<td class="px-4 py-3 text-right font-black text-gray-900 text-sm bg-gray-200/60">' + formatRp(totalRev) + '</td>' +
+      '</tr>';
     }
 
     function openTicketModal(tabType) {
@@ -1543,7 +1655,16 @@
         filtered.forEach((r, idx) => {
           var bTipe = r.tipe === 'TARGET' ? '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-black border border-blue-300">🎯 Targeted Cohort</span>' : '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-black border border-amber-300">⚠️ Organic Inflow</span>';
           var bSts = r.status === 'REDEEMED' ? '<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-[10px] font-bold">✅ Redeemed</span>' : (r.status === 'ACTIVE' ? '<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-[10px] font-bold">🔥 Active</span>' : '<span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-bold">✖ Expired</span>');
-          tbodyHtml += `<tr class="hover:bg-gray-50 transition"><td class="px-3 py-2 text-center text-gray-500 font-medium">${idx + 1}</td><td class="px-4 py-2"><p class="font-bold text-gray-900 uppercase">${r.nama}</p><p class="text-[10px] text-gray-500 font-medium">${r.model} (${r.nopol})</p></td><td class="px-4 py-2 font-mono font-bold text-gray-700">${r.vin}</td><td class="px-4 py-2"><p class="font-bold text-gray-800 uppercase">${r.cabang}</p><p class="text-[10px] text-gray-500">SA: ${r.namaSA}</p></td><td class="px-3 py-2 text-center font-bold text-gray-700">${r.servisKe}</td><td class="px-3 py-2 text-center font-mono text-gray-600">${r.tglTerbit}</td><td class="px-3 py-2 text-center">${bSts}</td><td class="px-3 py-2 text-center">${bTipe}</td></tr>`;
+          tbodyHtml += '<tr class="hover:bg-gray-50 transition">' +
+                         '<td class="px-3 py-2 text-center text-gray-500 font-medium">' + (idx + 1) + '</td>' +
+                         '<td class="px-4 py-2"><p class="font-bold text-gray-900 uppercase">' + r.nama + '</p><p class="text-[10px] text-gray-500 font-medium">' + r.model + ' (' + r.nopol + ')</p></td>' +
+                         '<td class="px-4 py-2 font-mono font-bold text-gray-700">' + r.vin + '</td>' +
+                         '<td class="px-4 py-2"><p class="font-bold text-gray-800 uppercase">' + r.cabang + '</p><p class="text-[10px] text-gray-500">SA: ' + r.namaSA + '</p></td>' +
+                         '<td class="px-3 py-2 text-center font-bold text-gray-700">' + r.servisKe + '</td>' +
+                         '<td class="px-3 py-2 text-center font-mono text-gray-600">' + r.tglTerbit + '</td>' +
+                         '<td class="px-3 py-2 text-center">' + bSts + '</td>' +
+                         '<td class="px-3 py-2 text-center">' + bTipe + '</td>' +
+                       '</tr>';
         });
       } else {
         tbodyHtml = '<tr><td colspan="8" class="px-4 py-10 text-center text-gray-400 italic font-medium">No tickets match active filter.</td></tr>';
@@ -1591,7 +1712,17 @@
         filtered.forEach((r, idx) => {
           totalRev += Number(r.revenue) || 0;
           var bTipe = r.tipe === 'TARGET' ? '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-black border border-blue-300">🎯 Targeted Cohort</span>' : '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-black border border-amber-300">⚠️ Organic Inflow</span>';
-          tbodyHtml += `<tr class="hover:bg-gray-50 transition"><td class="px-3 py-2 text-center text-gray-500 font-medium">${idx + 1}</td><td class="px-4 py-2"><p class="font-bold text-gray-900 uppercase">${r.nama}</p><p class="text-[10px] text-gray-500 font-medium">${r.model} (${r.nopol})</p></td><td class="px-4 py-2 font-mono font-bold text-gray-700">${r.vin}</td><td class="px-4 py-2"><p class="font-bold text-gray-800 uppercase">${r.cabang}</p><p class="text-[10px] text-gray-500">SA: ${r.namaSA}</p></td><td class="px-3 py-2 text-center font-bold text-gray-700">${r.servisKe}</td><td class="px-3 py-2 text-center font-mono font-bold text-indigo-700">${r.noWo}</td><td class="px-3 py-2 text-center font-mono text-gray-600">${r.tglRedeem}</td><td class="px-4 py-2 text-right font-black text-green-700">${formatRp(r.revenue)}</td><td class="px-3 py-2 text-center">${bTipe}</td></tr>`;
+          tbodyHtml += '<tr class="hover:bg-gray-50 transition">' +
+                         '<td class="px-3 py-2 text-center text-gray-500 font-medium">' + (idx + 1) + '</td>' +
+                         '<td class="px-4 py-2"><p class="font-bold text-gray-900 uppercase">' + r.nama + '</p><p class="text-[10px] text-gray-500 font-medium">' + r.model + ' (' + r.nopol + ')</p></td>' +
+                         '<td class="px-4 py-2 font-mono font-bold text-gray-700">' + r.vin + '</td>' +
+                         '<td class="px-4 py-2"><p class="font-bold text-gray-800 uppercase">' + r.cabang + '</p><p class="text-[10px] text-gray-500">SA: ' + r.namaSA + '</p></td>' +
+                         '<td class="px-3 py-2 text-center font-bold text-gray-700">' + r.servisKe + '</td>' +
+                         '<td class="px-3 py-2 text-center font-mono font-bold text-indigo-700">' + r.noWo + '</td>' +
+                         '<td class="px-3 py-2 text-center font-mono text-gray-600">' + r.tglRedeem + '</td>' +
+                         '<td class="px-4 py-2 text-right font-black text-green-700">' + formatRp(r.revenue) + '</td>' +
+                         '<td class="px-3 py-2 text-center">' + bTipe + '</td>' +
+                       '</tr>';
         });
       } else {
         tbodyHtml = '<tr><td colspan="9" class="px-4 py-10 text-center text-gray-400 italic font-medium">No redemption records found.</td></tr>';
@@ -1626,7 +1757,7 @@
           globalRedeemedDetails = res.redeemedDetails || [];
           dashIsJanJun = (res.isJanJun === true);
 
-          // 🔴 Display Dynamic In S2 Return in Leads card when Jan-Jun active
+          // Tampilkan badge In S2 Return pada kartu Leads bila Jan-Jun aktif
           var badgeS2 = document.getElementById('leadsInS2Badge');
           if (badgeS2) {
             if (dashIsJanJun) {
@@ -1773,7 +1904,23 @@
                 : '<span class="bg-gray-100 text-gray-800 px-2.5 py-0.5 rounded-md text-[10px] font-black border border-gray-300">❓ UNBILLED VOUCHER</span>'));
           
           var safeWo = r.noWo || '-', safeNoka = r.noka || '-';
-          tbodyHtml += `<tr class="hover:bg-slate-50 transition border-b border-gray-100"><td class="px-3 py-2.5 text-center text-gray-400 font-medium">${idx + 1}</td><td class="px-4 py-2.5"><p onclick="copyToClipboard('${safeWo}','No. WO')" class="font-bold text-gray-900 font-mono tracking-tight cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy WO">${safeWo} <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p><p class="text-[10px] text-gray-500 font-medium">${r.tglWo}</p></td><td class="px-4 py-2.5"><p class="font-bold text-gray-800 uppercase">${r.cabang}</p><p class="text-[10px] text-gray-500">SA: ${r.namaSA}</p></td><td class="px-4 py-2.5"><p onclick="copyToClipboard('${safeNoka}','VIN')" class="font-mono font-bold text-gray-900 cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy VIN">${safeNoka} <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p><p class="text-[10px] text-gray-500 font-semibold">${r.model || '-'}</p></td><td class="px-4 py-2.5 font-medium text-gray-800 max-w-xs truncate" title="${r.pekerjaan}">${r.pekerjaan}</td><td class="px-4 py-2.5 text-right font-mono font-bold text-purple-700">${r.discJasa}</td><td class="px-4 py-2.5 text-right font-black text-gray-900 font-mono">${formatRp(r.totalInvoice)}</td><td class="px-3 py-2.5 text-center">${badge}</td><td class="px-4 py-2.5 text-[11px] font-medium text-gray-600 leading-snug max-w-sm whitespace-normal">${r.keterangan}</td></tr>`;
+          tbodyHtml += '<tr class="hover:bg-slate-50 transition border-b border-gray-100">' +
+                         '<td class="px-3 py-2.5 text-center text-gray-400 font-medium">' + (idx + 1) + '</td>' +
+                         '<td class="px-4 py-2.5">' +
+                           '<p onclick="copyToClipboard(\'' + safeWo + '\', \'No. WO\')" class="font-bold text-gray-900 font-mono tracking-tight cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy WO">' + safeWo + ' <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p>' +
+                           '<p class="text-[10px] text-gray-500 font-medium">' + (r.tglWo || '-') + '</p>' +
+                         '</td>' +
+                         '<td class="px-4 py-2.5"><p class="font-bold text-gray-800 uppercase">' + (r.cabang || '-') + '</p><p class="text-[10px] text-gray-500">SA: ' + (r.namaSA || '-') + '</p></td>' +
+                         '<td class="px-4 py-2.5">' +
+                           '<p onclick="copyToClipboard(\'' + safeNoka + '\', \'VIN\')" class="font-mono font-bold text-gray-900 cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy VIN">' + safeNoka + ' <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p>' +
+                           '<p class="text-[10px] text-gray-500 font-semibold">' + (r.model || '-') + '</p>' +
+                         '</td>' +
+                         '<td class="px-4 py-2.5 font-medium text-gray-800 max-w-xs truncate" title="' + (r.pekerjaan || '-') + '">' + (r.pekerjaan || '-') + '</td>' +
+                         '<td class="px-4 py-2.5 text-right font-mono font-bold text-purple-700">' + (r.discJasa || '0%') + '</td>' +
+                         '<td class="px-4 py-2.5 text-right font-black text-gray-900 font-mono">' + formatRp(r.totalInvoice || 0) + '</td>' +
+                         '<td class="px-3 py-2.5 text-center">' + badge + '</td>' +
+                         '<td class="px-4 py-2.5 text-[11px] font-medium text-gray-600 leading-snug max-w-sm whitespace-normal">' + (r.keterangan || '-') + '</td>' +
+                       '</tr>';
         });
       } else {
         tbodyHtml = '<tr><td colspan="9" class="px-4 py-10 text-center text-gray-400 italic font-medium">No records match the active criteria.</td></tr>';
