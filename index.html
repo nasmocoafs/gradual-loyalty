@@ -454,12 +454,12 @@
         </div>
       </div>
 
-      <!-- 🔴 TAB: ANALYTICS DASHBOARD (GRANULAR SERVIS 8 VS 9) -->
+      <!-- 🔴 TAB: ANALYTICS DASHBOARD (TOP-DOWN FUNNEL & ARPU / COO REALIZATION) -->
       <div id="view-dashboard" class="w-full max-w-7xl mx-auto fade-in hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
           <div>
             <h2 class="text-xl md:text-2xl font-black text-gray-900 tracking-tight">Predictive Analytics & Executive Dashboard</h2>
-            <p class="text-xs text-gray-500 mt-1">Strategic Performance Governance: Servis 8 vs 9 Breakdown, Lock-in Rate & Gross Invoicing</p>
+            <p class="text-xs text-gray-500 mt-1">Strategic Performance Governance: Servis 8 vs 9 Breakdown, ARPU & COO Realization</p>
           </div>
           <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
             <div class="w-full md:w-auto">
@@ -497,14 +497,14 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
-              <!-- KARTU 1: COHORT TARGET LEADS (TOTAL + S8 & S9) -->
+              <!-- KARTU 1: COHORT TARGET LEADS -->
               <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center flex flex-col justify-between">
                 <div>
                   <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Cohort Target Leads</p>
                   <p class="text-3xl font-black text-white mt-1" id="kpiLeads">0</p>
                   <div class="mt-2 pt-2 border-t border-white/10 flex justify-around text-[11px] font-bold text-blue-100">
-                    <span>S8 (70k): <b id="kpiLeadsS8" class="text-white">0</b></span>
-                    <span class="border-l border-white/20 pl-2">S9 (80k): <b id="kpiLeadsS9" class="text-white">0</b></span>
+                    <span>S8: <b id="kpiLeadsS8" class="text-white">0</b></span>
+                    <span class="border-l border-white/20 pl-2">S9: <b id="kpiLeadsS9" class="text-white">0</b></span>
                   </div>
                 </div>
                 <div id="leadsInS2Badge" class="hidden mt-2 inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-[9px] font-bold text-emerald-300">
@@ -512,7 +512,7 @@
                 </div>
               </div>
               
-              <!-- KARTU 2: TICKETS ISSUED (TOTAL + S8 & S9) -->
+              <!-- KARTU 2: TICKETS ISSUED -->
               <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center relative group flex flex-col justify-between">
                 <div>
                   <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Tickets Issued</p>
@@ -525,7 +525,7 @@
                 <button onclick="openTicketModal('target')" class="mt-3 text-[10px] font-bold bg-blue-500/30 hover:bg-blue-500 text-white px-2.5 py-1 rounded-lg border border-blue-400/40 transition shadow-sm">🔍 Ticket Details</button>
               </div>
 
-              <!-- KARTU 3: REDEEMED UNITS (TOTAL + S8 & S9) -->
+              <!-- KARTU 3: REDEEMED UNITS -->
               <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center relative group flex flex-col justify-between">
                 <div>
                   <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Redeemed Units</p>
@@ -538,7 +538,7 @@
                 <button onclick="openRedeemModal('target')" class="mt-3 text-[10px] font-bold bg-emerald-500/30 hover:bg-emerald-500 text-white px-2.5 py-1 rounded-lg border border-emerald-400/40 transition shadow-sm">🔍 Customer Details</button>
               </div>
 
-              <!-- KARTU 4: COHORT CONVERSION RATE (TOTAL + S8 & S9) -->
+              <!-- KARTU 4: COHORT CONVERSION RATE -->
               <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center flex flex-col justify-between">
                 <div>
                   <p class="text-[10px] font-bold text-yellow-300 uppercase tracking-wider">Cohort Conversion Rate</p>
@@ -553,39 +553,147 @@
             </div>
           </div>
           
-          <!-- FINANCIAL METRICS & GRANULAR FUNNEL -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="col-span-1 bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center items-center">
-              <p class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Target Retention Funnel (Servis 8 vs 9)</p>
-              <div class="relative w-full h-52 md:h-60"><canvas id="funnelChart"></canvas></div>
-            </div>
-            <div class="col-span-1 md:col-span-2 grid grid-rows-2 gap-4">
-              <div class="bg-green-50 p-5 rounded-xl border border-green-200 shadow-sm flex flex-col justify-between relative overflow-hidden">
-                <div class="absolute top-0 right-0 bg-green-200 text-green-800 text-[9px] font-black px-3 py-1 rounded-bl-lg tracking-wider">REALIZED BILLING</div>
-                <div class="flex justify-between items-start">
-                  <div>
-                    <p class="text-xs font-bold text-green-700 uppercase tracking-widest">Total Actual Revenue (Gross)</p>
-                    <p class="text-3xl font-black text-green-700 mt-1" id="kpiActual">Rp 0</p>
+          <!-- 🔴 SEKSI 3: TOP-DOWN STEPPED RETENTION FUNNEL & ARPU / COO REALIZATION CARD -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- SISI KIRI (5 KOLOM): TOP-DOWN STEPPED FUNNEL KE BAWAH -->
+            <div class="lg:col-span-5 bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between">
+              <div class="border-b pb-2 mb-3 flex justify-between items-center">
+                <h3 class="text-xs font-black text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <span>🔻 Retention Funnel (Servis 8 vs 9)</span>
+                </h3>
+                <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">Top-Down Flow</span>
+              </div>
+
+              <!-- Stepped Funnel Container -->
+              <div class="space-y-2 flex flex-col items-center w-full">
+                <!-- STEP 1: TARGET LEADS (WIDE TOP) -->
+                <div class="w-full bg-slate-100 border border-slate-300 rounded-xl p-3 text-center shadow-sm">
+                  <div class="flex justify-between items-center mb-1">
+                    <span class="text-[10px] font-black text-slate-700 uppercase">1. Target Leads Cohort</span>
+                    <span class="text-[10px] font-bold text-slate-500">100% (Baseline)</span>
                   </div>
-                  <button onclick="openRedeemModal('all')" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow transition">🔍 View All Redeemed</button>
+                  <p class="text-2xl font-black text-slate-900" id="fnLeads">0</p>
+                  <div class="mt-1 flex justify-around text-[10px] font-bold text-slate-600 bg-white/70 py-1 rounded">
+                    <span>S8: <b id="fnLeadsS8" class="text-slate-900">0</b></span>
+                    <span>S9: <b id="fnLeadsS9" class="text-slate-900">0</b></span>
+                  </div>
                 </div>
-                <div class="mt-2 pt-2 border-t border-green-200 flex flex-wrap items-center gap-4 text-xs font-bold">
-                  <span class="text-green-800">🎯 Matched Invoicing: <b id="kpiTargetRevenueText" class="font-black">Rp 0</b></span>
-                  <span class="text-emerald-700">| S8: <b id="kpiRevS8">Rp 0</b></span>
-                  <span class="text-emerald-700">| S9: <b id="kpiRevS9">Rp 0</b></span>
-                  <span class="text-green-600 ml-auto">Projected Potential: <b id="kpiSaved">Rp 0</b></span>
+
+                <!-- Connector Lock-In -->
+                <div class="flex items-center gap-1 text-[10px] font-black text-blue-600 py-0.5">
+                  <span>↓</span>
+                  <span id="fnLockInRate">Lock-in Rate: 0%</span>
+                  <span>↓</span>
+                </div>
+
+                <!-- STEP 2: TICKETS ISSUED (MEDIUM) -->
+                <div class="w-[84%] bg-blue-50 border border-blue-300 rounded-xl p-2.5 text-center shadow-sm">
+                  <div class="flex justify-between items-center mb-0.5">
+                    <span class="text-[10px] font-black text-blue-800 uppercase">2. Tickets Issued (Lock-in)</span>
+                    <span class="text-[10px] font-bold text-blue-600" id="fnIssuedPct">0%</span>
+                  </div>
+                  <p class="text-xl font-black text-blue-700" id="fnIssued">0</p>
+                  <div class="mt-1 flex justify-around text-[9px] font-bold text-blue-800 bg-white/70 py-0.5 rounded">
+                    <span>S8: <b id="fnIssuedS8">0</b></span>
+                    <span>S9: <b id="fnIssuedS9">0</b></span>
+                  </div>
+                </div>
+
+                <!-- Connector Realization -->
+                <div class="flex items-center gap-1 text-[10px] font-black text-emerald-600 py-0.5">
+                  <span>↓</span>
+                  <span id="fnRealizationRate">Realization: 0%</span>
+                  <span>↓</span>
+                </div>
+
+                <!-- STEP 3: REDEEMED UNITS (NARROW BOTTOM) -->
+                <div class="w-[68%] bg-emerald-50 border border-emerald-300 rounded-xl p-2.5 text-center shadow-sm">
+                  <div class="flex justify-between items-center mb-0.5">
+                    <span class="text-[10px] font-black text-emerald-800 uppercase">3. Redeemed Units</span>
+                    <span class="text-[10px] font-bold text-emerald-600" id="fnRedeemedPct">0%</span>
+                  </div>
+                  <p class="text-xl font-black text-emerald-700" id="fnRedeemed">0</p>
+                  <div class="mt-1 flex justify-around text-[9px] font-bold text-emerald-800 bg-white/70 py-0.5 rounded">
+                    <span>S8: <b id="fnRedeemedS8">0</b></span>
+                    <span>S9: <b id="fnRedeemedS9">0</b></span>
+                  </div>
                 </div>
               </div>
-              <div class="bg-rose-50 p-5 rounded-xl border border-rose-200 shadow-sm flex flex-col justify-center relative overflow-hidden">
+
+              <p class="text-[10px] text-gray-400 font-medium text-center mt-2">Menampilkan konversi berjenjang dari populasi target leads menuju realisasi servis di bengkel.</p>
+            </div>
+
+            <!-- SISI KANAN (7 KOLOM): REVENUE & ARPU / COO REALIZATION -->
+            <div class="lg:col-span-7 flex flex-col gap-4">
+              
+              <!-- KARTU ACTUAL REVENUE + REVENUE PER UNIT & COO REALIZATION -->
+              <div class="bg-green-50/90 p-5 rounded-2xl border border-green-300 shadow-sm flex flex-col justify-between relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-green-200 text-green-900 text-[9px] font-black px-3 py-1 rounded-bl-lg tracking-wider">REALIZED BILLING</div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+                  <!-- KIRI: TOTAL ACTUAL REVENUE -->
+                  <div class="md:col-span-6">
+                    <p class="text-xs font-bold text-green-800 uppercase tracking-widest">Total Actual Revenue (Gross)</p>
+                    <p class="text-3xl font-black text-green-700 mt-1" id="kpiActual">Rp 0</p>
+                    <div class="mt-2 text-xs font-bold text-green-800 space-y-0.5">
+                      <p>S8 Gross: <b id="kpiRevS8" class="text-green-900 font-black">Rp 0</b></p>
+                      <p>S9 Gross: <b id="kpiRevS9" class="text-green-900 font-black">Rp 0</b></p>
+                      <p class="text-[11px] text-green-700 font-medium pt-1">Projected Target: <b id="kpiSaved">Rp 0</b></p>
+                    </div>
+                  </div>
+
+                  <!-- KANAN: REVENUE PER UNIT (ARPU) & COO REALIZATION RATIO -->
+                  <div class="md:col-span-6 bg-white/80 border border-green-200 rounded-xl p-3 shadow-sm">
+                    <div class="flex justify-between items-center pb-1 border-b border-green-200 mb-2">
+                      <span class="text-[10px] font-black text-green-900 uppercase">Revenue Per Unit (ARPU)</span>
+                      <span id="kpiCooRatioTotalBadge" class="bg-green-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded">0% vs COO</span>
+                    </div>
+
+                    <div class="mb-2">
+                      <p class="text-[10px] text-gray-500 font-semibold">Aktual / RO (Total):</p>
+                      <p class="text-xl font-black text-green-800" id="kpiArpuTotal">Rp 0</p>
+                      <p class="text-[9px] text-gray-400">Ideal COO: <span id="kpiIdealCooTotal" class="font-bold text-gray-600">Rp 0</span></p>
+                    </div>
+
+                    <!-- Breakdown S8 vs S9 ARPU & COO -->
+                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-green-100 text-[10px]">
+                      <div class="bg-emerald-50 p-1.5 rounded border border-emerald-200">
+                        <p class="font-black text-emerald-900 uppercase text-[9px]">S8 (70k KM)</p>
+                        <p class="font-black text-emerald-700 text-xs" id="kpiArpuS8">Rp 0</p>
+                        <p class="text-[9px] text-gray-500">COO: <span id="kpiIdealCooS8">Rp 0</span></p>
+                        <p class="text-[9px] font-bold text-emerald-800 mt-0.5">Ratio: <b id="kpiCooRatioS8">0%</b></p>
+                      </div>
+
+                      <div class="bg-blue-50 p-1.5 rounded border border-blue-200">
+                        <p class="font-black text-blue-900 uppercase text-[9px]">S9 (80k KM)</p>
+                        <p class="font-black text-blue-700 text-xs" id="kpiArpuS9">Rp 0</p>
+                        <p class="text-[9px] text-gray-500">COO: <span id="kpiIdealCooS9">Rp 0</span></p>
+                        <p class="text-[9px] font-bold text-blue-800 mt-0.5">Ratio: <b id="kpiCooRatioS9">0%</b></p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-3 pt-2 border-t border-green-200 flex justify-between items-center">
+                  <span class="text-[10px] text-green-800 font-bold">🎯 Acuan COO ideal diambil dari rata-rata estimasi biaya servis di database target.</span>
+                  <button onclick="openRedeemModal('all')" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3 py-1 rounded-lg shadow transition">🔍 View All Redeemed</button>
+                </div>
+              </div>
+
+              <!-- KARTU POTENTIAL REVENUE OUTSTANDING -->
+              <div class="bg-rose-50 p-5 rounded-2xl border border-rose-200 shadow-sm flex flex-col justify-center relative overflow-hidden">
                 <div class="absolute top-0 right-0 bg-rose-200 text-rose-800 text-[9px] font-black px-3 py-1 rounded-bl-lg tracking-wider">OUTSTANDING POTENTIAL</div>
                 <p class="text-xs font-bold text-rose-700 uppercase tracking-widest">Potential Revenue Outstanding (Unconverted Leads)</p>
                 <p class="text-3xl font-black text-rose-700 mt-1" id="kpiLost">Rp 0</p>
-                <div class="mt-1 flex gap-4 text-[11px] font-bold text-rose-800">
+                <div class="mt-2 flex gap-4 text-xs font-bold text-rose-800">
                   <span>S8 Outstanding: <b id="kpiOutS8">Rp 0</b></span>
-                  <span class="border-l border-rose-300 pl-3">S9 Outstanding: <b id="kpiOutS9">Rp 0</b></span>
+                  <span class="border-l border-rose-300 pl-4">S9 Outstanding: <b id="kpiOutS9">Rp 0</b></span>
                 </div>
               </div>
+
             </div>
+
           </div>
 
           <!-- 🔴 BARIS SEJAJAR: SA LEADERBOARD (KIRI 65%) & HYBRID VEHICLE ANALYSIS (KANAN 35%) -->
@@ -724,7 +832,7 @@
               <p class="text-2xl font-black text-amber-700 mt-1" id="kpiAuditSalahJob">0</p>
               <p class="text-[9px] text-amber-600 font-bold mt-0.5">Non-Standard Scope</p>
             </div>
-            <div class="bg-blue-50/80 p-4 rounded-xl border border-amber-200 shadow-sm text-center">
+            <div class="bg-blue-50/80 p-4 rounded-xl border border-blue-200 shadow-sm text-center">
               <p class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Unlinked Invoices</p>
               <p class="text-2xl font-black text-blue-700 mt-1" id="kpiAuditKlaimLiar">0</p>
               <p class="text-[9px] text-blue-600 font-bold mt-0.5">Pending Web Redemption</p>
@@ -906,7 +1014,6 @@
   <script>
     Chart.register(ChartDataLabels); 
     var sessionUser = null; 
-    var funnelChartInstance = null;
     var segmentChartInstance = null;
     var vehicleSegmentChartInstance = null;
     var html5QrCode = null; 
@@ -1325,7 +1432,7 @@
 
     function resetValidationForm() { document.getElementById('uniqueCode').value = ''; document.getElementById('validateResultSection').classList.add('hidden'); }
 
-    // 🔴 BADGE CELL CRM LENGKAP & AMAN
+    // 🔴 BADGE CELL CRM
     function buildBadgeCell(svc) {
       if (!svc || typeof svc !== 'object') return '-';
       var status = (svc.status || '').toString().toUpperCase().trim();
@@ -1795,16 +1902,7 @@
         filtered.forEach((r, idx) => {
           var bTipe = r.tipe === 'TARGET' ? '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-black border border-blue-300">🎯 Targeted Cohort</span>' : '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-black border border-amber-300">⚠️ Organic Inflow</span>';
           var bSts = r.status === 'REDEEMED' ? '<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-[10px] font-bold">✅ Redeemed</span>' : (r.status === 'ACTIVE' ? '<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-[10px] font-bold">🔥 Active</span>' : '<span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-bold">✖ Expired</span>');
-          tbodyHtml += '<tr class="hover:bg-gray-50 transition">' +
-                         '<td class="px-3 py-2 text-center text-gray-500 font-medium">' + (idx + 1) + '</td>' +
-                         '<td class="px-4 py-2"><p class="font-bold text-gray-900 uppercase">' + r.nama + '</p><p class="text-[10px] text-gray-500 font-medium">' + r.model + ' (' + r.nopol + ')</p></td>' +
-                         '<td class="px-4 py-2 font-mono font-bold text-gray-700">' + r.vin + '</td>' +
-                         '<td class="px-4 py-2"><p class="font-bold text-gray-800 uppercase">' + r.cabang + '</p><p class="text-[10px] text-gray-500">SA: ' + r.namaSA + '</p></td>' +
-                         '<td class="px-3 py-2 text-center font-bold text-gray-700">' + r.servisKe + '</td>' +
-                         '<td class="px-3 py-2 text-center font-mono text-gray-600">' + r.tglTerbit + '</td>' +
-                         '<td class="px-3 py-2 text-center">' + bSts + '</td>' +
-                         '<td class="px-3 py-2 text-center">' + bTipe + '</td>' +
-                       '</tr>';
+          tbodyHtml += `<tr class="hover:bg-gray-50 transition"><td class="px-3 py-2 text-center text-gray-500 font-medium">${idx + 1}</td><td class="px-4 py-2"><p class="font-bold text-gray-900 uppercase">${r.nama}</p><p class="text-[10px] text-gray-500 font-medium">${r.model} (${r.nopol})</p></td><td class="px-4 py-2 font-mono font-bold text-gray-700">${r.vin}</td><td class="px-4 py-2"><p class="font-bold text-gray-800 uppercase">${r.cabang}</p><p class="text-[10px] text-gray-500">SA: ${r.namaSA}</p></td><td class="px-3 py-2 text-center font-bold text-gray-700">${r.servisKe}</td><td class="px-3 py-2 text-center font-mono text-gray-600">${r.tglTerbit}</td><td class="px-3 py-2 text-center">${bSts}</td><td class="px-3 py-2 text-center">${bTipe}</td></tr>`;
         });
       } else {
         tbodyHtml = '<tr><td colspan="8" class="px-4 py-10 text-center text-gray-400 italic font-medium">No tickets match active filter.</td></tr>';
@@ -1852,17 +1950,7 @@
         filtered.forEach((r, idx) => {
           totalRev += Number(r.revenue) || 0;
           var bTipe = r.tipe === 'TARGET' ? '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-black border border-blue-300">🎯 Targeted Cohort</span>' : '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-black border border-amber-300">⚠️ Organic Inflow</span>';
-          tbodyHtml += '<tr class="hover:bg-gray-50 transition">' +
-                         '<td class="px-3 py-2 text-center text-gray-500 font-medium">' + (idx + 1) + '</td>' +
-                         '<td class="px-4 py-2"><p class="font-bold text-gray-900 uppercase">' + r.nama + '</p><p class="text-[10px] text-gray-500 font-medium">' + r.model + ' (' + r.nopol + ')</p></td>' +
-                         '<td class="px-4 py-2 font-mono font-bold text-gray-700">' + r.vin + '</td>' +
-                         '<td class="px-4 py-2"><p class="font-bold text-gray-800 uppercase">' + r.cabang + '</p><p class="text-[10px] text-gray-500">SA: ' + r.namaSA + '</p></td>' +
-                         '<td class="px-3 py-2 text-center font-bold text-gray-700">' + r.servisKe + '</td>' +
-                         '<td class="px-3 py-2 text-center font-mono font-bold text-indigo-700">' + r.noWo + '</td>' +
-                         '<td class="px-3 py-2 text-center font-mono text-gray-600">' + r.tglRedeem + '</td>' +
-                         '<td class="px-4 py-2 text-right font-black text-green-700">' + formatRp(r.revenue) + '</td>' +
-                         '<td class="px-3 py-2 text-center">' + bTipe + '</td>' +
-                       '</tr>';
+          tbodyHtml += `<tr class="hover:bg-gray-50 transition"><td class="px-3 py-2 text-center text-gray-500 font-medium">${idx + 1}</td><td class="px-4 py-2"><p class="font-bold text-gray-900 uppercase">${r.nama}</p><p class="text-[10px] text-gray-500 font-medium">${r.model} (${r.nopol})</p></td><td class="px-4 py-2 font-mono font-bold text-gray-700">${r.vin}</td><td class="px-4 py-2"><p class="font-bold text-gray-800 uppercase">${r.cabang}</p><p class="text-[10px] text-gray-500">SA: ${r.namaSA}</p></td><td class="px-3 py-2 text-center font-bold text-gray-700">${r.servisKe}</td><td class="px-3 py-2 text-center font-mono font-bold text-indigo-700">${r.noWo}</td><td class="px-3 py-2 text-center font-mono text-gray-600">${r.tglRedeem}</td><td class="px-4 py-2 text-right font-black text-green-700">${formatRp(r.revenue)}</td><td class="px-3 py-2 text-center">${bTipe}</td></tr>`;
         });
       } else {
         tbodyHtml = '<tr><td colspan="9" class="px-4 py-10 text-center text-gray-400 italic font-medium">No redemption records found.</td></tr>';
@@ -1881,7 +1969,7 @@
       XLSX.writeFile(wb, "Loyalty_Redemptions.xlsx");
     }
 
-    // 🔴 LOAD ANALYTICS DASHBOARD TERINTEGRASI (GRANULAR SERVIS 8 & 9)
+    // 🔴 LOAD ANALYTICS DASHBOARD TERINTEGRASI (GRANULAR SERVIS 8 & 9 + ARPU / COO REALIZATION)
     function loadDashboard() {
       document.getElementById('dashContent').classList.add('hidden'); 
       document.getElementById('dashLoading').classList.remove('hidden'); 
@@ -1909,34 +1997,66 @@
             }
           }
 
-          // KPI Leads (Total + S8 & S9)
+          // 1. KPI Leads (Total + S8 & S9)
           document.getElementById('kpiLeads').innerText = res.leads || 0; 
           document.getElementById('kpiLeadsS8').innerText = res.leadsS8 || 0;
           document.getElementById('kpiLeadsS9').innerText = res.leadsS9 || 0;
 
-          // KPI Tickets Issued (Total + S8 & S9)
+          // 2. KPI Tickets Issued (Total + S8 & S9)
           document.getElementById('kpiTargetConverted').innerText = res.ticketsIssued || res.targetConverted || 0;
           document.getElementById('kpiIssuedS8').innerText = res.ticketsIssuedS8 || 0;
           document.getElementById('kpiIssuedS9').innerText = res.ticketsIssuedS9 || 0;
 
-          // KPI Redeemed Units (Total + S8 & S9)
+          // 3. KPI Redeemed Units (Total + S8 & S9)
           document.getElementById('kpiTargetRedeemed').innerText = res.redeemedUnits || res.targetRedeemed || 0;
           document.getElementById('kpiRedeemedS8').innerText = res.redeemedUnitsS8 || 0;
           document.getElementById('kpiRedeemedS9').innerText = res.redeemedUnitsS9 || 0;
 
-          // KPI Conversion Rate (Total + S8 & S9)
+          // 4. KPI Conversion Rate (Total + S8 & S9)
           document.getElementById('kpiTargetConvRate').innerText = (res.targetConvRate || 0) + '%';
           document.getElementById('kpiConvS8').innerText = (res.convRateS8 || 0) + '%';
           document.getElementById('kpiConvS9').innerText = (res.convRateS9 || 0) + '%';
           document.getElementById('kpiTargetLockInRate').innerText = (res.targetLockInRate || 0) + '%';
 
-          // Revenue & Potential Outstanding
+          // 🔴 5. TOP-DOWN STEPPED FUNNEL POPULATION
+          document.getElementById('fnLeads').innerText = res.leads || 0;
+          document.getElementById('fnLeadsS8').innerText = res.leadsS8 || 0;
+          document.getElementById('fnLeadsS9').innerText = res.leadsS9 || 0;
+
+          document.getElementById('fnLockInRate').innerText = `Lock-in Rate: ${res.targetLockInRate || 0}%`;
+          document.getElementById('fnIssuedPct').innerText = `${res.targetLockInRate || 0}%`;
+          document.getElementById('fnIssued').innerText = res.ticketsIssued || 0;
+          document.getElementById('fnIssuedS8').innerText = res.ticketsIssuedS8 || 0;
+          document.getElementById('fnIssuedS9').innerText = res.ticketsIssuedS9 || 0;
+
+          var relRate = res.ticketsIssued > 0 ? ((res.redeemedUnits / res.ticketsIssued) * 100).toFixed(1) : "0.0";
+          document.getElementById('fnRealizationRate').innerText = `Realization: ${relRate}%`;
+          document.getElementById('fnRedeemedPct').innerText = `${res.targetConvRate || 0}% of Leads`;
+          document.getElementById('fnRedeemed').innerText = res.redeemedUnits || 0;
+          document.getElementById('fnRedeemedS8').innerText = res.redeemedUnitsS8 || 0;
+          document.getElementById('fnRedeemedS9').innerText = res.redeemedUnitsS9 || 0;
+
+          // 🔴 6. REVENUE, ARPU & COO REALIZATION
           document.getElementById('kpiActual').innerText = formatRp(res.totalActualRevenue || res.targetRevenue || 0);
           document.getElementById('kpiTargetRevenueText').innerText = formatRp(res.targetRevenue || 0);
           document.getElementById('kpiRevS8').innerText = formatRp(res.revenueS8 || 0);
           document.getElementById('kpiRevS9').innerText = formatRp(res.revenueS9 || 0);
+          document.getElementById('kpiSaved').innerText = formatRp(res.savedEstimasi || 0);
 
-          document.getElementById('kpiSaved').innerText = formatRp(res.savedEstimasi || 0); 
+          // ARPU & COO metrics
+          document.getElementById('kpiArpuTotal').innerText = formatRp(res.arpuTotal || 0);
+          document.getElementById('kpiIdealCooTotal').innerText = formatRp(res.idealCooTotal || 0);
+          document.getElementById('kpiCooRatioTotalBadge').innerText = `${res.cooRatioTotal || '0.0'}% vs COO`;
+
+          document.getElementById('kpiArpuS8').innerText = formatRp(res.arpuS8 || 0);
+          document.getElementById('kpiIdealCooS8').innerText = formatRp(res.idealCooS8 || 0);
+          document.getElementById('kpiCooRatioS8').innerText = `${res.cooRatioS8 || '0.0'}%`;
+
+          document.getElementById('kpiArpuS9').innerText = formatRp(res.arpuS9 || 0);
+          document.getElementById('kpiIdealCooS9').innerText = formatRp(res.idealCooS9 || 0);
+          document.getElementById('kpiCooRatioS9').innerText = `${res.cooRatioS9 || '0.0'}%`;
+
+          // Potential Outstanding
           document.getElementById('kpiLost').innerText = formatRp(res.potentialRevenueOutstanding || res.lost || 0);
           document.getElementById('kpiOutS8').innerText = formatRp(res.potentialRevenueOutstandingS8 || 0);
           document.getElementById('kpiOutS9').innerText = formatRp(res.potentialRevenueOutstandingS9 || 0);
@@ -1945,25 +2065,6 @@
           if (today.getDate() >= 15 && parseFloat(res.targetConvRate) < 20 && res.leads > 0) { 
             document.getElementById('earlyWarning').classList.remove('hidden'); 
           }
-          
-          // Diagram Funneling Target
-          if (funnelChartInstance) funnelChartInstance.destroy();
-          funnelChartInstance = new Chart(document.getElementById('funnelChart').getContext('2d'), { 
-            type: 'bar', 
-            data: { 
-              labels: ['Target Leads', 'Tickets Issued', 'Redeemed Units'], 
-              datasets: [{ 
-                data: [res.leads, (res.ticketsIssued || res.targetConverted || 0), (res.redeemedUnits || res.targetRedeemed || 0)], 
-                backgroundColor: ['#94a3b8', '#3b82f6', '#10b981'], 
-                borderRadius: 4 
-              }] 
-            }, 
-            options: { 
-              responsive: true, maintainAspectRatio: false, 
-              plugins: { legend: { display: false }, datalabels: { color: '#ffffff', font: { weight: 'bold', size: 13 }, formatter: v => v > 0 ? v : '' } }, 
-              scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } 
-            } 
-          });
           
           // Render SA Leaderboard
           rawLeaderboardData = res.leaderboard || [];
@@ -1979,7 +2080,7 @@
             hoSection.classList.add('hidden'); hoSection.classList.remove('flex');
           }
 
-          // 🔴 1. CHART: VEHICLE SEGMENT DISTRIBUTION (6 KATEGORI RESMI)
+          // 🔴 7. CHART: VEHICLE SEGMENT DISTRIBUTION (6 KATEGORI RESMI)
           if (vehicleSegmentChartInstance) vehicleSegmentChartInstance.destroy();
           var vSeg = res.vehicleSegments || {};
           var vSegLabels = ['New Entry', 'Economy', 'Standard', 'Medium Luxury', 'Luxury', 'Commercial'];
@@ -2011,7 +2112,7 @@
             });
           }
 
-          // 🔴 2. MINI-TABLE MODEL BREAKDOWN
+          // 🔴 8. MINI-TABLE MODEL BREAKDOWN
           renderModelMiniTable(res.segments || {}, res.redeemedDetails || []);
         }
       });
@@ -2096,18 +2197,18 @@
                          '<td class="px-3 py-2.5 text-center text-gray-400 font-medium">' + (idx + 1) + '</td>' +
                          '<td class="px-4 py-2.5">' +
                            '<p onclick="copyToClipboard(\'' + safeWo + '\', \'No. WO\')" class="font-bold text-gray-900 font-mono tracking-tight cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy WO">' + safeWo + ' <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p>' +
-                           '<p class="text-[10px] text-gray-500 font-medium">' + r.tglWo + '</p>' +
+                           '<p class="text-[10px] text-gray-500 font-medium">' + (r.tglWo || '-') + '</p>' +
                          '</td>' +
-                         '<td class="px-4 py-2.5"><p class="font-bold text-gray-800 uppercase">' + r.cabang + '</p><p class="text-[10px] text-gray-500">SA: ' + r.namaSA + '</p></td>' +
+                         '<td class="px-4 py-2.5"><p class="font-bold text-gray-800 uppercase">' + (r.cabang || '-') + '</p><p class="text-[10px] text-gray-500">SA: ' + (r.namaSA || '-') + '</p></td>' +
                          '<td class="px-4 py-2.5">' +
                            '<p onclick="copyToClipboard(\'' + safeNoka + '\', \'VIN\')" class="font-mono font-bold text-gray-900 cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy VIN">' + safeNoka + ' <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p>' +
                            '<p class="text-[10px] text-gray-500 font-semibold">' + (r.model || '-') + '</p>' +
                          '</td>' +
-                         '<td class="px-4 py-2.5 font-medium text-gray-800 max-w-xs truncate" title="' + r.pekerjaan + '">' + r.pekerjaan + '</td>' +
-                         '<td class="px-4 py-2.5 text-right font-mono font-bold text-purple-700">' + r.discJasa + '</td>' +
-                         '<td class="px-4 py-2.5 text-right font-black text-gray-900 font-mono">' + formatRp(r.totalInvoice) + '</td>' +
+                         '<td class="px-4 py-2.5 font-medium text-gray-800 max-w-xs truncate" title="' + (r.pekerjaan || '-') + '">' + (r.pekerjaan || '-') + '</td>' +
+                         '<td class="px-4 py-2.5 text-right font-mono font-bold text-purple-700">' + (r.discJasa || '0%') + '</td>' +
+                         '<td class="px-4 py-2.5 text-right font-black text-gray-900 font-mono">' + formatRp(r.totalInvoice || 0) + '</td>' +
                          '<td class="px-3 py-2.5 text-center">' + badge + '</td>' +
-                         '<td class="px-4 py-2.5 text-[11px] font-medium text-gray-600 leading-snug max-w-sm whitespace-normal">' + r.keterangan + '</td>' +
+                         '<td class="px-4 py-2.5 text-[11px] font-medium text-gray-600 leading-snug max-w-sm whitespace-normal">' + (r.keterangan || '-') + '</td>' +
                        '</tr>';
         });
       } else {
