@@ -213,7 +213,7 @@
         <div id="panduan-ho" class="hidden bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-200 mb-6">
           <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">Role: Head Office</span> Panduan Eksekutif</h3>
           <ul class="space-y-4 text-gray-600 text-sm">
-            <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">1</span><div><strong class="text-gray-900">Distribusi Target Retensi:</strong> Gunakan menu <i>Analytics Dashboard</i> lalu klik tombol <b class="text-red-600">Upload Master Target</b>. Format file Excel (.XLSX): Cabang | No Rangka | Potensi Rupiah | In S2.</div></li>
+            <li class="flex items-start gap-3"><span class="bg-gray-900 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0">1</span><div><strong class="text-gray-900">Distribusi Target Retensi:</strong> Gunakan menu <i>Analytics Dashboard</i> lalu klik tombol <b class="text-red-600">Upload Master Target</b>. Format file Excel (.XLSX): Cabang | No Rangka | Potensi Rupiah | In S2 | Potensi Svc (8/9) | Bulan S2.</div></li>
           </ul>
         </div>
         <div id="panduan-cabang" class="hidden bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-200">
@@ -454,12 +454,12 @@
         </div>
       </div>
 
-      <!-- 🔴 TAB: ANALYTICS DASHBOARD (EXECUTIVE LEVEL & SEJAJAR) -->
+      <!-- 🔴 TAB: ANALYTICS DASHBOARD (GRANULAR SERVIS 8 VS 9) -->
       <div id="view-dashboard" class="w-full max-w-7xl mx-auto fade-in hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
           <div>
             <h2 class="text-xl md:text-2xl font-black text-gray-900 tracking-tight">Predictive Analytics & Executive Dashboard</h2>
-            <p class="text-xs text-gray-500 mt-1">Strategic Performance Governance: Retention Progress, Lock-in Rate & Gross Invoicing</p>
+            <p class="text-xs text-gray-500 mt-1">Strategic Performance Governance: Servis 8 vs 9 Breakdown, Lock-in Rate & Gross Invoicing</p>
           </div>
           <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
             <div class="w-full md:w-auto">
@@ -486,57 +486,77 @@
         
         <div id="dashContent" class="hidden space-y-6">
 
-          <!-- 🔴 PRIMARY PANE: RETENTION PERFORMANCE -->
+          <!-- 🔴 STRATEGIC PANE: 4 KARTU UTAMA DENGAN BREAKDOWN SERVIS 8 & 9 -->
           <div class="bg-gradient-to-r from-blue-900 to-indigo-950 p-5 rounded-2xl shadow-md text-white">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 pb-3 border-b border-blue-800/60">
               <div class="flex items-center gap-2">
                 <span class="bg-blue-500 text-white text-[10px] font-black px-2.5 py-1 rounded uppercase tracking-wider">STRATEGIC PANE</span>
-                <h3 class="text-sm md:text-base font-black tracking-wide">Targeted Loyalty Cohort Performance</h3>
+                <h3 class="text-sm md:text-base font-black tracking-wide">Targeted Loyalty Cohort Performance (Servis 8 & 9 Granular)</h3>
               </div>
               <span class="text-xs text-blue-200 font-medium">Primary Benchmark for Dealership Customer Retention</span>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
+              <!-- KARTU 1: COHORT TARGET LEADS (TOTAL + S8 & S9) -->
               <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center flex flex-col justify-between">
                 <div>
                   <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Cohort Target Leads</p>
-                  <p class="text-2xl md:text-3xl font-black text-white mt-1" id="kpiLeads">0</p>
+                  <p class="text-3xl font-black text-white mt-1" id="kpiLeads">0</p>
+                  <div class="mt-2 pt-2 border-t border-white/10 flex justify-around text-[11px] font-bold text-blue-100">
+                    <span>S8 (70k): <b id="kpiLeadsS8" class="text-white">0</b></span>
+                    <span class="border-l border-white/20 pl-2">S9 (80k): <b id="kpiLeadsS9" class="text-white">0</b></span>
+                  </div>
                 </div>
                 <div id="leadsInS2Badge" class="hidden mt-2 inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-[9px] font-bold text-emerald-300">
                   <span>In S2 Return:</span> <b id="kpiLeadsInS2" class="text-white font-black">0 (0%)</b>
                 </div>
               </div>
               
+              <!-- KARTU 2: TICKETS ISSUED (TOTAL + S8 & S9) -->
               <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center relative group flex flex-col justify-between">
                 <div>
                   <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Tickets Issued</p>
-                  <p class="text-2xl md:text-3xl font-black text-blue-300 mt-1" id="kpiTargetConverted">0</p>
+                  <p class="text-3xl font-black text-blue-300 mt-1" id="kpiTargetConverted">0</p>
+                  <div class="mt-2 pt-2 border-t border-white/10 flex justify-around text-[11px] font-bold text-blue-100">
+                    <span>S8: <b id="kpiIssuedS8" class="text-white">0</b></span>
+                    <span class="border-l border-white/20 pl-2">S9: <b id="kpiIssuedS9" class="text-white">0</b></span>
+                  </div>
                 </div>
-                <button onclick="openTicketModal('target')" class="mt-2 text-[10px] font-bold bg-blue-500/30 hover:bg-blue-500 text-white px-2.5 py-1 rounded-lg border border-blue-400/40 transition shadow-sm">🔍 Ticket Details</button>
+                <button onclick="openTicketModal('target')" class="mt-3 text-[10px] font-bold bg-blue-500/30 hover:bg-blue-500 text-white px-2.5 py-1 rounded-lg border border-blue-400/40 transition shadow-sm">🔍 Ticket Details</button>
               </div>
 
+              <!-- KARTU 3: REDEEMED UNITS (TOTAL + S8 & S9) -->
               <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center relative group flex flex-col justify-between">
                 <div>
                   <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Redeemed Units</p>
-                  <p class="text-2xl md:text-3xl font-black text-emerald-400 mt-1" id="kpiTargetRedeemed">0</p>
+                  <p class="text-3xl font-black text-emerald-400 mt-1" id="kpiTargetRedeemed">0</p>
+                  <div class="mt-2 pt-2 border-t border-white/10 flex justify-around text-[11px] font-bold text-blue-100">
+                    <span>S8: <b id="kpiRedeemedS8" class="text-white">0</b></span>
+                    <span class="border-l border-white/20 pl-2">S9: <b id="kpiRedeemedS9" class="text-white">0</b></span>
+                  </div>
                 </div>
-                <button onclick="openRedeemModal('target')" class="mt-2 text-[10px] font-bold bg-emerald-500/30 hover:bg-emerald-500 text-white px-2.5 py-1 rounded-lg border border-emerald-400/40 transition shadow-sm">🔍 Customer Details</button>
+                <button onclick="openRedeemModal('target')" class="mt-3 text-[10px] font-bold bg-emerald-500/30 hover:bg-emerald-500 text-white px-2.5 py-1 rounded-lg border border-emerald-400/40 transition shadow-sm">🔍 Customer Details</button>
               </div>
 
+              <!-- KARTU 4: COHORT CONVERSION RATE (TOTAL + S8 & S9) -->
               <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center flex flex-col justify-between">
                 <div>
                   <p class="text-[10px] font-bold text-yellow-300 uppercase tracking-wider">Cohort Conversion Rate</p>
-                  <p class="text-2xl md:text-3xl font-black text-yellow-400 mt-1" id="kpiTargetConvRate">0%</p>
+                  <p class="text-3xl font-black text-yellow-400 mt-1" id="kpiTargetConvRate">0%</p>
+                  <div class="mt-2 pt-2 border-t border-white/10 flex justify-around text-[11px] font-bold text-blue-100">
+                    <span>S8: <b id="kpiConvS8" class="text-white">0%</b></span>
+                    <span class="border-l border-white/20 pl-2">S9: <b id="kpiConvS9" class="text-white">0%</b></span>
+                  </div>
                 </div>
                 <p class="text-[9px] text-blue-200 mt-1">Lock-in Rate: <b id="kpiTargetLockInRate" class="text-white">0%</b></p>
               </div>
             </div>
           </div>
           
-          <!-- FINANCIAL METRICS & FUNNEL -->
+          <!-- FINANCIAL METRICS & GRANULAR FUNNEL -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="col-span-1 bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center items-center">
-              <p class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Target Retention Funnel</p>
+              <p class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Target Retention Funnel (Servis 8 vs 9)</p>
               <div class="relative w-full h-52 md:h-60"><canvas id="funnelChart"></canvas></div>
             </div>
             <div class="col-span-1 md:col-span-2 grid grid-rows-2 gap-4">
@@ -551,13 +571,19 @@
                 </div>
                 <div class="mt-2 pt-2 border-t border-green-200 flex flex-wrap items-center gap-4 text-xs font-bold">
                   <span class="text-green-800">🎯 Matched Invoicing: <b id="kpiTargetRevenueText" class="font-black">Rp 0</b></span>
-                  <span class="text-green-600">Projected Potential: <b id="kpiSaved">Rp 0</b></span>
+                  <span class="text-emerald-700">| S8: <b id="kpiRevS8">Rp 0</b></span>
+                  <span class="text-emerald-700">| S9: <b id="kpiRevS9">Rp 0</b></span>
+                  <span class="text-green-600 ml-auto">Projected Potential: <b id="kpiSaved">Rp 0</b></span>
                 </div>
               </div>
               <div class="bg-rose-50 p-5 rounded-xl border border-rose-200 shadow-sm flex flex-col justify-center relative overflow-hidden">
                 <div class="absolute top-0 right-0 bg-rose-200 text-rose-800 text-[9px] font-black px-3 py-1 rounded-bl-lg tracking-wider">OUTSTANDING POTENTIAL</div>
                 <p class="text-xs font-bold text-rose-700 uppercase tracking-widest">Potential Revenue Outstanding (Unconverted Leads)</p>
                 <p class="text-3xl font-black text-rose-700 mt-1" id="kpiLost">Rp 0</p>
+                <div class="mt-1 flex gap-4 text-[11px] font-bold text-rose-800">
+                  <span>S8 Outstanding: <b id="kpiOutS8">Rp 0</b></span>
+                  <span class="border-l border-rose-300 pl-3">S9 Outstanding: <b id="kpiOutS9">Rp 0</b></span>
+                </div>
               </div>
             </div>
           </div>
@@ -607,7 +633,7 @@
               </div>
 
               <div class="p-4 flex-1 flex flex-col justify-center min-h-[300px]">
-                <!-- Donut Chart 6 Segmen -->
+                <!-- Donut Chart 6 Segmen Resmi -->
                 <div id="view-vehicle-segment" class="w-full h-full relative flex items-center justify-center min-h-[260px]">
                   <canvas id="vehicleSegmentChart"></canvas>
                 </div>
@@ -631,11 +657,11 @@
 
           </div>
 
-          <!-- 🔴 TABEL 2: BREAKDOWN PERFORMA CABANG (FUNNELING MURNI + IN S2 PALING KANAN) -->
+          <!-- 🔴 TABEL 2: BREAKDOWN PERFORMA CABANG (GRANULAR SERVIS 8 & 9) -->
           <div id="hoBreakdownSection" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-col">
             <div class="bg-gray-900 p-4 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div class="flex items-center gap-2">
-                <h3 class="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2">📊 Dealership Performance Breakdown</h3>
+                <h3 class="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2">📊 Dealership Performance Breakdown (Servis 8 & 9 Granular)</h3>
                 <span id="branchCountBadge" class="bg-gray-800 text-yellow-400 text-xs px-2.5 py-0.5 rounded-full font-bold border border-gray-700">0 Branches</span>
               </div>
               <div class="relative w-full sm:w-64">
@@ -655,7 +681,7 @@
         </div>
       </div>
 
-      <!-- 🔴 TAB: NIS PROGRAM GOVERNANCE & INTEGRITY -->
+      <!-- TAB: NIS PROGRAM GOVERNANCE -->
       <div id="view-audit" class="w-full max-w-7xl mx-auto fade-in hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
           <div>
@@ -682,7 +708,6 @@
         <div id="auditLoading" class="text-center py-12 text-gray-500 font-bold hidden">Synchronizing Invoicing Records with Loyalty Engine...</div>
 
         <div id="auditContent" class="space-y-5">
-          <!-- KPI ROW 1: GOVERNANCE METRICS -->
           <div class="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-center">
               <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total Invoiced WO</p>
@@ -699,7 +724,7 @@
               <p class="text-2xl font-black text-amber-700 mt-1" id="kpiAuditSalahJob">0</p>
               <p class="text-[9px] text-amber-600 font-bold mt-0.5">Non-Standard Scope</p>
             </div>
-            <div class="bg-blue-50/80 p-4 rounded-xl border border-blue-200 shadow-sm text-center">
+            <div class="bg-blue-50/80 p-4 rounded-xl border border-amber-200 shadow-sm text-center">
               <p class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Unlinked Invoices</p>
               <p class="text-2xl font-black text-blue-700 mt-1" id="kpiAuditKlaimLiar">0</p>
               <p class="text-[9px] text-blue-600 font-bold mt-0.5">Pending Web Redemption</p>
@@ -711,7 +736,7 @@
             </div>
           </div>
 
-          <!-- 🔴 KPI ROW 2: DISCRETIONARY / ORGANIC INFLOW (DARI EVALUASI SECONDARY PANE) -->
+          <!-- DISCRETIONARY OVERSIGHT / ORGANIC INFLOW -->
           <div class="bg-amber-50/60 border border-amber-200 p-4 rounded-2xl shadow-sm">
             <div class="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-amber-200">
               <div class="flex items-center gap-2">
@@ -736,7 +761,6 @@
             </div>
           </div>
 
-          <!-- TOOLBAR FILTER -->
           <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-3">
             <div class="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
               <button id="btn-audit-ALL" onclick="filterAuditTable('ALL')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm">All Records</button>
@@ -750,7 +774,6 @@
             </div>
           </div>
 
-          <!-- RECONCILIATION AUDIT TABLE -->
           <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div class="overflow-x-auto max-h-[65vh]">
               <table class="w-full text-xs text-left whitespace-nowrap">
@@ -1302,7 +1325,7 @@
 
     function resetValidationForm() { document.getElementById('uniqueCode').value = ''; document.getElementById('validateResultSection').classList.add('hidden'); }
 
-    // 🔴 BADGE CELL CRM LENGKAP & AMAN DARI RUNTIME ERROR
+    // 🔴 BADGE CELL CRM LENGKAP & AMAN
     function buildBadgeCell(svc) {
       if (!svc || typeof svc !== 'object') return '-';
       var status = (svc.status || '').toString().toUpperCase().trim();
@@ -1381,7 +1404,6 @@
     function goToMraPage(page) { mraCurrentPage = page; renderMraTable(); }
     function goToMraLastPage() { mraCurrentPage = Math.ceil(mraFilteredData.length / mraPageSize) || 1; renderMraTable(); }
 
-    // 🔴 RENDER TABEL CRM SOLID & BEBAS CRASH
     function renderMraTable() {
       var totalData = mraFilteredData.length;
       var totalPages = Math.ceil(totalData / mraPageSize) || 1;
@@ -1534,8 +1556,13 @@
         var dataArray = [];
         for (var i = 1; i < rows.length; i++) { 
           if (rows[i] && rows[i].length >= 3) { 
-            var cbg = rows[i][0] ? rows[i][0].toString().trim().replace(/^NS\s+/i, '') : '', nk = rows[i][1] ? rows[i][1].toString().trim().toUpperCase() : '', rp = rows[i][2] ? rows[i][2].toString().replace(/[^0-9]/g, '') : '0', s2 = rows[i][3] ? rows[i][3].toString().trim() : '';
-            if (cbg !== '' && nk !== '') dataArray.push([cbg, nk, rp, s2]); 
+            var cbg = rows[i][0] ? rows[i][0].toString().trim().replace(/^NS\s+/i, '') : '';
+            var nk = rows[i][1] ? rows[i][1].toString().trim().toUpperCase() : '';
+            var rp = rows[i][2] ? rows[i][2].toString().replace(/[^0-9]/g, '') : '0';
+            var s2 = rows[i][3] ? rows[i][3].toString().trim() : '';
+            var svcType = rows[i][4] ? rows[i][4].toString().trim() : '';
+            var bulanS2 = rows[i][5] ? rows[i][5].toString().trim() : '';
+            if (cbg !== '' && nk !== '') dataArray.push([cbg, nk, rp, s2, svcType, bulanS2]); 
           } 
         }
         if (dataArray.length === 0) { btn.innerText = 'Process File'; btn.disabled = false; return Swal.fire('Gagal', 'Tidak ada data valid.', 'error'); }
@@ -1654,15 +1681,17 @@
 
     function filterBranchBreakdown(query) { branchSearchQuery = (query || '').toUpperCase().trim(); renderBranchBreakdown(); }
 
-    // 🔴 DEALERSHIP BREAKDOWN: FUNNELING MURNI + IN S2 PALING KANAN
+    // 🔴 DEALERSHIP BREAKDOWN: GRANULAR SERVIS 8 VS 9 + IN S2 PALING KANAN
     function renderBranchBreakdown() {
       var headHtml = '<tr>' +
         '<th class="px-3 py-3 border-b text-center w-10 bg-gray-50">#</th>' +
         '<th onclick="sortBranchTable(\'cabang\')" class="px-4 py-3 border-b sortable-th bg-gray-50">Dealership <span id="br-sort-cabang">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'potensi\')" class="px-3 py-3 border-b text-center sortable-th bg-gray-50 text-purple-700">Target Leads <span id="br-sort-potensi">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'regTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-blue-50/50 text-blue-700">Tickets Issued <span id="br-sort-regTarget">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'redeemTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-emerald-50/50 text-emerald-700">Redeemed Units <span id="br-sort-redeemTarget">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'convRateTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-indigo-50/50 text-indigo-700">Conversion <span id="br-sort-convRateTarget">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'potensi\')" class="px-3 py-3 border-b text-center sortable-th bg-gray-50 text-purple-700">Total Leads <span id="br-sort-potensi">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'potensiS8\')" class="px-3 py-3 border-b text-center sortable-th bg-purple-50/30 text-purple-800">Leads S8 <span id="br-sort-potensiS8">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'potensiS9\')" class="px-3 py-3 border-b text-center sortable-th bg-purple-50/30 text-purple-800">Leads S9 <span id="br-sort-potensiS9">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'regTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-blue-50/50 text-blue-700">Issued <span id="br-sort-regTarget">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'redeemTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-emerald-50/50 text-emerald-700">Redeemed <span id="br-sort-redeemTarget">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'convRateTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-indigo-50/50 text-indigo-700">Conv % <span id="br-sort-convRateTarget">↕</span></th>' +
         '<th onclick="sortBranchTable(\'revenue\')" class="px-4 py-3 border-b text-right sortable-th bg-gray-100 font-black">Gross Revenue <span id="br-sort-revenue">↕</span></th>';
       
       if (dashIsJanJun) {
@@ -1681,17 +1710,19 @@
         return branchSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
       });
 
-      ['cabang', 'potensi', 'regTarget', 'redeemTarget', 'convRateTarget', 'revenue', 'inS2Count'].forEach(c => {
+      ['cabang', 'potensi', 'potensiS8', 'potensiS9', 'regTarget', 'redeemTarget', 'convRateTarget', 'revenue', 'inS2Count'].forEach(c => {
         var el = document.getElementById('br-sort-' + c);
         if (el) el.innerHTML = branchSortCol === c ? (branchSortOrder === 'asc' ? '<span class="text-red-600 font-bold">▲</span>' : '<span class="text-red-600 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
       });
 
       var badgeEl = document.getElementById('branchCountBadge'); if (badgeEl) badgeEl.innerText = filtered.length + " Branches";
-      var bdHtml = '', totalPot = 0, totalInS2 = 0, totalRegT = 0, totalRedT = 0, totalRev = 0;
+      var bdHtml = '', totalPot = 0, totalPot8 = 0, totalPot9 = 0, totalInS2 = 0, totalRegT = 0, totalRedT = 0, totalRev = 0;
 
       if (filtered.length > 0) {
         filtered.forEach(function(b, idx) {
           totalPot += Number(b.potensi) || 0; 
+          totalPot8 += Number(b.potensiS8) || 0;
+          totalPot9 += Number(b.potensiS9) || 0;
           totalInS2 += Number(b.inS2Count) || 0;
           totalRegT += Number(b.regTarget) || 0; 
           totalRedT += Number(b.redeemTarget) || 0; 
@@ -1703,6 +1734,8 @@
                       '<td class="px-3 py-3 text-center border-b border-gray-100 font-medium text-gray-500">' + (idx + 1) + '</td>' +
                       '<td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">' + b.cabang + '</td>' +
                       '<td class="px-3 py-3 text-center font-black text-purple-700 bg-purple-50/20 border-b border-gray-100">' + (b.potensi || 0) + '</td>' +
+                      '<td class="px-3 py-3 text-center font-bold text-purple-900 bg-purple-50/10 border-b border-gray-100">' + (b.potensiS8 || 0) + '</td>' +
+                      '<td class="px-3 py-3 text-center font-bold text-purple-900 bg-purple-50/10 border-b border-gray-100">' + (b.potensiS9 || 0) + '</td>' +
                       '<td class="px-3 py-3 text-center font-bold text-blue-700 bg-blue-50/30 border-b border-gray-100">' + (b.regTarget || 0) + '</td>' +
                       '<td class="px-3 py-3 text-center font-black text-emerald-700 bg-blue-50/30 border-b border-gray-100">' + (b.redeemTarget || 0) + '</td>' +
                       '<td class="px-3 py-3 text-center font-black text-indigo-700 bg-blue-50/30 border-b border-gray-100">' + (b.convRateTarget || '0,0') + '%</td>' +
@@ -1711,7 +1744,7 @@
                     '</tr>';
         });
       } else {
-        bdHtml = '<tr><td colspan="' + (dashIsJanJun ? 8 : 7) + '" class="px-4 py-8 text-center text-gray-400 italic font-medium">No dealership performance data available.</td></tr>';
+        bdHtml = '<tr><td colspan="' + (dashIsJanJun ? 10 : 9) + '" class="px-4 py-8 text-center text-gray-400 italic font-medium">No dealership performance data available.</td></tr>';
       }
       document.getElementById('hoBreakdownBody').innerHTML = bdHtml;
 
@@ -1722,6 +1755,8 @@
       document.getElementById('hoBreakdownFoot').innerHTML = '<tr class="bg-gray-100 text-xs">' +
         '<td colspan="2" class="px-4 py-3 text-center uppercase tracking-wider font-black">TOTAL ALL BRANCHES</td>' +
         '<td class="px-3 py-3 text-center font-black text-purple-800 bg-purple-100/50">' + totalPot + '</td>' +
+        '<td class="px-3 py-3 text-center font-black text-purple-900 bg-purple-100/30">' + totalPot8 + '</td>' +
+        '<td class="px-3 py-3 text-center font-black text-purple-900 bg-purple-100/30">' + totalPot9 + '</td>' +
         '<td class="px-3 py-3 text-center font-black text-blue-800 bg-blue-100/50">' + totalRegT + '</td>' +
         '<td class="px-3 py-3 text-center font-black text-emerald-800 bg-blue-100/50">' + totalRedT + '</td>' +
         '<td class="px-3 py-3 text-center font-black text-indigo-800 bg-blue-100/50">' + avgTargetConv + '%</td>' +
@@ -1760,7 +1795,16 @@
         filtered.forEach((r, idx) => {
           var bTipe = r.tipe === 'TARGET' ? '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-black border border-blue-300">🎯 Targeted Cohort</span>' : '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-black border border-amber-300">⚠️ Organic Inflow</span>';
           var bSts = r.status === 'REDEEMED' ? '<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-[10px] font-bold">✅ Redeemed</span>' : (r.status === 'ACTIVE' ? '<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-[10px] font-bold">🔥 Active</span>' : '<span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-bold">✖ Expired</span>');
-          tbodyHtml += `<tr class="hover:bg-gray-50 transition"><td class="px-3 py-2 text-center text-gray-500 font-medium">${idx + 1}</td><td class="px-4 py-2"><p class="font-bold text-gray-900 uppercase">${r.nama}</p><p class="text-[10px] text-gray-500 font-medium">${r.model} (${r.nopol})</p></td><td class="px-4 py-2 font-mono font-bold text-gray-700">${r.vin}</td><td class="px-4 py-2"><p class="font-bold text-gray-800 uppercase">${r.cabang}</p><p class="text-[10px] text-gray-500">SA: ${r.namaSA}</p></td><td class="px-3 py-2 text-center font-bold text-gray-700">${r.servisKe}</td><td class="px-3 py-2 text-center font-mono text-gray-600">${r.tglTerbit}</td><td class="px-3 py-2 text-center">${bSts}</td><td class="px-3 py-2 text-center">${bTipe}</td></tr>`;
+          tbodyHtml += '<tr class="hover:bg-gray-50 transition">' +
+                         '<td class="px-3 py-2 text-center text-gray-500 font-medium">' + (idx + 1) + '</td>' +
+                         '<td class="px-4 py-2"><p class="font-bold text-gray-900 uppercase">' + r.nama + '</p><p class="text-[10px] text-gray-500 font-medium">' + r.model + ' (' + r.nopol + ')</p></td>' +
+                         '<td class="px-4 py-2 font-mono font-bold text-gray-700">' + r.vin + '</td>' +
+                         '<td class="px-4 py-2"><p class="font-bold text-gray-800 uppercase">' + r.cabang + '</p><p class="text-[10px] text-gray-500">SA: ' + r.namaSA + '</p></td>' +
+                         '<td class="px-3 py-2 text-center font-bold text-gray-700">' + r.servisKe + '</td>' +
+                         '<td class="px-3 py-2 text-center font-mono text-gray-600">' + r.tglTerbit + '</td>' +
+                         '<td class="px-3 py-2 text-center">' + bSts + '</td>' +
+                         '<td class="px-3 py-2 text-center">' + bTipe + '</td>' +
+                       '</tr>';
         });
       } else {
         tbodyHtml = '<tr><td colspan="8" class="px-4 py-10 text-center text-gray-400 italic font-medium">No tickets match active filter.</td></tr>';
@@ -1808,7 +1852,17 @@
         filtered.forEach((r, idx) => {
           totalRev += Number(r.revenue) || 0;
           var bTipe = r.tipe === 'TARGET' ? '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-black border border-blue-300">🎯 Targeted Cohort</span>' : '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-black border border-amber-300">⚠️ Organic Inflow</span>';
-          tbodyHtml += `<tr class="hover:bg-gray-50 transition"><td class="px-3 py-2 text-center text-gray-500 font-medium">${idx + 1}</td><td class="px-4 py-2"><p class="font-bold text-gray-900 uppercase">${r.nama}</p><p class="text-[10px] text-gray-500 font-medium">${r.model} (${r.nopol})</p></td><td class="px-4 py-2 font-mono font-bold text-gray-700">${r.vin}</td><td class="px-4 py-2"><p class="font-bold text-gray-800 uppercase">${r.cabang}</p><p class="text-[10px] text-gray-500">SA: ${r.namaSA}</p></td><td class="px-3 py-2 text-center font-bold text-gray-700">${r.servisKe}</td><td class="px-3 py-2 text-center font-mono font-bold text-indigo-700">${r.noWo}</td><td class="px-3 py-2 text-center font-mono text-gray-600">${r.tglRedeem}</td><td class="px-4 py-2 text-right font-black text-green-700">${formatRp(r.revenue)}</td><td class="px-3 py-2 text-center">${bTipe}</td></tr>`;
+          tbodyHtml += '<tr class="hover:bg-gray-50 transition">' +
+                         '<td class="px-3 py-2 text-center text-gray-500 font-medium">' + (idx + 1) + '</td>' +
+                         '<td class="px-4 py-2"><p class="font-bold text-gray-900 uppercase">' + r.nama + '</p><p class="text-[10px] text-gray-500 font-medium">' + r.model + ' (' + r.nopol + ')</p></td>' +
+                         '<td class="px-4 py-2 font-mono font-bold text-gray-700">' + r.vin + '</td>' +
+                         '<td class="px-4 py-2"><p class="font-bold text-gray-800 uppercase">' + r.cabang + '</p><p class="text-[10px] text-gray-500">SA: ' + r.namaSA + '</p></td>' +
+                         '<td class="px-3 py-2 text-center font-bold text-gray-700">' + r.servisKe + '</td>' +
+                         '<td class="px-3 py-2 text-center font-mono font-bold text-indigo-700">' + r.noWo + '</td>' +
+                         '<td class="px-3 py-2 text-center font-mono text-gray-600">' + r.tglRedeem + '</td>' +
+                         '<td class="px-4 py-2 text-right font-black text-green-700">' + formatRp(r.revenue) + '</td>' +
+                         '<td class="px-3 py-2 text-center">' + bTipe + '</td>' +
+                       '</tr>';
         });
       } else {
         tbodyHtml = '<tr><td colspan="9" class="px-4 py-10 text-center text-gray-400 italic font-medium">No redemption records found.</td></tr>';
@@ -1827,7 +1881,7 @@
       XLSX.writeFile(wb, "Loyalty_Redemptions.xlsx");
     }
 
-    // 🔴 LOAD ANALYTICS DASHBOARD TERINTEGRASI
+    // 🔴 LOAD ANALYTICS DASHBOARD TERINTEGRASI (GRANULAR SERVIS 8 & 9)
     function loadDashboard() {
       document.getElementById('dashContent').classList.add('hidden'); 
       document.getElementById('dashLoading').classList.remove('hidden'); 
@@ -1844,7 +1898,7 @@
           globalRedeemedDetails = res.redeemedDetails || [];
           dashIsJanJun = (res.isJanJun === true);
 
-          // Tampilkan badge In S2 Return pada kartu Leads bila Jan-Jun aktif
+          // Badge In S2 Return
           var badgeS2 = document.getElementById('leadsInS2Badge');
           if (badgeS2) {
             if (dashIsJanJun) {
@@ -1855,16 +1909,37 @@
             }
           }
 
+          // KPI Leads (Total + S8 & S9)
           document.getElementById('kpiLeads').innerText = res.leads || 0; 
+          document.getElementById('kpiLeadsS8').innerText = res.leadsS8 || 0;
+          document.getElementById('kpiLeadsS9').innerText = res.leadsS9 || 0;
+
+          // KPI Tickets Issued (Total + S8 & S9)
           document.getElementById('kpiTargetConverted').innerText = res.ticketsIssued || res.targetConverted || 0;
+          document.getElementById('kpiIssuedS8').innerText = res.ticketsIssuedS8 || 0;
+          document.getElementById('kpiIssuedS9').innerText = res.ticketsIssuedS9 || 0;
+
+          // KPI Redeemed Units (Total + S8 & S9)
           document.getElementById('kpiTargetRedeemed').innerText = res.redeemedUnits || res.targetRedeemed || 0;
+          document.getElementById('kpiRedeemedS8').innerText = res.redeemedUnitsS8 || 0;
+          document.getElementById('kpiRedeemedS9').innerText = res.redeemedUnitsS9 || 0;
+
+          // KPI Conversion Rate (Total + S8 & S9)
           document.getElementById('kpiTargetConvRate').innerText = (res.targetConvRate || 0) + '%';
+          document.getElementById('kpiConvS8').innerText = (res.convRateS8 || 0) + '%';
+          document.getElementById('kpiConvS9').innerText = (res.convRateS9 || 0) + '%';
           document.getElementById('kpiTargetLockInRate').innerText = (res.targetLockInRate || 0) + '%';
 
+          // Revenue & Potential Outstanding
           document.getElementById('kpiActual').innerText = formatRp(res.totalActualRevenue || res.targetRevenue || 0);
           document.getElementById('kpiTargetRevenueText').innerText = formatRp(res.targetRevenue || 0);
+          document.getElementById('kpiRevS8').innerText = formatRp(res.revenueS8 || 0);
+          document.getElementById('kpiRevS9').innerText = formatRp(res.revenueS9 || 0);
+
           document.getElementById('kpiSaved').innerText = formatRp(res.savedEstimasi || 0); 
           document.getElementById('kpiLost').innerText = formatRp(res.potentialRevenueOutstanding || res.lost || 0);
+          document.getElementById('kpiOutS8').innerText = formatRp(res.potentialRevenueOutstandingS8 || 0);
+          document.getElementById('kpiOutS9').innerText = formatRp(res.potentialRevenueOutstandingS9 || 0);
           
           var today = new Date(); 
           if (today.getDate() >= 15 && parseFloat(res.targetConvRate) < 20 && res.leads > 0) { 
@@ -1904,7 +1979,7 @@
             hoSection.classList.add('hidden'); hoSection.classList.remove('flex');
           }
 
-          // 🔴 1. CHART: VEHICLE SEGMENT DISTRIBUTION (6 KATEGORI RESMI SESUAI TABEL)
+          // 🔴 1. CHART: VEHICLE SEGMENT DISTRIBUTION (6 KATEGORI RESMI)
           if (vehicleSegmentChartInstance) vehicleSegmentChartInstance.destroy();
           var vSeg = res.vehicleSegments || {};
           var vSegLabels = ['New Entry', 'Economy', 'Standard', 'Medium Luxury', 'Luxury', 'Commercial'];
@@ -1936,7 +2011,7 @@
             });
           }
 
-          // 🔴 2. MINI-TABLE MODEL BREAKDOWN (UNTUK TAB MODEL)
+          // 🔴 2. MINI-TABLE MODEL BREAKDOWN
           renderModelMiniTable(res.segments || {}, res.redeemedDetails || []);
         }
       });
@@ -1960,7 +2035,6 @@
           document.getElementById('kpiAuditKlaimLiar').innerText = res.summary.klaimLiar || 0;
           document.getElementById('kpiAuditLeakage').innerText = formatRp(res.summary.totalRevenueNis || 0);
 
-          // 🔴 Display Discretionary / Organic Inflow Audit Cards
           document.getElementById('kpiGovOrganicTickets').innerText = res.summary.organicTickets || 0;
           document.getElementById('kpiGovOrganicRedeemed').innerText = res.summary.organicRedeemed || 0;
           document.getElementById('kpiGovOrganicRevenue').innerText = formatRp(res.summary.organicRevenue || 0);
@@ -2018,7 +2092,23 @@
                 : '<span class="bg-gray-100 text-gray-800 px-2.5 py-0.5 rounded-md text-[10px] font-black border border-gray-300">❓ UNBILLED VOUCHER</span>'));
           
           var safeWo = r.noWo || '-', safeNoka = r.noka || '-';
-          tbodyHtml += `<tr class="hover:bg-slate-50 transition border-b border-gray-100"><td class="px-3 py-2.5 text-center text-gray-400 font-medium">${idx + 1}</td><td class="px-4 py-2.5"><p onclick="copyToClipboard('${safeWo}','No. WO')" class="font-bold text-gray-900 font-mono tracking-tight cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy WO">${safeWo} <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p><p class="text-[10px] text-gray-500 font-medium">${r.tglWo}</p></td><td class="px-4 py-2.5"><p class="font-bold text-gray-800 uppercase">${r.cabang}</p><p class="text-[10px] text-gray-500">SA: ${r.namaSA}</p></td><td class="px-4 py-2.5"><p onclick="copyToClipboard('${safeNoka}','VIN')" class="font-mono font-bold text-gray-900 cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy VIN">${safeNoka} <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p><p class="text-[10px] text-gray-500 font-semibold">${r.model || '-'}</p></td><td class="px-4 py-2.5 font-medium text-gray-800 max-w-xs truncate" title="${r.pekerjaan}">${r.pekerjaan}</td><td class="px-4 py-2.5 text-right font-mono font-bold text-purple-700">${r.discJasa}</td><td class="px-4 py-2.5 text-right font-black text-gray-900 font-mono">${formatRp(r.totalInvoice)}</td><td class="px-3 py-2.5 text-center">${badge}</td><td class="px-4 py-2.5 text-[11px] font-medium text-gray-600 leading-snug max-w-sm whitespace-normal">${r.keterangan}</td></tr>`;
+          tbodyHtml += '<tr class="hover:bg-slate-50 transition border-b border-gray-100">' +
+                         '<td class="px-3 py-2.5 text-center text-gray-400 font-medium">' + (idx + 1) + '</td>' +
+                         '<td class="px-4 py-2.5">' +
+                           '<p onclick="copyToClipboard(\'' + safeWo + '\', \'No. WO\')" class="font-bold text-gray-900 font-mono tracking-tight cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy WO">' + safeWo + ' <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p>' +
+                           '<p class="text-[10px] text-gray-500 font-medium">' + r.tglWo + '</p>' +
+                         '</td>' +
+                         '<td class="px-4 py-2.5"><p class="font-bold text-gray-800 uppercase">' + r.cabang + '</p><p class="text-[10px] text-gray-500">SA: ' + r.namaSA + '</p></td>' +
+                         '<td class="px-4 py-2.5">' +
+                           '<p onclick="copyToClipboard(\'' + safeNoka + '\', \'VIN\')" class="font-mono font-bold text-gray-900 cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy VIN">' + safeNoka + ' <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p>' +
+                           '<p class="text-[10px] text-gray-500 font-semibold">' + (r.model || '-') + '</p>' +
+                         '</td>' +
+                         '<td class="px-4 py-2.5 font-medium text-gray-800 max-w-xs truncate" title="' + r.pekerjaan + '">' + r.pekerjaan + '</td>' +
+                         '<td class="px-4 py-2.5 text-right font-mono font-bold text-purple-700">' + r.discJasa + '</td>' +
+                         '<td class="px-4 py-2.5 text-right font-black text-gray-900 font-mono">' + formatRp(r.totalInvoice) + '</td>' +
+                         '<td class="px-3 py-2.5 text-center">' + badge + '</td>' +
+                         '<td class="px-4 py-2.5 text-[11px] font-medium text-gray-600 leading-snug max-w-sm whitespace-normal">' + r.keterangan + '</td>' +
+                       '</tr>';
         });
       } else {
         tbodyHtml = '<tr><td colspan="9" class="px-4 py-10 text-center text-gray-400 italic font-medium">No records match the active criteria.</td></tr>';
