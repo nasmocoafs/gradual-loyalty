@@ -29,7 +29,7 @@
 
     // DASBOR ANALITIK STATE
     var rawLeaderboardData = [];
-    var lbSortCol = 'redeemTarget';
+    var lbSortCol = 'redeemed';
     var lbSortOrder = 'desc';
 
     var rawBranchBreakdownData = [];
@@ -459,7 +459,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
           <div>
             <h2 class="text-xl md:text-2xl font-black text-gray-900 tracking-tight">Predictive Analytics & Executive Dashboard</h2>
-            <p class="text-xs text-gray-500 mt-1">Dual-Track Governance: Targeted Cohort Retention vs. Organic Inflow</p>
+            <p class="text-xs text-gray-500 mt-1">Strategic Performance Governance: Retention Progress, Lock-in Rate & Gross Value</p>
           </div>
           <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
             <div class="w-full md:w-auto">
@@ -478,22 +478,22 @@
         <div id="earlyWarning" class="mb-6 bg-red-100 border-l-4 border-red-600 p-4 rounded shadow-sm hidden animate-pulse">
            <div class="flex">
              <div class="flex-shrink-0"><svg class="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg></div>
-             <div class="ml-3"><p class="text-xs text-red-700 font-bold uppercase tracking-widest">Early Warning Alert!</p><p class="text-xs text-red-600 mt-0.5">Target conversion rate is below 20%. Tactical intervention required.</p></div>
+             <div class="ml-3"><p class="text-xs text-red-700 font-bold uppercase tracking-widest">Early Warning Alert!</p><p class="text-xs text-red-600 mt-0.5">Cohort conversion rate is below 20%. Tactical review recommended.</p></div>
            </div>
         </div>
         
-        <div id="dashLoading" class="text-center py-12 text-gray-500 font-bold hidden">Processing Multi-Channel Data Analytics...</div>
+        <div id="dashLoading" class="text-center py-12 text-gray-500 font-bold hidden">Processing Executive Data Analytics...</div>
         
         <div id="dashContent" class="hidden space-y-6">
 
-          <!-- 🔴 PRIMARY PANE -->
+          <!-- 🔴 PRIMARY PANE: RETENTION PERFORMANCE -->
           <div class="bg-gradient-to-r from-blue-900 to-indigo-950 p-5 rounded-2xl shadow-md text-white">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 pb-3 border-b border-blue-800/60">
               <div class="flex items-center gap-2">
-                <span class="bg-blue-500 text-white text-[10px] font-black px-2.5 py-1 rounded uppercase tracking-wider">PRIMARY PANE</span>
-                <h3 class="text-sm md:text-base font-black tracking-wide">Targeted Loyalty Cohort (Matched VIN)</h3>
+                <span class="bg-blue-500 text-white text-[10px] font-black px-2.5 py-1 rounded uppercase tracking-wider">STRATEGIC PANE</span>
+                <h3 class="text-sm md:text-base font-black tracking-wide">Targeted Loyalty Cohort Performance</h3>
               </div>
-              <span class="text-xs text-blue-200 font-medium">Primary Dealership Retention Benchmark</span>
+              <span class="text-xs text-blue-200 font-medium">Primary Benchmark for Dealership Customer Retention</span>
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
@@ -510,7 +510,7 @@
               
               <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center relative group flex flex-col justify-between">
                 <div>
-                  <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Target Tickets Issued</p>
+                  <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Tickets Issued</p>
                   <p class="text-2xl md:text-3xl font-black text-blue-300 mt-1" id="kpiTargetConverted">0</p>
                 </div>
                 <button onclick="openTicketModal('target')" class="mt-2 text-[10px] font-bold bg-blue-500/30 hover:bg-blue-500 text-white px-2.5 py-1 rounded-lg border border-blue-400/40 transition shadow-sm">🔍 Ticket Details</button>
@@ -518,7 +518,7 @@
 
               <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center relative group flex flex-col justify-between">
                 <div>
-                  <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Target Redeemed Units</p>
+                  <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Redeemed Units</p>
                   <p class="text-2xl md:text-3xl font-black text-emerald-400 mt-1" id="kpiTargetRedeemed">0</p>
                 </div>
                 <button onclick="openRedeemModal('target')" class="mt-2 text-[10px] font-bold bg-emerald-500/30 hover:bg-emerald-500 text-white px-2.5 py-1 rounded-lg border border-emerald-400/40 transition shadow-sm">🔍 Customer Details</button>
@@ -533,35 +533,8 @@
               </div>
             </div>
           </div>
-
-          <!-- 🔴 SECONDARY PANE -->
-          <div class="bg-amber-50/70 border border-amber-200 p-4 rounded-2xl shadow-sm">
-            <div class="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-amber-200">
-              <div class="flex items-center gap-2">
-                <span class="bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">SECONDARY PANE</span>
-                <h4 class="text-xs md:text-sm font-black text-amber-900">Organic & Discretionary Inflow (Non-Target VIN)</h4>
-              </div>
-              <span class="text-[11px] text-amber-700 font-semibold">Walk-ins outside target master database</span>
-            </div>
-            <div class="grid grid-cols-3 gap-3 text-center">
-              <div class="bg-white p-3 rounded-xl border border-amber-200">
-                <p class="text-[10px] font-bold text-gray-500 uppercase">Organic Tickets</p>
-                <p class="text-xl font-black text-amber-700 mt-0.5" id="kpiNonTargetConverted">0</p>
-                <button onclick="openTicketModal('nontarget')" class="mt-1.5 text-[9px] font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 px-2 py-0.5 rounded border border-amber-300 transition">🔍 Ticket Details</button>
-              </div>
-              <div class="bg-white p-3 rounded-xl border border-amber-200">
-                <p class="text-[10px] font-bold text-gray-500 uppercase">Organic Redeemed</p>
-                <p class="text-xl font-black text-amber-800 mt-0.5" id="kpiNonTargetRedeemed">0</p>
-                <button onclick="openRedeemModal('nontarget')" class="mt-1.5 text-[9px] font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 px-2 py-0.5 rounded border border-amber-300 transition">🔍 Customer Details</button>
-              </div>
-              <div class="bg-white p-3 rounded-xl border border-amber-200">
-                <p class="text-[10px] font-bold text-gray-500 uppercase">Organic Revenue</p>
-                <p class="text-xl font-black text-amber-900 mt-0.5" id="kpiNonTargetRevenue">Rp 0</p>
-              </div>
-            </div>
-          </div>
           
-          <!-- FINANCIAL METRICS -->
+          <!-- FINANCIAL METRICS & FUNNEL -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="col-span-1 bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-center items-center">
               <p class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Target Retention Funnel</p>
@@ -569,58 +542,76 @@
             </div>
             <div class="col-span-1 md:col-span-2 grid grid-rows-2 gap-4">
               <div class="bg-green-50 p-5 rounded-xl border border-green-200 shadow-sm flex flex-col justify-between relative overflow-hidden">
-                <div class="absolute top-0 right-0 bg-green-200 text-green-800 text-[9px] font-black px-3 py-1 rounded-bl-lg tracking-wider">REALIZED INVOICING</div>
+                <div class="absolute top-0 right-0 bg-green-200 text-green-800 text-[9px] font-black px-3 py-1 rounded-bl-lg tracking-wider">REALIZED BILLING</div>
                 <div class="flex justify-between items-start">
                   <div>
                     <p class="text-xs font-bold text-green-700 uppercase tracking-widest">Total Actual Revenue (Gross)</p>
                     <p class="text-3xl font-black text-green-700 mt-1" id="kpiActual">Rp 0</p>
                   </div>
-                  <button onclick="openRedeemModal('all')" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow transition">🔍 View All Transactions</button>
+                  <button onclick="openRedeemModal('all')" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow transition">🔍 View All Redeemed</button>
                 </div>
                 <div class="mt-2 pt-2 border-t border-green-200 flex flex-wrap items-center gap-4 text-xs font-bold">
-                  <span class="text-green-800">🎯 Targeted Cohort: <b id="kpiTargetRevenueText" class="font-black">Rp 0</b></span>
-                  <span class="text-amber-800">⚠️ Organic Inflow: <b id="kpiNonTargetRevenueText" class="font-black">Rp 0</b></span>
+                  <span class="text-green-800">🎯 Matched Invoicing: <b id="kpiTargetRevenueText" class="font-black">Rp 0</b></span>
                   <span class="text-green-600">Projected Potential: <b id="kpiSaved">Rp 0</b></span>
                 </div>
               </div>
-              <div class="bg-red-50 p-5 rounded-xl border border-red-200 shadow-sm flex flex-col justify-center relative overflow-hidden">
-                <div class="absolute top-0 right-0 bg-red-200 text-red-800 text-[9px] font-black px-3 py-1 rounded-bl-lg tracking-wider">REVENUE AT RISK</div>
-                <p class="text-xs font-bold text-red-700 uppercase tracking-widest">Estimated Retention Leakage (Unconverted Leads)</p>
-                <p class="text-3xl font-black text-red-700 mt-1" id="kpiLost">Rp 0</p>
+              <div class="bg-rose-50 p-5 rounded-xl border border-rose-200 shadow-sm flex flex-col justify-center relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-rose-200 text-rose-800 text-[9px] font-black px-3 py-1 rounded-bl-lg tracking-wider">OUTSTANDING POTENTIAL</div>
+                <p class="text-xs font-bold text-rose-700 uppercase tracking-widest">Potential Revenue Outstanding (Unconverted Leads)</p>
+                <p class="text-3xl font-black text-rose-700 mt-1" id="kpiLost">Rp 0</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 🔴 SEGMENTASI UNIT & MODEL EVALUATION (DUAL CHARTS) -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- 1. VEHICLE SEGMENT EVALUATION (6 KATEGORI) -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col overflow-hidden">
+              <div class="bg-gray-900 p-4 border-b border-gray-800 flex justify-between items-center">
+                <h3 class="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2">🚘 Vehicle Segment Distribution</h3>
+                <span class="text-[10px] text-gray-400 font-medium">Economy, Entry, Standard, Lux, Commercial</span>
+              </div>
+              <div class="p-4 flex-1 relative flex items-center justify-center min-h-[260px]">
+                <canvas id="vehicleSegmentChart"></canvas>
+              </div>
+            </div>
+
+            <!-- 2. RETENTION BY VEHICLE MODEL -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col overflow-hidden">
+              <div class="bg-gray-900 p-4 border-b border-gray-800 flex justify-between items-center">
+                <h3 class="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2">🎯 Retention by Vehicle Model</h3>
+                <span class="text-[10px] text-gray-400 font-medium">Model Breakdown Performance</span>
+              </div>
+              <div class="p-4 flex-1 relative flex items-center justify-center min-h-[260px]">
+                <canvas id="segmentChart"></canvas>
               </div>
             </div>
           </div>
           
-          <!-- TABEL 1: LEADERBOARD SA -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-             <div class="col-span-1 md:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
-                <div class="bg-gray-900 p-4 border-b border-gray-800 flex justify-between items-center">
-                   <h3 class="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2">🏆 Top 5 Service Advisor Leaderboard</h3>
-                   <span class="text-[10px] text-gray-400 font-medium">Ranked by Targeted Cohort Retention & Gross Value</span>
-                </div>
-                <div class="p-0 flex-1 overflow-x-auto">
-                  <table class="w-full text-sm text-left">
-                    <thead class="bg-gray-50 text-[10px] uppercase text-gray-500 font-bold">
-                      <tr>
-                        <th class="px-4 py-3 border-b text-center">Rank</th>
-                        <th onclick="toggleLeaderboardSort('cabang')" class="px-4 py-3 border-b sortable-th">Dealership <span id="lb-sort-cabang">↕</span></th>
-                        <th onclick="toggleLeaderboardSort('nama')" class="px-4 py-3 border-b sortable-th">Service Advisor <span id="lb-sort-nama">↕</span></th>
-                        <th onclick="toggleLeaderboardSort('redeemTarget')" class="px-4 py-3 border-b text-center sortable-th text-blue-700">Target Redeemed <span id="lb-sort-redeemTarget">↕</span></th>
-                        <th onclick="toggleLeaderboardSort('revTarget')" class="px-4 py-3 border-b text-right sortable-th text-emerald-700">Target Revenue <span id="lb-sort-revTarget">↕</span></th>
-                        <th onclick="toggleLeaderboardSort('revenue')" class="px-4 py-3 border-b text-right sortable-th">Total Gross Revenue <span id="lb-sort-revenue">↕</span></th>
-                      </tr>
-                    </thead>
-                    <tbody id="leaderboardBody" class="divide-y divide-gray-100"></tbody>
-                  </table>
-                </div>
-             </div>
-             <div class="col-span-1 bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col">
-               <div class="bg-gray-900 p-4 border-b border-gray-800"><h3 class="text-white font-bold text-sm uppercase tracking-wider">🎯 Retention by Vehicle Model</h3></div>
-               <div class="p-4 flex-1 relative flex items-center justify-center min-h-[250px]"><canvas id="segmentChart"></canvas></div>
-             </div>
+          <!-- 🔴 TABEL 1: LEADERBOARD SA (NAMA, CABANG, REGISTERED, REDEEMED, REVENUE) -->
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+            <div class="bg-gray-900 p-4 border-b border-gray-800 flex justify-between items-center">
+              <h3 class="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2">🏆 Top 5 Service Advisor Leaderboard</h3>
+              <span class="text-[10px] text-gray-400 font-medium">Ranked by Redeemed Units & Gross Revenue</span>
+            </div>
+            <div class="p-0 flex-1 overflow-x-auto">
+              <table class="w-full text-sm text-left">
+                <thead class="bg-gray-50 text-[10px] uppercase text-gray-500 font-bold">
+                  <tr>
+                    <th class="px-4 py-3 border-b text-center w-12">Rank</th>
+                    <th onclick="toggleLeaderboardSort('cabang')" class="px-4 py-3 border-b sortable-th">Dealership <span id="lb-sort-cabang">↕</span></th>
+                    <th onclick="toggleLeaderboardSort('nama')" class="px-4 py-3 border-b sortable-th">Service Advisor <span id="lb-sort-nama">↕</span></th>
+                    <th onclick="toggleLeaderboardSort('registered')" class="px-4 py-3 border-b text-center sortable-th text-blue-700">Registered <span id="lb-sort-registered">↕</span></th>
+                    <th onclick="toggleLeaderboardSort('redeemed')" class="px-4 py-3 border-b text-center sortable-th text-emerald-700">Redeemed <span id="lb-sort-redeemed">↕</span></th>
+                    <th onclick="toggleLeaderboardSort('revenue')" class="px-4 py-3 border-b text-right sortable-th text-gray-900 font-black">Gross Revenue <span id="lb-sort-revenue">↕</span></th>
+                  </tr>
+                </thead>
+                <tbody id="leaderboardBody" class="divide-y divide-gray-100"></tbody>
+              </table>
+            </div>
           </div>
 
-          <!-- TABEL 2: BREAKDOWN PERFORMA CABANG DENGAN IN S2 DINAMIS -->
+          <!-- 🔴 TABEL 2: BREAKDOWN PERFORMA CABANG (FUNNELING MURNI + IN S2 PALING KANAN) -->
           <div id="hoBreakdownSection" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-col">
             <div class="bg-gray-900 p-4 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div class="flex items-center gap-2">
@@ -644,12 +635,12 @@
         </div>
       </div>
 
-      <!-- TAB: NIS PROGRAM GOVERNANCE -->
+      <!-- 🔴 TAB: NIS PROGRAM GOVERNANCE & INTEGRITY -->
       <div id="view-audit" class="w-full max-w-7xl mx-auto fade-in hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
           <div>
             <h2 class="text-xl md:text-2xl font-black text-gray-900 tracking-tight">NIS Program Governance & Integrity</h2>
-            <p class="text-xs text-gray-500 mt-1">Automated Cross-System Validation & Integrity Tracking (NIS vs. Loyalty Web App)</p>
+            <p class="text-xs text-gray-500 mt-1">Cross-System Compliance, Invoicing Audit & Non-Target Discretionary Oversight</p>
           </div>
           <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
             <div class="w-full sm:w-auto">
@@ -671,6 +662,7 @@
         <div id="auditLoading" class="text-center py-12 text-gray-500 font-bold hidden">Synchronizing Invoicing Records with Loyalty Engine...</div>
 
         <div id="auditContent" class="space-y-5">
+          <!-- KPI ROW 1: GOVERNANCE METRICS -->
           <div class="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-center">
               <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total Invoiced WO</p>
@@ -699,6 +691,32 @@
             </div>
           </div>
 
+          <!-- 🔴 KPI ROW 2: SECONDARY PANE / ORGANIC INFLOW DIPINDAHKAN KE GOVERNANCE -->
+          <div class="bg-amber-50/60 border border-amber-200 p-4 rounded-2xl shadow-sm">
+            <div class="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-amber-200">
+              <div class="flex items-center gap-2">
+                <span class="bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">DISCRETIONARY OVERSIGHT</span>
+                <h4 class="text-xs md:text-sm font-black text-amber-900">Organic & Discretionary Inflow Audit (Non-Target VIN)</h4>
+              </div>
+              <span class="text-[11px] text-amber-700 font-semibold">Walk-in transactions outside active target cohort</span>
+            </div>
+            <div class="grid grid-cols-3 gap-3 text-center">
+              <div class="bg-white p-3 rounded-xl border border-amber-200">
+                <p class="text-[10px] font-bold text-gray-500 uppercase">Organic Tickets</p>
+                <p class="text-xl font-black text-amber-700 mt-0.5" id="kpiGovOrganicTickets">0</p>
+              </div>
+              <div class="bg-white p-3 rounded-xl border border-amber-200">
+                <p class="text-[10px] font-bold text-gray-500 uppercase">Organic Redeemed</p>
+                <p class="text-xl font-black text-amber-800 mt-0.5" id="kpiGovOrganicRedeemed">0</p>
+              </div>
+              <div class="bg-white p-3 rounded-xl border border-amber-200">
+                <p class="text-[10px] font-bold text-gray-500 uppercase">Organic Revenue (Gross)</p>
+                <p class="text-xl font-black text-amber-900 mt-0.5" id="kpiGovOrganicRevenue">Rp 0</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOOLBAR FILTER -->
           <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-3">
             <div class="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
               <button id="btn-audit-ALL" onclick="filterAuditTable('ALL')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm">All Records</button>
@@ -712,6 +730,7 @@
             </div>
           </div>
 
+          <!-- RECONCILIATION AUDIT TABLE -->
           <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div class="overflow-x-auto max-h-[65vh]">
               <table class="w-full text-xs text-left whitespace-nowrap">
@@ -846,6 +865,7 @@
     var sessionUser = null; 
     var funnelChartInstance = null;
     var segmentChartInstance = null;
+    var vehicleSegmentChartInstance = null;
     var html5QrCode = null; 
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -1261,17 +1281,19 @@
 
     function resetValidationForm() { document.getElementById('uniqueCode').value = ''; document.getElementById('validateResultSection').classList.add('hidden'); }
 
-    // 🔴 FUNGSI BADGE CELL CRM LENGKAP & AMAN DARI ERROR RUNTIME
+    // 🔴 BADGE CELL DENGAN STRING CONCATENATION AMAN
     function buildBadgeCell(svc) {
-      if (!svc) return '-';
-      if (svc.status === 'REDEEMED') {
+      if (!svc || typeof svc !== 'object') return '-';
+      var status = (svc.status || '').toString().toUpperCase().trim();
+      if (status === 'REDEEMED') {
         return '<div class="bg-green-50 border border-green-200 text-green-700 font-bold px-2 py-1.5 rounded shadow-sm flex flex-col justify-center items-center gap-1 leading-tight"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg><span class="text-[9px] uppercase">Selesai</span></div>';
       }
-      if (svc.status === 'EXPIRED') {
+      if (status === 'EXPIRED') {
         return '<div class="bg-gray-100 border border-gray-200 text-gray-500 font-bold px-2 py-1.5 rounded flex flex-col justify-center items-center gap-1 leading-tight"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg><span class="text-[9px] uppercase">Hangus</span></div>';
       }
-      if (svc.status === 'ACTIVE') {
-        return '<div class="bg-red-50 border border-red-200 text-red-700 font-bold px-2 py-1.5 rounded shadow flex flex-col justify-center items-center gap-0.5 leading-tight animate-pulse"><span class="text-[11px] font-mono whitespace-nowrap">' + (svc.validUntil || '-') + '</span><span class="text-[9px] uppercase bg-red-600 text-white px-1.5 rounded">Aktif</span></div>';
+      if (status === 'ACTIVE') {
+        var validDate = svc.validUntil || '-';
+        return '<div class="bg-red-50 border border-red-200 text-red-700 font-bold px-2 py-1.5 rounded shadow flex flex-col justify-center items-center gap-0.5 leading-tight animate-pulse"><span class="text-[11px] font-mono whitespace-nowrap">' + validDate + '</span><span class="text-[9px] uppercase bg-red-600 text-white px-1.5 rounded">Aktif</span></div>';
       }
       return '-';
     }
@@ -1279,7 +1301,7 @@
     function parseJatuhTempoTimestamp(dateStr) {
       if (!dateStr || dateStr === '-' || dateStr === '') return 0;
       var parts = dateStr.trim().split(' '); if (parts.length < 3) return 0;
-      var monthMap = { 'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'Mei': 4, 'Jun': 5, 'Jul': 6, 'Agu': 7, 'Sep': 8, 'Okt': 9, 'Nov': 10, 'Des': 11, 'Dec': 11 };
+      var monthMap = { 'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'Mei': 4, 'May': 4, 'Jun': 5, 'Jul': 6, 'Agu': 7, 'Aug': 7, 'Sep': 8, 'Okt': 9, 'Oct': 9, 'Nov': 10, 'Des': 11, 'Dec': 11 };
       return new Date(parseInt(parts[2], 10), (monthMap[parts[1]] !== undefined ? monthMap[parts[1]] : 0), parseInt(parts[0], 10)).getTime();
     }
 
@@ -1338,7 +1360,7 @@
     function goToMraPage(page) { mraCurrentPage = page; renderMraTable(); }
     function goToMraLastPage() { mraCurrentPage = Math.ceil(mraFilteredData.length / mraPageSize) || 1; renderMraTable(); }
 
-    // 🔴 RENDER TABEL CRM SOLID DAN AMAN DARI SINTAKS ERROR
+    // 🔴 RENDER TABEL CRM SOLID & BEBAS ERROR SINTAKS STRING
     function renderMraTable() {
       var totalData = mraFilteredData.length;
       var totalPages = Math.ceil(totalData / mraPageSize) || 1;
@@ -1508,6 +1530,7 @@
     function parseRate(val) { return !val ? 0 : parseFloat(val.toString().replace('%', '').replace(',', '.').trim()) || 0; }
     function formatRp(num) { return 'Rp ' + Math.round(Number(num) || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
 
+    // 🔴 SORTING LEADERBOARD SA (REGISTERED, REDEEMED, REVENUE)
     function toggleLeaderboardSort(col) {
       if (lbSortCol === col) lbSortOrder = (lbSortOrder === 'asc') ? 'desc' : 'asc';
       else { lbSortCol = col; lbSortOrder = (col === 'nama' || col === 'cabang') ? 'asc' : 'desc'; }
@@ -1522,7 +1545,7 @@
         return lbSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
       });
 
-      ['cabang', 'nama', 'redeemTarget', 'revTarget', 'revenue'].forEach(c => {
+      ['cabang', 'nama', 'registered', 'redeemed', 'revenue'].forEach(c => {
         var el = document.getElementById('lb-sort-' + c);
         if (el) el.innerHTML = lbSortCol === c ? (lbSortOrder === 'asc' ? '<span class="text-yellow-400 font-bold">▲</span>' : '<span class="text-yellow-400 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
       });
@@ -1532,12 +1555,12 @@
         list.slice(0, 5).forEach(function(sa, idx) { 
           var medal = (idx === 0) ? '🥇' : (idx === 1) ? '🥈' : (idx === 2) ? '🥉' : '<span class="text-gray-400 font-bold">' + (idx + 1) + '</span>'; 
           lbHtml += '<tr class="hover:bg-gray-50 transition">' +
-                      '<td class="px-4 py-3 font-black text-center w-10 text-lg border-b border-gray-100">' + medal + '</td>' +
+                      '<td class="px-4 py-3 font-black text-center w-12 text-base border-b border-gray-100">' + medal + '</td>' +
                       '<td class="px-4 py-3 font-bold text-gray-600 text-xs uppercase border-b border-gray-100">' + (sa.cabang || '-') + '</td>' +
                       '<td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">' + sa.nama + '</td>' +
-                      '<td class="px-4 py-3 text-center font-bold text-blue-700 bg-blue-50/20 border-b border-gray-100">' + (sa.redeemTarget || 0) + '</td>' +
-                      '<td class="px-4 py-3 text-right font-black text-emerald-700 border-b border-gray-100">' + formatRp(sa.revTarget || 0) + '</td>' +
-                      '<td class="px-4 py-3 text-right font-black text-gray-800 border-b border-gray-100">' + formatRp(sa.revenue || 0) + '</td>' +
+                      '<td class="px-4 py-3 text-center font-bold text-blue-700 bg-blue-50/20 border-b border-gray-100">' + (sa.registered || 0) + '</td>' +
+                      '<td class="px-4 py-3 text-center font-black text-emerald-700 bg-emerald-50/20 border-b border-gray-100">' + (sa.redeemed || 0) + '</td>' +
+                      '<td class="px-4 py-3 text-right font-black text-gray-900 border-b border-gray-100">' + formatRp(sa.revenue || 0) + '</td>' +
                     '</tr>'; 
         }); 
       } else { 
@@ -1554,55 +1577,64 @@
 
     function filterBranchBreakdown(query) { branchSearchQuery = (query || '').toUpperCase().trim(); renderBranchBreakdown(); }
 
+    // 🔴 DEALERSHIP BREAKDOWN: FUNNELING MURNI + IN S2 PALING KANAN
     function renderBranchBreakdown() {
-      var headHtml = '<tr><th class="px-3 py-3 border-b text-center w-10 bg-gray-50">#</th><th onclick="sortBranchTable(\'cabang\')" class="px-4 py-3 border-b sortable-th bg-gray-50">Dealership <span id="br-sort-cabang">↕</span></th><th onclick="sortBranchTable(\'potensi\')" class="px-3 py-3 border-b text-center sortable-th bg-gray-50 text-purple-700">Target Leads <span id="br-sort-potensi">↕</span></th>';
-      if (dashIsJanJun) headHtml += '<th onclick="sortBranchTable(\'inS2Count\')" class="px-3 py-3 border-b text-center sortable-th bg-emerald-50 text-emerald-800">In S2 Return <span id="br-sort-inS2Count">↕</span></th>';
-      headHtml += '<th onclick="sortBranchTable(\'regTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-blue-50/50 text-blue-700">Target Issued <span id="br-sort-regTarget">↕</span></th><th onclick="sortBranchTable(\'redeemTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-blue-50/50 text-emerald-700">Target Redeemed <span id="br-sort-redeemTarget">↕</span></th><th onclick="sortBranchTable(\'convRateTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-blue-50/50 text-indigo-700">Conversion <span id="br-sort-convRateTarget">↕</span></th><th onclick="sortBranchTable(\'revTarget\')" class="px-4 py-3 border-b text-right sortable-th bg-blue-50/50 text-emerald-800">Target Revenue <span id="br-sort-revTarget">↕</span></th><th onclick="sortBranchTable(\'regNonTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-amber-50/40 text-amber-700">Organic Issued <span id="br-sort-regNonTarget">↕</span></th><th onclick="sortBranchTable(\'redeemNonTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-amber-50/40 text-amber-800">Organic Redeemed <span id="br-sort-redeemNonTarget">↕</span></th><th onclick="sortBranchTable(\'revNonTarget\')" class="px-4 py-3 border-b text-right sortable-th bg-amber-50/40 text-amber-900">Organic Revenue <span id="br-sort-revNonTarget">↕</span></th><th onclick="sortBranchTable(\'revenue\')" class="px-4 py-3 border-b text-right sortable-th bg-gray-100 font-black">Gross Revenue <span id="br-sort-revenue">↕</span></th></tr>';
+      var headHtml = '<tr>' +
+        '<th class="px-3 py-3 border-b text-center w-10 bg-gray-50">#</th>' +
+        '<th onclick="sortBranchTable(\'cabang\')" class="px-4 py-3 border-b sortable-th bg-gray-50">Dealership <span id="br-sort-cabang">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'potensi\')" class="px-3 py-3 border-b text-center sortable-th bg-gray-50 text-purple-700">Target Leads <span id="br-sort-potensi">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'regTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-blue-50/50 text-blue-700">Tickets Issued <span id="br-sort-regTarget">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'redeemTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-emerald-50/50 text-emerald-700">Redeemed Units <span id="br-sort-redeemTarget">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'convRateTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-indigo-50/50 text-indigo-700">Conversion <span id="br-sort-convRateTarget">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'revenue\')" class="px-4 py-3 border-b text-right sortable-th bg-gray-100 font-black">Gross Revenue <span id="br-sort-revenue">↕</span></th>';
+      
+      if (dashIsJanJun) {
+        headHtml += '<th onclick="sortBranchTable(\'inS2Count\')" class="px-3 py-3 border-b text-center sortable-th bg-emerald-50 text-emerald-800">In S2 Return <span id="br-sort-inS2Count">↕</span></th>';
+      }
+      headHtml += '</tr>';
       document.getElementById('branchBreakdownHead').innerHTML = headHtml;
 
       var filtered = rawBranchBreakdownData.filter(b => !branchSearchQuery || (b.cabang || '').toUpperCase().includes(branchSearchQuery));
       filtered.sort((a, b) => {
         var valA = a[branchSortCol], valB = b[branchSortCol];
-        if (branchSortCol === 'convRateTarget' || branchSortCol === 'returRate' || branchSortCol === 'inS2Rate') {
+        if (branchSortCol === 'convRateTarget' || branchSortCol === 'inS2Rate') {
           return branchSortOrder === 'asc' ? (parseRate(valA) - parseRate(valB)) : (parseRate(valB) - parseRate(valA));
         }
         if (typeof valA === 'string') return branchSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
         return branchSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
       });
 
-      ['cabang', 'potensi', 'inS2Count', 'regTarget', 'redeemTarget', 'convRateTarget', 'revTarget', 'regNonTarget', 'redeemNonTarget', 'revNonTarget', 'revenue'].forEach(c => {
+      ['cabang', 'potensi', 'regTarget', 'redeemTarget', 'convRateTarget', 'revenue', 'inS2Count'].forEach(c => {
         var el = document.getElementById('br-sort-' + c);
         if (el) el.innerHTML = branchSortCol === c ? (branchSortOrder === 'asc' ? '<span class="text-red-600 font-bold">▲</span>' : '<span class="text-red-600 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
       });
 
       var badgeEl = document.getElementById('branchCountBadge'); if (badgeEl) badgeEl.innerText = filtered.length + " Branches";
-      var bdHtml = '', totalPot = 0, totalInS2 = 0, totalRegT = 0, totalRedT = 0, totalRevT = 0, totalRegNT = 0, totalRedNT = 0, totalRevNT = 0, totalRev = 0;
+      var bdHtml = '', totalPot = 0, totalInS2 = 0, totalRegT = 0, totalRedT = 0, totalRev = 0;
 
       if (filtered.length > 0) {
         filtered.forEach(function(b, idx) {
-          totalPot += Number(b.potensi) || 0; totalInS2 += Number(b.inS2Count) || 0;
-          totalRegT += Number(b.regTarget) || 0; totalRedT += Number(b.redeemTarget) || 0; totalRevT += Number(b.revTarget) || 0;
-          totalRegNT += Number(b.regNonTarget) || 0; totalRedNT += Number(b.redeemNonTarget) || 0; totalRevNT += Number(b.revNonTarget) || 0;
+          totalPot += Number(b.potensi) || 0; 
+          totalInS2 += Number(b.inS2Count) || 0;
+          totalRegT += Number(b.regTarget) || 0; 
+          totalRedT += Number(b.redeemTarget) || 0; 
           totalRev += Number(b.revenue) || 0;
 
           var inS2Cell = dashIsJanJun ? '<td class="px-3 py-3 text-center font-bold text-emerald-800 bg-emerald-50/40 border-b border-gray-100">' + (b.inS2Count || 0) + ' <span class="text-[10px] text-gray-500 font-normal">(' + (b.inS2Rate || '0,0') + '%)</span></td>' : '';
+          
           bdHtml += '<tr class="hover:bg-gray-50 transition text-xs">' +
                       '<td class="px-3 py-3 text-center border-b border-gray-100 font-medium text-gray-500">' + (idx + 1) + '</td>' +
                       '<td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">' + b.cabang + '</td>' +
                       '<td class="px-3 py-3 text-center font-black text-purple-700 bg-purple-50/20 border-b border-gray-100">' + (b.potensi || 0) + '</td>' +
-                      inS2Cell +
                       '<td class="px-3 py-3 text-center font-bold text-blue-700 bg-blue-50/30 border-b border-gray-100">' + (b.regTarget || 0) + '</td>' +
-                      '<td class="px-3 py-3 text-center font-black text-emerald-700 bg-blue-50/30 border-b border-gray-100">' + (b.redeemTarget || 0) + '</td>' +
-                      '<td class="px-3 py-3 text-center font-black text-indigo-700 bg-blue-50/30 border-b border-gray-100">' + (b.convRateTarget || '0,0') + '%</td>' +
-                      '<td class="px-4 py-3 text-right font-black text-emerald-800 bg-blue-50/30 border-b border-gray-100">' + formatRp(b.revTarget || 0) + '</td>' +
-                      '<td class="px-3 py-3 text-center font-bold text-amber-700 bg-amber-50/20 border-b border-gray-100">' + (b.regNonTarget || 0) + '</td>' +
-                      '<td class="px-3 py-3 text-center font-bold text-amber-800 bg-amber-50/20 border-b border-gray-100">' + (b.redeemNonTarget || 0) + '</td>' +
-                      '<td class="px-4 py-3 text-right font-black text-amber-900 bg-amber-50/20 border-b border-gray-100">' + formatRp(b.revNonTarget || 0) + '</td>' +
+                      '<td class="px-3 py-3 text-center font-black text-emerald-700 bg-emerald-50/30 border-b border-gray-100">' + (b.redeemTarget || 0) + '</td>' +
+                      '<td class="px-3 py-3 text-center font-black text-indigo-700 bg-indigo-50/30 border-b border-gray-100">' + (b.convRateTarget || '0,0') + '%</td>' +
                       '<td class="px-4 py-3 text-right font-black text-gray-900 bg-gray-50/60 border-b border-gray-100">' + formatRp(b.revenue || 0) + '</td>' +
+                      inS2Cell +
                     '</tr>';
         });
       } else {
-        bdHtml = '<tr><td colspan="' + (dashIsJanJun ? 12 : 11) + '" class="px-4 py-8 text-center text-gray-400 italic font-medium">No dealership performance data available.</td></tr>';
+        bdHtml = '<tr><td colspan="' + (dashIsJanJun ? 8 : 7) + '" class="px-4 py-8 text-center text-gray-400 italic font-medium">No dealership performance data available.</td></tr>';
       }
       document.getElementById('hoBreakdownBody').innerHTML = bdHtml;
 
@@ -1613,15 +1645,11 @@
       document.getElementById('hoBreakdownFoot').innerHTML = '<tr class="bg-gray-100 text-xs">' +
         '<td colspan="2" class="px-4 py-3 text-center uppercase tracking-wider font-black">TOTAL ALL BRANCHES</td>' +
         '<td class="px-3 py-3 text-center font-black text-purple-800 bg-purple-100/50">' + totalPot + '</td>' +
-        footInS2 +
         '<td class="px-3 py-3 text-center font-black text-blue-800 bg-blue-100/50">' + totalRegT + '</td>' +
         '<td class="px-3 py-3 text-center font-black text-emerald-800 bg-blue-100/50">' + totalRedT + '</td>' +
         '<td class="px-3 py-3 text-center font-black text-indigo-800 bg-blue-100/50">' + avgTargetConv + '%</td>' +
-        '<td class="px-4 py-3 text-right font-black text-emerald-900 bg-blue-100/50">' + formatRp(totalRevT) + '</td>' +
-        '<td class="px-3 py-3 text-center font-black text-amber-800 bg-amber-100/50">' + totalRegNT + '</td>' +
-        '<td class="px-3 py-3 text-center font-black text-amber-900 bg-amber-100/50">' + totalRedNT + '</td>' +
-        '<td class="px-4 py-3 text-right font-black text-amber-950 bg-amber-100/50">' + formatRp(totalRevNT) + '</td>' +
         '<td class="px-4 py-3 text-right font-black text-gray-900 text-sm bg-gray-200/60">' + formatRp(totalRev) + '</td>' +
+        footInS2 +
       '</tr>';
     }
 
@@ -1741,6 +1769,7 @@
       XLSX.writeFile(wb, "Loyalty_Redemptions.xlsx");
     }
 
+    // 🔴 LOAD ANALYTICS DASHBOARD TERINTEGRASI
     function loadDashboard() {
       document.getElementById('dashContent').classList.add('hidden'); 
       document.getElementById('dashLoading').classList.remove('hidden'); 
@@ -1768,34 +1797,33 @@
             }
           }
 
-          document.getElementById('kpiLeads').innerText = res.leads; 
-          document.getElementById('kpiTargetConverted').innerText = res.targetConverted || 0;
-          document.getElementById('kpiTargetRedeemed').innerText = res.targetRedeemed || 0;
+          document.getElementById('kpiLeads').innerText = res.leads || 0; 
+          document.getElementById('kpiTargetConverted').innerText = res.ticketsIssued || res.targetConverted || 0;
+          document.getElementById('kpiTargetRedeemed').innerText = res.redeemedUnits || res.targetRedeemed || 0;
           document.getElementById('kpiTargetConvRate').innerText = (res.targetConvRate || 0) + '%';
           document.getElementById('kpiTargetLockInRate').innerText = (res.targetLockInRate || 0) + '%';
-          
-          document.getElementById('kpiNonTargetConverted').innerText = res.nonTargetConverted || 0;
-          document.getElementById('kpiNonTargetRedeemed').innerText = res.nonTargetRedeemed || 0;
-          document.getElementById('kpiNonTargetRevenue').innerText = formatRp(res.nonTargetRevenue || 0);
 
-          document.getElementById('kpiActual').innerText = formatRp(res.totalActualRevenue || 0);
+          document.getElementById('kpiActual').innerText = formatRp(res.totalActualRevenue || res.targetRevenue || 0);
           document.getElementById('kpiTargetRevenueText').innerText = formatRp(res.targetRevenue || 0);
-          document.getElementById('kpiNonTargetRevenueText').innerText = formatRp(res.nonTargetRevenue || 0);
-
           document.getElementById('kpiSaved').innerText = formatRp(res.savedEstimasi || 0); 
-          document.getElementById('kpiLost').innerText = formatRp(res.lost || 0);
+          document.getElementById('kpiLost').innerText = formatRp(res.potentialRevenueOutstanding || res.lost || 0);
           
           var today = new Date(); 
           if (today.getDate() >= 15 && parseFloat(res.targetConvRate) < 20 && res.leads > 0) { 
             document.getElementById('earlyWarning').classList.remove('hidden'); 
           }
           
+          // Diagram Funneling Target
           if (funnelChartInstance) funnelChartInstance.destroy();
           funnelChartInstance = new Chart(document.getElementById('funnelChart').getContext('2d'), { 
             type: 'bar', 
             data: { 
-              labels: ['Target Leads', 'Target Issued', 'Target Redeemed'], 
-              datasets: [{ data: [res.leads, res.targetConverted, res.targetRedeemed], backgroundColor: ['#94a3b8', '#3b82f6', '#10b981'], borderRadius: 4 }] 
+              labels: ['Target Leads', 'Tickets Issued', 'Redeemed Units'], 
+              datasets: [{ 
+                data: [res.leads, (res.ticketsIssued || res.targetConverted || 0), (res.redeemedUnits || res.targetRedeemed || 0)], 
+                backgroundColor: ['#94a3b8', '#3b82f6', '#10b981'], 
+                borderRadius: 4 
+              }] 
             }, 
             options: { 
               responsive: true, maintainAspectRatio: false, 
@@ -1804,9 +1832,11 @@
             } 
           });
           
+          // Render SA Leaderboard
           rawLeaderboardData = res.leaderboard || [];
           renderLeaderboard();
 
+          // Render Breakdown Cabang
           var hoSection = document.getElementById('hoBreakdownSection');
           if (sessionUser && (sessionUser.cabang.toUpperCase() === 'HEAD OFFICE' || sessionUser.cabang.toUpperCase() === 'HEADOFFICE')) {
             hoSection.classList.remove('hidden'); hoSection.classList.add('flex');
@@ -1816,17 +1846,65 @@
             hoSection.classList.add('hidden'); hoSection.classList.remove('flex');
           }
 
+          // 🔴 1. CHART: VEHICLE SEGMENT DISTRIBUTION (6 KATEGORI RESMI)
+          if (vehicleSegmentChartInstance) vehicleSegmentChartInstance.destroy();
+          var vSeg = res.vehicleSegments || {};
+          var vSegLabels = ['Economy', 'New Entry', 'Standard', 'Medium Luxury', 'Luxury', 'Commercial'];
+          var vSegData = vSegLabels.map(k => vSeg[k] || 0);
+          var totalVSeg = vSegData.reduce((a,b) => a+b, 0);
+
+          if (totalVSeg > 0) {
+            vehicleSegmentChartInstance = new Chart(document.getElementById('vehicleSegmentChart').getContext('2d'), {
+              type: 'doughnut',
+              data: {
+                labels: vSegLabels,
+                datasets: [{
+                  data: vSegData,
+                  backgroundColor: ['#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#f59e0b', '#64748b']
+                }]
+              },
+              options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                  legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } },
+                  datalabels: { color: '#ffffff', font: { weight: 'bold', size: 11 }, formatter: v => v > 0 ? (Math.round((v/totalVSeg)*100) + '%') : '' }
+                }
+              }
+            });
+          } else {
+            vehicleSegmentChartInstance = new Chart(document.getElementById('vehicleSegmentChart').getContext('2d'), {
+              type: 'doughnut', data: { labels: ['No Segment Data'], datasets: [{ data: [1], backgroundColor: ['#e2e8f0'] }] },
+              options: { plugins: { legend: { display: false }, datalabels: { display: false } }, cutout: '65%' }
+            });
+          }
+
+          // 🔴 2. CHART: RETENTION BY VEHICLE MODEL
           if (segmentChartInstance) segmentChartInstance.destroy();
-          var segLabels = Object.keys(res.segments), segData = Object.values(res.segments), totalSeg = segData.reduce((a,b) => a+b, 0);
-          if (segData.length > 0) {
+          var segLabels = Object.keys(res.segments || {});
+          var segData = Object.values(res.segments || {});
+          var totalSeg = segData.reduce((a,b) => a+b, 0);
+
+          if (totalSeg > 0) {
             segmentChartInstance = new Chart(document.getElementById('segmentChart').getContext('2d'), { 
               type: 'doughnut', 
-              data: { labels: segLabels, datasets: [{ data: segData, backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#64748b', '#ec4899', '#14b8a6'] }] }, 
-              options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } }, datalabels: { color: '#ffffff', font: { weight: 'bold', size: 11 }, formatter: v => Math.round((v/totalSeg)*100) + '%' } } } 
+              data: { 
+                labels: segLabels, 
+                datasets: [{ 
+                  data: segData, 
+                  backgroundColor: ['#ef4444', '#f97316', '#f59e0b', '#10b981', '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#ec4899', '#64748b'] 
+                }] 
+              }, 
+              options: { 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { 
+                  legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } }, 
+                  datalabels: { color: '#ffffff', font: { weight: 'bold', size: 11 }, formatter: v => Math.round((v/totalSeg)*100) + '%' } 
+                } 
+              } 
             });
           } else {
             segmentChartInstance = new Chart(document.getElementById('segmentChart').getContext('2d'), { 
-              type: 'doughnut', data: { labels: ['No Invoiced Data'], datasets: [{ data: [1], backgroundColor: ['#e2e8f0'] }] }, 
+              type: 'doughnut', data: { labels: ['No Model Data'], datasets: [{ data: [1], backgroundColor: ['#e2e8f0'] }] }, 
               options: { plugins: { legend: { display: false }, datalabels: { display: false } }, cutout: '65%' } 
             });
           }
@@ -1851,6 +1929,12 @@
           document.getElementById('kpiAuditSalahJob').innerText = res.summary.salahJob || 0;
           document.getElementById('kpiAuditKlaimLiar').innerText = res.summary.klaimLiar || 0;
           document.getElementById('kpiAuditLeakage').innerText = formatRp(res.summary.totalRevenueNis || 0);
+
+          // 🔴 Display Discretionary / Organic Inflow Audit Cards
+          document.getElementById('kpiGovOrganicTickets').innerText = res.summary.organicTickets || 0;
+          document.getElementById('kpiGovOrganicRedeemed').innerText = res.summary.organicRedeemed || 0;
+          document.getElementById('kpiGovOrganicRevenue').innerText = formatRp(res.summary.organicRevenue || 0);
+
           renderAuditTable();
         } else Swal.fire('Information', res.message, 'warning');
       });
@@ -1908,18 +1992,18 @@
                          '<td class="px-3 py-2.5 text-center text-gray-400 font-medium">' + (idx + 1) + '</td>' +
                          '<td class="px-4 py-2.5">' +
                            '<p onclick="copyToClipboard(\'' + safeWo + '\', \'No. WO\')" class="font-bold text-gray-900 font-mono tracking-tight cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy WO">' + safeWo + ' <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p>' +
-                           '<p class="text-[10px] text-gray-500 font-medium">' + (r.tglWo || '-') + '</p>' +
+                           '<p class="text-[10px] text-gray-500 font-medium">' + r.tglWo + '</p>' +
                          '</td>' +
-                         '<td class="px-4 py-2.5"><p class="font-bold text-gray-800 uppercase">' + (r.cabang || '-') + '</p><p class="text-[10px] text-gray-500">SA: ' + (r.namaSA || '-') + '</p></td>' +
+                         '<td class="px-4 py-2.5"><p class="font-bold text-gray-800 uppercase">' + r.cabang + '</p><p class="text-[10px] text-gray-500">SA: ' + r.namaSA + '</p></td>' +
                          '<td class="px-4 py-2.5">' +
                            '<p onclick="copyToClipboard(\'' + safeNoka + '\', \'VIN\')" class="font-mono font-bold text-gray-900 cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy VIN">' + safeNoka + ' <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p>' +
                            '<p class="text-[10px] text-gray-500 font-semibold">' + (r.model || '-') + '</p>' +
                          '</td>' +
-                         '<td class="px-4 py-2.5 font-medium text-gray-800 max-w-xs truncate" title="' + (r.pekerjaan || '-') + '">' + (r.pekerjaan || '-') + '</td>' +
-                         '<td class="px-4 py-2.5 text-right font-mono font-bold text-purple-700">' + (r.discJasa || '0%') + '</td>' +
-                         '<td class="px-4 py-2.5 text-right font-black text-gray-900 font-mono">' + formatRp(r.totalInvoice || 0) + '</td>' +
+                         '<td class="px-4 py-2.5 font-medium text-gray-800 max-w-xs truncate" title="' + r.pekerjaan + '">' + r.pekerjaan + '</td>' +
+                         '<td class="px-4 py-2.5 text-right font-mono font-bold text-purple-700">' + r.discJasa + '</td>' +
+                         '<td class="px-4 py-2.5 text-right font-black text-gray-900 font-mono">' + formatRp(r.totalInvoice) + '</td>' +
                          '<td class="px-3 py-2.5 text-center">' + badge + '</td>' +
-                         '<td class="px-4 py-2.5 text-[11px] font-medium text-gray-600 leading-snug max-w-sm whitespace-normal">' + (r.keterangan || '-') + '</td>' +
+                         '<td class="px-4 py-2.5 text-[11px] font-medium text-gray-600 leading-snug max-w-sm whitespace-normal">' + r.keterangan + '</td>' +
                        '</tr>';
         });
       } else {
