@@ -83,7 +83,7 @@
       if (el) el.innerHTML = (val !== undefined && val !== null) ? val : '-';
     }
 
-    // 🔴 FORMAT ANGKA DENGAN TITIK (MISAL 14.343)
+    // 🔴 FORMAT ANGKA DENGAN TITIK (CONTOH: 14.343)
     function formatNum(val) {
       if (val === null || val === undefined || isNaN(val)) return '0';
       return Math.round(Number(val)).toLocaleString('id-ID');
@@ -97,6 +97,15 @@
     }
     function parseRate(val) {
       return !val ? 0 : parseFloat(val.toString().replace('%', '').replace(',', '.').trim()) || 0;
+    }
+
+    // 🔴 HELPER FORMAT NOMOR WHATSAPP (Mencegah error 'formatWAPhone is not defined')
+    function formatWAPhone(number) {
+      if (!number) return '-';
+      var str = number.toString().replace(/[^0-9]/g, '');
+      if (str.startsWith('0')) return '62' + str.substring(1);
+      if (str.startsWith('8')) return '62' + str;
+      return str;
     }
 
     async function fetchAPI(action, payload = {}) {
@@ -507,14 +516,14 @@
         
         <div id="dashContent" class="hidden space-y-6">
 
-          <!-- 🔴 STRATEGIC PANE: 4 KARTU UTAMA DENGAN FORMAT RIBUAN TITIK -->
+          <!-- 🔴 STRATEGIC PANE: 4 KARTU UTAMA INTERAKTIF (BISA DIKLIK UNTUK DRILL-DOWN) -->
           <div class="bg-gradient-to-r from-blue-900 to-indigo-950 p-5 rounded-2xl shadow-md text-white">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 pb-3 border-b border-blue-800/60">
               <div class="flex items-center gap-2">
                 <span class="bg-blue-500 text-white text-[10px] font-black px-2.5 py-1 rounded uppercase tracking-wider">STRATEGIC PANE</span>
                 <h3 class="text-sm md:text-base font-black tracking-wide">Targeted Loyalty Cohort Performance (Servis 8 & 9 Granular)</h3>
               </div>
-              <span class="text-xs text-blue-200 font-medium">Primary Benchmark for Dealership Customer Retention</span>
+              <span class="text-xs text-blue-200 font-medium">💡 Klik kartu untuk melihat rincian pelanggan & tiket</span>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
@@ -534,7 +543,7 @@
               </div>
               
               <!-- KARTU 2: TICKETS ISSUED -->
-              <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center relative group flex flex-col justify-between">
+              <div onclick="openTicketModal('target')" class="bg-white/10 hover:bg-white/15 cursor-pointer backdrop-blur p-4 rounded-xl border border-white/10 text-center relative group flex flex-col justify-between transition transform hover:scale-[1.01]">
                 <div>
                   <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Tickets Issued</p>
                   <p class="text-3xl font-black text-blue-300 mt-1" id="kpiTargetConverted">0</p>
@@ -543,11 +552,11 @@
                     <span class="border-l border-white/20 pl-2">S9: <b id="kpiIssuedS9" class="text-white">0</b></span>
                   </div>
                 </div>
-                <button onclick="openTicketModal('target')" class="mt-3 text-[10px] font-bold bg-blue-500/30 hover:bg-blue-500 text-white px-2.5 py-1 rounded-lg border border-blue-400/40 transition shadow-sm">🔍 Ticket Details</button>
+                <button class="mt-3 text-[10px] font-bold bg-blue-500/30 group-hover:bg-blue-500 text-white px-2.5 py-1 rounded-lg border border-blue-400/40 transition shadow-sm">🔍 Ticket Details</button>
               </div>
 
               <!-- KARTU 3: REDEEMED UNITS -->
-              <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center relative group flex flex-col justify-between">
+              <div onclick="openRedeemModal('target')" class="bg-white/10 hover:bg-white/15 cursor-pointer backdrop-blur p-4 rounded-xl border border-white/10 text-center relative group flex flex-col justify-between transition transform hover:scale-[1.01]">
                 <div>
                   <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Redeemed Units</p>
                   <p class="text-3xl font-black text-emerald-400 mt-1" id="kpiTargetRedeemed">0</p>
@@ -556,7 +565,7 @@
                     <span class="border-l border-white/20 pl-2">S9: <b id="kpiRedeemedS9" class="text-white">0</b></span>
                   </div>
                 </div>
-                <button onclick="openRedeemModal('target')" class="mt-3 text-[10px] font-bold bg-emerald-500/30 hover:bg-emerald-500 text-white px-2.5 py-1 rounded-lg border border-emerald-400/40 transition shadow-sm">🔍 Customer Details</button>
+                <button class="mt-3 text-[10px] font-bold bg-emerald-500/30 group-hover:bg-emerald-500 text-white px-2.5 py-1 rounded-lg border border-emerald-400/40 transition shadow-sm">🔍 Customer Details</button>
               </div>
 
               <!-- KARTU 4: COHORT CONVERSION RATE -->
@@ -574,26 +583,26 @@
             </div>
           </div>
 
-          <!-- 🔴 SEKSI BARU: POTENTIAL S2 ARRIVAL SCHEDULING BOARD (PER BULAN) -->
+          <!-- 🔴 SEKSI WORKLOAD S2: SCHEDULING BOARD BULANAN (TARGET VS AKTUAL + RASIO) -->
           <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-gray-100">
               <div>
                 <h3 class="text-xs font-black text-gray-900 uppercase tracking-wider flex items-center gap-2">
-                  <span>📅 Potential S2 Arrival Scheduling Board (Target per Bulan)</span>
+                  <span>📅 Proyeksi Workload & Kapasitas Servis Berkala Semester 2</span>
                 </h3>
-                <p class="text-[11px] text-gray-500">Estimasi sebaran bulan kedatangan unit di Semester 2 (Kolom G DataExpired) untuk persiapan load kapasitas bengkel.</p>
+                <p class="text-[11px] text-gray-500">Estimasi sebaran kedatangan unit di Semester 2 untuk persiapan load kapasitas bengkel (Klik bulan untuk melihat detail).</p>
               </div>
-              <span class="text-[10px] font-bold bg-purple-100 text-purple-800 px-2.5 py-1 rounded-full border border-purple-200">Semester 2 Workload</span>
+              <span class="text-[10px] font-bold bg-purple-100 text-purple-800 px-2.5 py-1 rounded-full border border-purple-200">Workload Management</span>
             </div>
             <div id="s2MonthlyBoard" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 pt-1">
-              <div class="p-3 bg-gray-50 border rounded-xl text-center text-gray-400 text-xs italic col-span-6">Memuat jadwal kedatangan S2...</div>
+              <div class="p-3 bg-gray-50 border rounded-xl text-center text-gray-400 text-xs italic col-span-6">Memuat data proyeksi Semester 2...</div>
             </div>
           </div>
           
           <!-- 🔴 SEKSI 3: TOP-DOWN STEPPED RETENTION FUNNEL & ARPU / COO REALIZATION CARD -->
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            <!-- SISI KIRI (5 KOLOM): TOP-DOWN STEPPED FUNNEL -->
+            <!-- SISI KIRI (5 KOLOM): TOP-DOWN STEPPED FUNNEL KE BAWAH -->
             <div class="lg:col-span-5 bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between">
               <div class="border-b pb-2 mb-3 flex justify-between items-center">
                 <h3 class="text-xs font-black text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
@@ -625,7 +634,7 @@
                 </div>
 
                 <!-- STEP 2: TICKETS ISSUED (MEDIUM) -->
-                <div class="w-[84%] bg-blue-50 border border-blue-300 rounded-xl p-2.5 text-center shadow-sm">
+                <div onclick="openTicketModal('target')" class="w-[84%] bg-blue-50 hover:bg-blue-100/70 cursor-pointer border border-blue-300 rounded-xl p-2.5 text-center shadow-sm transition">
                   <div class="flex justify-between items-center mb-0.5">
                     <span class="text-[10px] font-black text-blue-800 uppercase">2. Tickets Issued (Lock-in)</span>
                     <span class="text-[10px] font-bold text-blue-600" id="fnIssuedPct">0%</span>
@@ -645,7 +654,7 @@
                 </div>
 
                 <!-- STEP 3: REDEEMED UNITS (NARROW BOTTOM) -->
-                <div class="w-[68%] bg-emerald-50 border border-emerald-300 rounded-xl p-2.5 text-center shadow-sm">
+                <div onclick="openRedeemModal('target')" class="w-[68%] bg-emerald-50 hover:bg-emerald-100/70 cursor-pointer border border-emerald-300 rounded-xl p-2.5 text-center shadow-sm transition">
                   <div class="flex justify-between items-center mb-0.5">
                     <span class="text-[10px] font-black text-emerald-800 uppercase">3. Redeemed Units</span>
                     <span class="text-[10px] font-bold text-emerald-600" id="fnRedeemedPct">0%</span>
@@ -802,7 +811,7 @@
 
           </div>
 
-          <!-- 🔴 TABEL 2: BREAKDOWN PERFORMA CABANG LENGKAP (24 CABANG UTUH TANPA TERPOTONG) -->
+          <!-- 🔴 TABEL 2: BREAKDOWN PERFORMA CABANG LENGKAP (24 CABANG UTUH) -->
           <div id="hoBreakdownSection" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-col">
             <div class="bg-gray-900 p-4 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div class="flex items-center gap-2">
@@ -814,7 +823,6 @@
                 <svg class="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
               </div>
             </div>
-            <!-- Container tabel diperlebar agar menampilkan 24 cabang secara utuh -->
             <div class="p-0 flex-1 overflow-x-auto max-h-[85vh]">
               <table class="w-full text-sm text-left whitespace-nowrap">
                 <thead class="bg-gray-50 text-[10px] uppercase text-gray-500 font-bold sticky top-0 z-10 shadow-sm" id="branchBreakdownHead"></thead>
@@ -1710,36 +1718,374 @@
       reader.readAsArrayBuffer(file);
     }
 
-    // 🔴 RENDER POTENTIAL S2 SCHEDULING BOARD (PER BULAN)
+    // 🔴 TOGGLE TAB SEGMENT VS MODEL
+    function switchVehicleView(viewType) {
+      currentVehicleTab = viewType;
+      var btnSeg = document.getElementById('btn-tab-segment');
+      var btnMod = document.getElementById('btn-tab-model');
+      var viewSeg = document.getElementById('view-vehicle-segment');
+      var viewMod = document.getElementById('view-vehicle-model');
+
+      if (viewType === 'segment') {
+        btnSeg.className = 'px-2.5 py-1 rounded text-[10px] font-bold transition bg-blue-600 text-white shadow-sm';
+        btnMod.className = 'px-2.5 py-1 rounded text-[10px] font-bold transition text-gray-400 hover:text-white';
+        viewSeg.classList.remove('hidden');
+        viewMod.classList.add('hidden');
+      } else {
+        btnMod.className = 'px-2.5 py-1 rounded text-[10px] font-bold transition bg-blue-600 text-white shadow-sm';
+        btnSeg.className = 'px-2.5 py-1 rounded text-[10px] font-bold transition text-gray-400 hover:text-white';
+        viewMod.classList.remove('hidden');
+        viewSeg.classList.add('hidden');
+      }
+    }
+
+    function renderModelMiniTable(modelMap, redeemedList) {
+      var tbody = document.getElementById('modelBreakdownBody');
+      if (!tbody) return;
+
+      var models = Object.keys(modelMap || {});
+      var totalUnits = Object.values(modelMap || {}).reduce((a, b) => a + b, 0);
+
+      var modelRevMap = {};
+      (redeemedList || []).forEach(r => {
+        var m = r.model || 'LAINNYA';
+        modelRevMap[m] = (modelRevMap[m] || 0) + (Number(r.revenue) || 0);
+      });
+
+      models.sort((a, b) => (modelMap[b] || 0) - (modelMap[a] || 0));
+
+      var html = '';
+      if (models.length > 0) {
+        models.forEach(m => {
+          var count = modelMap[m] || 0;
+          var rev = modelRevMap[m] || 0;
+          var share = totalUnits > 0 ? ((count / totalUnits) * 100).toFixed(0) : 0;
+
+          html += `<tr class="hover:bg-gray-50 transition">
+            <td class="py-2 px-2 font-bold text-gray-800 uppercase">${m}</td>
+            <td class="py-2 px-2 text-center font-black text-emerald-700 bg-emerald-50/30">${formatNum(count)}</td>
+            <td class="py-2 px-2 text-right font-mono text-gray-700">${formatRp(rev)}</td>
+            <td class="py-2 px-2 text-center text-blue-600 font-bold">${share}%</td>
+          </tr>`;
+        });
+      } else {
+        html = '<tr><td colspan="4" class="text-center py-6 text-gray-400 italic">No model data available.</td></tr>';
+      }
+      tbody.innerHTML = html;
+    }
+
+    // 🔴 SORTING LEADERBOARD SA
+    function toggleLeaderboardSort(col) {
+      if (lbSortCol === col) lbSortOrder = (lbSortOrder === 'asc') ? 'desc' : 'asc';
+      else { lbSortCol = col; lbSortOrder = (col === 'nama' || col === 'cabang') ? 'asc' : 'desc'; }
+      renderLeaderboard();
+    }
+
+    function renderLeaderboard() {
+      var list = rawLeaderboardData.slice();
+      list.sort((a, b) => {
+        var valA = a[lbSortCol], valB = b[lbSortCol];
+        if (typeof valA === 'string') return lbSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        return lbSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
+      });
+
+      ['cabang', 'nama', 'registered', 'redeemed', 'revenue'].forEach(c => {
+        var el = document.getElementById('lb-sort-' + c);
+        if (el) el.innerHTML = lbSortCol === c ? (lbSortOrder === 'asc' ? '<span class="text-yellow-400 font-bold">▲</span>' : '<span class="text-yellow-400 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
+      });
+
+      var lbHtml = '';
+      if (list.length > 0) { 
+        list.slice(0, 5).forEach(function(sa, idx) { 
+          var medal = (idx === 0) ? '🥇' : (idx === 1) ? '🥈' : (idx === 2) ? '🥉' : '<span class="text-gray-400 font-bold">' + (idx + 1) + '</span>'; 
+          lbHtml += '<tr class="hover:bg-gray-50 transition">' +
+                      '<td class="px-4 py-3 font-black text-center w-12 text-base border-b border-gray-100">' + medal + '</td>' +
+                      '<td class="px-4 py-3 font-bold text-gray-600 text-xs uppercase border-b border-gray-100">' + (sa.cabang || '-') + '</td>' +
+                      '<td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">' + sa.nama + '</td>' +
+                      '<td class="px-4 py-3 text-center font-bold text-blue-700 bg-blue-50/20 border-b border-gray-100">' + formatNum(sa.registered || 0) + '</td>' +
+                      '<td class="px-4 py-3 text-center font-black text-emerald-700 bg-emerald-50/20 border-b border-gray-100">' + formatNum(sa.redeemed || 0) + '</td>' +
+                      '<td class="px-4 py-3 text-right font-black text-gray-900 border-b border-gray-100">' + formatRp(sa.revenue || 0) + '</td>' +
+                    '</tr>'; 
+        }); 
+      } else { 
+        lbHtml = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400 italic font-medium">No recorded Service Advisor performance in this period.</td></tr>'; 
+      }
+      setHTML('leaderboardBody', lbHtml);
+    }
+
+    function sortBranchTable(col) {
+      if (branchSortCol === col) branchSortOrder = (branchSortOrder === 'asc') ? 'desc' : 'asc';
+      else { branchSortCol = col; branchSortOrder = (col === 'cabang') ? 'asc' : 'desc'; }
+      renderBranchBreakdown();
+    }
+
+    function filterBranchBreakdown(query) { branchSearchQuery = (query || '').toUpperCase().trim(); renderBranchBreakdown(); }
+
+    // 🔴 RENDER SCHEDULING BOARD S2: TARGET VS AKTUAL + RASIO + KLIK FILTER
     function renderS2MonthlyBoard(monthlyData) {
       var container = document.getElementById('s2MonthlyBoard');
       if (!container) return;
       var months = Object.keys(monthlyData || {}).sort();
       if (months.length === 0) {
-        container.innerHTML = '<div class="p-3 bg-gray-50 border rounded-xl text-center text-gray-400 text-xs italic col-span-6">Belum ada data proyeksi bulan jatuh tempo S2 (Kolom G kosong).</div>';
+        container.innerHTML = '<div class="p-3 bg-gray-50 border rounded-xl text-center text-gray-400 text-xs italic col-span-6">Belum ada data proyeksi kedatangan Semester 2 pada periode ini.</div>';
         return;
       }
-      var monthNames = { "01":"Januari", "02":"Februari", "03":"Maret", "04":"April", "05":"Mei", "06":"Juni", "07":"Juli", "08":"Agustus", "09":"September", "10":"Oktober", "11":"November", "12":"Desember" };
+      var monthNames = { "01":"JANUARI", "02":"FEBRUARI", "03":"MARET", "04":"APRIL", "05":"MEI", "06":"JUNI", "07":"JULI", "08":"AGUSTUS", "09":"SEPTEMBER", "10":"OKTOBER", "11":"NOVEMBER", "12":"DESEMBER" };
       var html = '';
       months.forEach(mKey => {
         var item = monthlyData[mKey];
         var parts = mKey.split('-');
         var labelMonth = (parts.length === 2 && monthNames[parts[1]]) ? (monthNames[parts[1]] + ' ' + parts[0]) : mKey;
-        html += `<div class="bg-purple-50/70 border border-purple-200 rounded-xl p-3 text-center shadow-sm flex flex-col justify-between">
+        
+        var targetTotal = item.targetTotal || item.total || 0;
+        var actualTotal = item.actualTotal || item.actual || 0;
+        var ratioVal = item.ratio || item.progressPct || (targetTotal > 0 ? ((actualTotal / targetTotal) * 100).toFixed(1) : "0.0");
+        
+        var badgeColor = parseFloat(ratioVal) >= 50 ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : (parseFloat(ratioVal) >= 20 ? 'bg-blue-100 text-blue-800 border-blue-300' : 'bg-amber-100 text-amber-800 border-amber-300');
+
+        html += `<div onclick="openRedeemModalFilteredByMonth('${mKey}')" class="bg-purple-50/50 hover:bg-purple-100/60 cursor-pointer border border-purple-200 rounded-xl p-3 text-center shadow-sm flex flex-col justify-between transition transform hover:scale-[1.02]">
           <div>
-            <p class="text-[10px] font-black text-purple-900 uppercase tracking-wider">${labelMonth}</p>
-            <p class="text-xl font-black text-purple-700 mt-1">${formatNum(item.total)} <span class="text-[10px] font-normal text-gray-500">Unit</span></p>
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-[10px] font-black text-purple-900 tracking-wider">${labelMonth}</span>
+              <span class="text-[9px] font-black px-1.5 py-0.5 rounded border ${badgeColor}">${ratioVal}%</span>
+            </div>
+            <div class="grid grid-cols-2 gap-1 my-1.5 py-1.5 bg-white/80 rounded-lg border border-purple-100 text-center">
+              <div>
+                <p class="text-[8px] font-bold text-gray-500 uppercase">Target In</p>
+                <p class="text-base font-black text-purple-800">${formatNum(targetTotal)}</p>
+              </div>
+              <div class="border-l border-purple-100">
+                <p class="text-[8px] font-bold text-emerald-700 uppercase">Aktual In</p>
+                <p class="text-base font-black text-emerald-700">${formatNum(actualTotal)}</p>
+              </div>
+            </div>
           </div>
-          <div class="mt-2 pt-2 border-t border-purple-200 flex justify-around text-[10px] font-bold text-gray-600 bg-white/70 py-1 rounded">
-            <span>S8: <b class="text-purple-900">${formatNum(item.s8)}</b></span>
-            <span>S9: <b class="text-purple-900">${formatNum(item.s9)}</b></span>
+          <div class="pt-1 border-t border-purple-200/60 flex justify-around text-[9px] font-bold text-gray-600 bg-white/50 py-1 rounded">
+            <span>S8: <b class="text-purple-950">${formatNum(item.targetS8 || item.s8 || 0)}</b></span>
+            <span>S9: <b class="text-purple-950">${formatNum(item.targetS9 || item.s9 || 0)}</b></span>
           </div>
         </div>`;
       });
       container.innerHTML = html;
     }
 
-    // 🔴 LOAD ANALYTICS DASHBOARD TERINTEGRASI LENGKAP
+    // 🔴 FITUR INTERAKTIF: KLIK BULAN S2 LANGSUNG MEMBUKA MODAL TRANSAKSI BULAN TERSEBUT
+    function openRedeemModalFilteredByMonth(monthKey) {
+      currentRedeemTab = 'target';
+      document.getElementById('searchRedeemInput').value = monthKey;
+      redeemSearchQuery = monthKey.toUpperCase().trim();
+      document.getElementById('modalRedeemDetail').classList.remove('hidden');
+      updateRedeemModalUI();
+    }
+
+    // 🔴 DEALERSHIP BREAKDOWN (24 CABANG UTUH, BREAKDOWN REDEEM S8 & S9, TARGET S2 & PROGRESS %)
+    function renderBranchBreakdown() {
+      var headHtml = '<tr>' +
+        '<th class="px-3 py-3 border-b text-center w-8 bg-gray-50">#</th>' +
+        '<th onclick="sortBranchTable(\'cabang\')" class="px-3 py-3 border-b sortable-th bg-gray-50">Dealership <span id="br-sort-cabang">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'potensi\')" class="px-2.5 py-3 border-b text-center sortable-th bg-gray-50 text-purple-700">Total Leads <span id="br-sort-potensi">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'potensiS8\')" class="px-2.5 py-3 border-b text-center sortable-th bg-purple-50/40 text-purple-800">Leads S8 <span id="br-sort-potensiS8">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'potensiS9\')" class="px-2.5 py-3 border-b text-center sortable-th bg-purple-50/40 text-purple-800">Leads S9 <span id="br-sort-potensiS9">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'regTarget\')" class="px-2.5 py-3 border-b text-center sortable-th bg-blue-50/50 text-blue-700">Issued <span id="br-sort-regTarget">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'redeemTarget\')" class="px-2.5 py-3 border-b text-center sortable-th bg-emerald-50/50 text-emerald-700">Redeemed <span id="br-sort-redeemTarget">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'redeemS8\')" class="px-2.5 py-3 border-b text-center sortable-th bg-emerald-50/30 text-emerald-800">Redeem S8 <span id="br-sort-redeemS8">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'redeemS9\')" class="px-2.5 py-3 border-b text-center sortable-th bg-emerald-50/30 text-emerald-800">Redeem S9 <span id="br-sort-redeemS9">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'convRateTarget\')" class="px-2.5 py-3 border-b text-center sortable-th bg-indigo-50/50 text-indigo-700">Conv % <span id="br-sort-convRateTarget">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'revenue\')" class="px-3 py-3 border-b text-right sortable-th bg-gray-100 font-black">Gross Revenue <span id="br-sort-revenue">↕</span></th>';
+      
+      if (dashIsJanJun) {
+        headHtml += '<th onclick="sortBranchTable(\'inS2Count\')" class="px-2.5 py-3 border-b text-center sortable-th bg-emerald-50 text-emerald-800">Act In S2 <span id="br-sort-inS2Count">↕</span></th>' +
+                    '<th onclick="sortBranchTable(\'targetInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-50 text-teal-800">Target S2 <span id="br-sort-targetInS2">↕</span></th>' +
+                    '<th onclick="sortBranchTable(\'progressInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-100 text-teal-900 font-black">Progress S2 <span id="br-sort-progressInS2">↕</span></th>';
+      }
+      headHtml += '</tr>';
+      setHTML('branchBreakdownHead', headHtml);
+
+      var filtered = rawBranchBreakdownData.filter(b => !branchSearchQuery || (b.cabang || '').toUpperCase().includes(branchSearchQuery));
+      filtered.sort((a, b) => {
+        var valA = a[branchSortCol], valB = b[branchSortCol];
+        if (branchSortCol === 'convRateTarget' || branchSortCol === 'inS2Rate' || branchSortCol === 'progressInS2') {
+          return branchSortOrder === 'asc' ? (parseRate(valA) - parseRate(valB)) : (parseRate(valB) - parseRate(valA));
+        }
+        if (typeof valA === 'string') return branchSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        return branchSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
+      });
+
+      ['cabang', 'potensi', 'potensiS8', 'potensiS9', 'regTarget', 'redeemTarget', 'redeemS8', 'redeemS9', 'convRateTarget', 'revenue', 'inS2Count', 'targetInS2', 'progressInS2'].forEach(c => {
+        var el = document.getElementById('br-sort-' + c);
+        if (el) el.innerHTML = branchSortCol === c ? (branchSortOrder === 'asc' ? '<span class="text-red-600 font-bold">▲</span>' : '<span class="text-red-600 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
+      });
+
+      setText('branchCountBadge', filtered.length + " Branches");
+      
+      var bdHtml = '', totalPot = 0, totalPot8 = 0, totalPot9 = 0, totalInS2 = 0, totalTargetS2 = 0, totalRegT = 0, totalRedT = 0, totalRed8 = 0, totalRed9 = 0, totalRev = 0;
+
+      if (filtered.length > 0) {
+        filtered.forEach(function(b, idx) {
+          totalPot += Number(b.potensi) || 0; 
+          totalPot8 += Number(b.potensiS8) || 0;
+          totalPot9 += Number(b.potensiS9) || 0;
+          totalInS2 += Number(b.inS2Count) || 0;
+          totalTargetS2 += Number(b.targetInS2) || 0;
+          totalRegT += Number(b.regTarget) || 0; 
+          totalRedT += Number(b.redeemTarget) || 0; 
+          totalRed8 += Number(b.redeemS8) || 0; 
+          totalRed9 += Number(b.redeemS9) || 0; 
+          totalRev += Number(b.revenue) || 0;
+
+          var inS2Cells = dashIsJanJun ? 
+            `<td class="px-2.5 py-3 text-center font-bold text-emerald-800 bg-emerald-50/40 border-b border-gray-100">${formatNum(b.inS2Count || 0)} <span class="text-[10px] text-gray-500">(${b.inS2Rate || '0,0'}%)</span></td>
+             <td class="px-2.5 py-3 text-center font-bold text-teal-800 bg-teal-50/40 border-b border-gray-100">${formatNum(b.targetInS2 || 0)}</td>
+             <td class="px-2.5 py-3 text-center font-black text-teal-900 bg-teal-100/50 border-b border-gray-100">${b.progressInS2 || '0,0'}%</td>` : '';
+          
+          bdHtml += `<tr class="hover:bg-gray-50 transition text-xs">
+            <td class="px-3 py-3 text-center border-b border-gray-100 font-medium text-gray-500">${idx + 1}</td>
+            <td class="px-3 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">${b.cabang}</td>
+            <td class="px-2.5 py-3 text-center font-black text-purple-700 bg-purple-50/20 border-b border-gray-100">${formatNum(b.potensi || 0)}</td>
+            <td class="px-2.5 py-3 text-center font-bold text-purple-900 bg-purple-50/10 border-b border-gray-100">${formatNum(b.potensiS8 || 0)}</td>
+            <td class="px-2.5 py-3 text-center font-bold text-purple-900 bg-purple-50/10 border-b border-gray-100">${formatNum(b.potensiS9 || 0)}</td>
+            <td class="px-2.5 py-3 text-center font-bold text-blue-700 bg-blue-50/30 border-b border-gray-100">${formatNum(b.regTarget || 0)}</td>
+            <td class="px-2.5 py-3 text-center font-black text-emerald-700 bg-blue-50/30 border-b border-gray-100">${formatNum(b.redeemTarget || 0)}</td>
+            <td class="px-2.5 py-3 text-center font-bold text-emerald-800 bg-emerald-50/20 border-b border-gray-100">${formatNum(b.redeemS8 || 0)}</td>
+            <td class="px-2.5 py-3 text-center font-bold text-emerald-800 bg-emerald-50/20 border-b border-gray-100">${formatNum(b.redeemS9 || 0)}</td>
+            <td class="px-2.5 py-3 text-center font-black text-indigo-700 bg-blue-50/30 border-b border-gray-100">${b.convRateTarget || '0,0'}%</td>
+            <td class="px-3 py-3 text-right font-black text-gray-900 bg-gray-50/60 border-b border-gray-100">${formatRp(b.revenue || 0)}</td>
+            ${inS2Cells}
+          </tr>`;
+        });
+      } else {
+        bdHtml = `<tr><td colspan="${dashIsJanJun ? 14 : 11}" class="px-4 py-8 text-center text-gray-400 italic font-medium">No dealership performance data available.</td></tr>`;
+      }
+      setHTML('hoBreakdownBody', bdHtml);
+
+      var avgTargetConv = totalPot > 0 ? ((totalRedT / totalPot) * 100).toFixed(1).replace('.', ',') : '0,0';
+      var avgInS2Ratio = totalPot > 0 ? ((totalInS2 / totalPot) * 100).toFixed(1).replace('.', ',') : '0,0';
+      var totalProgressS2 = totalTargetS2 > 0 ? ((totalInS2 / totalTargetS2) * 100).toFixed(1).replace('.', ',') : '0,0';
+
+      var footInS2 = dashIsJanJun ? 
+        `<td class="px-2.5 py-3 text-center font-black text-emerald-900 bg-emerald-100/70">${formatNum(totalInS2)} <span class="text-[10px] font-normal">(${avgInS2Ratio}%)</span></td>
+         <td class="px-2.5 py-3 text-center font-black text-teal-900 bg-teal-100/70">${formatNum(totalTargetS2)}</td>
+         <td class="px-2.5 py-3 text-center font-black text-teal-950 bg-teal-200/80">${totalProgressS2}%</td>` : '';
+      
+      setHTML('hoBreakdownFoot', `<tr class="bg-gray-100 text-xs">
+        <td colspan="2" class="px-3 py-3 text-center uppercase tracking-wider font-black">TOTAL ALL BRANCHES</td>
+        <td class="px-2.5 py-3 text-center font-black text-purple-800 bg-purple-100/50">${formatNum(totalPot)}</td>
+        <td class="px-2.5 py-3 text-center font-black text-purple-900 bg-purple-100/30">${formatNum(totalPot8)}</td>
+        <td class="px-2.5 py-3 text-center font-black text-purple-900 bg-purple-100/30">${formatNum(totalPot9)}</td>
+        <td class="px-2.5 py-3 text-center font-black text-blue-800 bg-blue-100/50">${formatNum(totalRegT)}</td>
+        <td class="px-2.5 py-3 text-center font-black text-emerald-800 bg-blue-100/50">${formatNum(totalRedT)}</td>
+        <td class="px-2.5 py-3 text-center font-black text-emerald-900 bg-emerald-100/40">${formatNum(totalRed8)}</td>
+        <td class="px-2.5 py-3 text-center font-black text-emerald-900 bg-emerald-100/40">${formatNum(totalRed9)}</td>
+        <td class="px-2.5 py-3 text-center font-black text-indigo-800 bg-blue-100/50">${avgTargetConv}%</td>
+        <td class="px-3 py-3 text-right font-black text-gray-900 text-sm bg-gray-200/60">${formatRp(totalRev)}</td>
+        ${footInS2}
+      </tr>`);
+    }
+
+    function openTicketModal(tabType) {
+      currentTicketTab = tabType || 'all'; 
+      document.getElementById('searchTicketInput').value = ''; 
+      ticketSearchQuery = '';
+      document.getElementById('modalTicketDetail').classList.remove('hidden'); 
+      updateTicketModalUI();
+    }
+    function closeTicketModal() { document.getElementById('modalTicketDetail').classList.add('hidden'); }
+    function switchTicketTab(tabType) { currentTicketTab = tabType; updateTicketModalUI(); }
+    function filterTicketTable(query) { ticketSearchQuery = (query || '').toUpperCase().trim(); renderTicketTableRows(); }
+
+    function updateTicketModalUI() {
+      ['all', 'target', 'nontarget'].forEach(t => {
+        var btn = document.getElementById('tab-tk-' + t);
+        if (btn) btn.className = currentTicketTab === t ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm' : 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-100';
+      });
+      setText('tk-count-all', formatNum(globalAllTicketDetails.length));
+      setText('tk-count-target', formatNum(globalAllTicketDetails.filter(r => r.tipe === 'TARGET').length));
+      setText('tk-count-nontarget', formatNum(globalAllTicketDetails.filter(r => r.tipe === 'NON_TARGET').length));
+      renderTicketTableRows();
+    }
+
+    function renderTicketTableRows() {
+      var filtered = globalAllTicketDetails.filter(item => {
+        var matchTab = (currentTicketTab === 'all') || (currentTicketTab === 'target' && item.tipe === 'TARGET') || (currentTicketTab === 'nontarget' && item.tipe === 'NON_TARGET');
+        if (!matchTab) return false;
+        return !ticketSearchQuery || (item.nama + ' ' + item.nopol + ' ' + item.vin + ' ' + item.cabang + ' ' + item.namaSA + ' ' + (item.bulanS2 || '')).toUpperCase().includes(ticketSearchQuery);
+      });
+      var tbodyHtml = '';
+      if (filtered.length > 0) {
+        filtered.forEach((r, idx) => {
+          var bTipe = r.tipe === 'TARGET' ? '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-black border border-blue-300">🎯 Targeted Cohort</span>' : '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-black border border-amber-300">⚠️ Organic Inflow</span>';
+          var bSts = r.status === 'REDEEMED' ? '<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-[10px] font-bold">✅ Redeemed</span>' : (r.status === 'ACTIVE' ? '<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-[10px] font-bold">🔥 Active</span>' : '<span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-bold">✖ Expired</span>');
+          tbodyHtml += `<tr class="hover:bg-gray-50 transition"><td class="px-3 py-2 text-center text-gray-500 font-medium">${idx + 1}</td><td class="px-4 py-2"><p class="font-bold text-gray-900 uppercase">${r.nama}</p><p class="text-[10px] text-gray-500 font-medium">${r.model} (${r.nopol})</p></td><td class="px-4 py-2 font-mono font-bold text-gray-700">${r.vin}</td><td class="px-4 py-2"><p class="font-bold text-gray-800 uppercase">${r.cabang}</p><p class="text-[10px] text-gray-500">SA: ${r.namaSA}</p></td><td class="px-3 py-2 text-center font-bold text-gray-700">${r.servisKe}</td><td class="px-3 py-2 text-center font-mono text-gray-600">${r.tglTerbit}</td><td class="px-3 py-2 text-center">${bSts}</td><td class="px-3 py-2 text-center">${bTipe}</td></tr>`;
+        });
+      } else {
+        tbodyHtml = '<tr><td colspan="8" class="px-4 py-10 text-center text-gray-400 italic font-medium">No tickets match active filter.</td></tr>';
+      }
+      setHTML('ticketTableBody', tbodyHtml);
+      setText('ticketTotalFooterText', 'Total Filtered: ' + formatNum(filtered.length) + ' Tickets');
+    }
+
+    function downloadTicketExcel() {
+      if (!globalAllTicketDetails || globalAllTicketDetails.length === 0) return Swal.fire('No Data', 'No records to export.', 'warning');
+      var exportData = [ ["#", "Classification", "Customer Name", "Model", "Plate No", "VIN Number", "Dealership", "Service Advisor", "Service Level", "Issued Date", "Status"] ];
+      globalAllTicketDetails.forEach((r, idx) => exportData.push([idx + 1, r.tipe === 'TARGET' ? 'Targeted Cohort' : 'Organic Inflow', r.nama, r.model, r.nopol, r.vin, r.cabang, r.namaSA, r.servisKe, r.tglTerbit, r.status]));
+      var ws = XLSX.utils.aoa_to_sheet(exportData), wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Tickets_Issued");
+      XLSX.writeFile(wb, "Loyalty_Tickets_Issued.xlsx");
+    }
+
+    function openRedeemModal(tabType) {
+      currentRedeemTab = tabType || 'all'; 
+      document.getElementById('searchRedeemInput').value = ''; 
+      redeemSearchQuery = '';
+      document.getElementById('modalRedeemDetail').classList.remove('hidden'); 
+      updateRedeemModalUI();
+    }
+    function closeRedeemModal() { document.getElementById('modalRedeemDetail').classList.add('hidden'); }
+    function switchRedeemTab(tabType) { currentRedeemTab = tabType; updateRedeemModalUI(); }
+    function filterRedeemTable(query) { redeemSearchQuery = (query || '').toUpperCase().trim(); renderRedeemTableRows(); }
+
+    function updateRedeemModalUI() {
+      ['all', 'target', 'nontarget'].forEach(t => {
+        var btn = document.getElementById('tab-rd-' + t);
+        if (btn) btn.className = currentRedeemTab === t ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm' : 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-100';
+      });
+      setText('rd-count-all', formatNum(globalRedeemedDetails.length));
+      setText('rd-count-target', formatNum(globalRedeemedDetails.filter(r => r.tipe === 'TARGET').length));
+      setText('rd-count-nontarget', formatNum(globalRedeemedDetails.filter(r => r.tipe === 'NON_TARGET').length));
+      renderRedeemTableRows();
+    }
+
+    function renderRedeemTableRows() {
+      var filtered = globalRedeemedDetails.filter(item => {
+        var matchTab = (currentRedeemTab === 'all') || (currentRedeemTab === 'target' && item.tipe === 'TARGET') || (currentRedeemTab === 'nontarget' && item.tipe === 'NON_TARGET');
+        if (!matchTab) return false;
+        return !redeemSearchQuery || (item.nama + ' ' + item.nopol + ' ' + item.vin + ' ' + item.cabang + ' ' + item.namaSA + ' ' + item.noWo + ' ' + (item.bulanS2 || '')).toUpperCase().includes(redeemSearchQuery);
+      });
+      var tbodyHtml = '', totalRev = 0;
+      if (filtered.length > 0) {
+        filtered.forEach((r, idx) => {
+          totalRev += Number(r.revenue) || 0;
+          var bTipe = r.tipe === 'TARGET' ? '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-black border border-blue-300">🎯 Targeted Cohort</span>' : '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-black border border-amber-300">⚠️ Organic Inflow</span>';
+          tbodyHtml += `<tr class="hover:bg-gray-50 transition"><td class="px-3 py-2 text-center text-gray-500 font-medium">${idx + 1}</td><td class="px-4 py-2"><p class="font-bold text-gray-900 uppercase">${r.nama}</p><p class="text-[10px] text-gray-500 font-medium">${r.model} (${r.nopol})</p></td><td class="px-4 py-2 font-mono font-bold text-gray-700">${r.vin}</td><td class="px-4 py-2"><p class="font-bold text-gray-800 uppercase">${r.cabang}</p><p class="text-[10px] text-gray-500">SA: ${r.namaSA}</p></td><td class="px-3 py-2 text-center font-bold text-gray-700">${r.servisKe}</td><td class="px-3 py-2 text-center font-mono font-bold text-indigo-700">${r.noWo}</td><td class="px-3 py-2 text-center font-mono text-gray-600">${r.tglRedeem}</td><td class="px-4 py-2 text-right font-black text-green-700">${formatRp(r.revenue)}</td><td class="px-3 py-2 text-center">${bTipe}</td></tr>`;
+        });
+      } else {
+        tbodyHtml = '<tr><td colspan="9" class="px-4 py-10 text-center text-gray-400 italic font-medium">No redemption records found.</td></tr>';
+      }
+      setHTML('redeemTableBody', tbodyHtml);
+      setText('redeemTotalFooterText', 'Total Transactions: ' + formatNum(filtered.length) + ' Units');
+      setText('redeemTotalRevenueText', 'Total Revenue: ' + formatRp(totalRev));
+    }
+
+    function downloadRedeemExcel() {
+      if (!globalRedeemedDetails || globalRedeemedDetails.length === 0) return Swal.fire('No Data', 'No records to export.', 'warning');
+      var exportData = [ ["#", "Classification", "Customer Name", "Model", "Plate No", "VIN Number", "Dealership", "Service Advisor", "Service Level", "WO No", "Redeem Date", "Actual Gross Revenue"] ];
+      globalRedeemedDetails.forEach((r, idx) => exportData.push([idx + 1, r.tipe === 'TARGET' ? 'Targeted Cohort' : 'Organic Inflow', r.nama, r.model, r.nopol, r.vin, r.cabang, r.namaSA, r.servisKe, r.noWo, r.tglRedeem, Number(r.revenue) || 0]));
+      var ws = XLSX.utils.aoa_to_sheet(exportData), wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Redemptions");
+      XLSX.writeFile(wb, "Loyalty_Redemptions.xlsx");
+    }
+
+    // 🔴 LOAD ANALYTICS DASHBOARD TERINTEGRASI (DEFENSIVE + FULL CALCULATION)
     function loadDashboard() {
       document.getElementById('dashContent').classList.add('hidden'); 
       document.getElementById('dashLoading').classList.remove('hidden'); 
@@ -1916,110 +2262,6 @@
           renderModelMiniTable(res.segments || {}, res.redeemedDetails || []);
         }
       });
-    }
-
-    // 🔴 DEALERSHIP BREAKDOWN LENGKAP: S8 & S9, IN S2 RETURN, TARGET S2 & PROGRESS
-    function renderBranchBreakdown() {
-      var headHtml = '<tr>' +
-        '<th class="px-3 py-3 border-b text-center w-8 bg-gray-50">#</th>' +
-        '<th onclick="sortBranchTable(\'cabang\')" class="px-3 py-3 border-b sortable-th bg-gray-50">Dealership <span id="br-sort-cabang">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'potensi\')" class="px-2.5 py-3 border-b text-center sortable-th bg-gray-50 text-purple-700">Total Leads <span id="br-sort-potensi">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'potensiS8\')" class="px-2 py-3 border-b text-center sortable-th bg-purple-50/40 text-purple-800">Leads S8 <span id="br-sort-potensiS8">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'potensiS9\')" class="px-2 py-3 border-b text-center sortable-th bg-purple-50/40 text-purple-800">Leads S9 <span id="br-sort-potensiS9">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'regTarget\')" class="px-2.5 py-3 border-b text-center sortable-th bg-blue-50/50 text-blue-700">Issued <span id="br-sort-regTarget">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'redeemTarget\')" class="px-2.5 py-3 border-b text-center sortable-th bg-emerald-50/50 text-emerald-700">Redeemed <span id="br-sort-redeemTarget">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'redeemS8\')" class="px-2 py-3 border-b text-center sortable-th bg-emerald-50/30 text-emerald-800">Redeem S8 <span id="br-sort-redeemS8">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'redeemS9\')" class="px-2 py-3 border-b text-center sortable-th bg-emerald-50/30 text-emerald-800">Redeem S9 <span id="br-sort-redeemS9">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'convRateTarget\')" class="px-2 py-3 border-b text-center sortable-th bg-indigo-50/50 text-indigo-700">Conv % <span id="br-sort-convRateTarget">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'revenue\')" class="px-3 py-3 border-b text-right sortable-th bg-gray-100 font-black">Gross Revenue <span id="br-sort-revenue">↕</span></th>';
-      
-      if (dashIsJanJun) {
-        headHtml += '<th onclick="sortBranchTable(\'inS2Count\')" class="px-2.5 py-3 border-b text-center sortable-th bg-emerald-50 text-emerald-800">Act In S2 <span id="br-sort-inS2Count">↕</span></th>' +
-                    '<th onclick="sortBranchTable(\'targetInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-50 text-teal-800">Target S2 <span id="br-sort-targetInS2">↕</span></th>' +
-                    '<th onclick="sortBranchTable(\'progressInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-100 text-teal-900 font-black">Progress S2 <span id="br-sort-progressInS2">↕</span></th>';
-      }
-      headHtml += '</tr>';
-      setHTML('branchBreakdownHead', headHtml);
-
-      var filtered = rawBranchBreakdownData.filter(b => !branchSearchQuery || (b.cabang || '').toUpperCase().includes(branchSearchQuery));
-      filtered.sort((a, b) => {
-        var valA = a[branchSortCol], valB = b[branchSortCol];
-        if (branchSortCol === 'convRateTarget' || branchSortCol === 'inS2Rate' || branchSortCol === 'progressInS2') {
-          return branchSortOrder === 'asc' ? (parseRate(valA) - parseRate(valB)) : (parseRate(valB) - parseRate(valA));
-        }
-        if (typeof valA === 'string') return branchSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-        return branchSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
-      });
-
-      ['cabang', 'potensi', 'potensiS8', 'potensiS9', 'regTarget', 'redeemTarget', 'redeemS8', 'redeemS9', 'convRateTarget', 'revenue', 'inS2Count', 'targetInS2', 'progressInS2'].forEach(c => {
-        var el = document.getElementById('br-sort-' + c);
-        if (el) el.innerHTML = branchSortCol === c ? (branchSortOrder === 'asc' ? '<span class="text-red-600 font-bold">▲</span>' : '<span class="text-red-600 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
-      });
-
-      setText('branchCountBadge', filtered.length + " Branches");
-      
-      var bdHtml = '', totalPot = 0, totalPot8 = 0, totalPot9 = 0, totalInS2 = 0, totalTargetS2 = 0, totalRegT = 0, totalRedT = 0, totalRed8 = 0, totalRed9 = 0, totalRev = 0;
-
-      if (filtered.length > 0) {
-        filtered.forEach(function(b, idx) {
-          totalPot += Number(b.potensi) || 0; 
-          totalPot8 += Number(b.potensiS8) || 0;
-          totalPot9 += Number(b.potensiS9) || 0;
-          totalInS2 += Number(b.inS2Count) || 0;
-          totalTargetS2 += Number(b.targetInS2) || 0;
-          totalRegT += Number(b.regTarget) || 0; 
-          totalRedT += Number(b.redeemTarget) || 0; 
-          totalRed8 += Number(b.redeemS8) || 0; 
-          totalRed9 += Number(b.redeemS9) || 0; 
-          totalRev += Number(b.revenue) || 0;
-
-          var inS2Cells = dashIsJanJun ? 
-            `<td class="px-2.5 py-3 text-center font-bold text-emerald-800 bg-emerald-50/40 border-b border-gray-100">${formatNum(b.inS2Count || 0)} <span class="text-[10px] text-gray-500">(${b.inS2Rate || '0,0'}%)</span></td>
-             <td class="px-2.5 py-3 text-center font-bold text-teal-800 bg-teal-50/40 border-b border-gray-100">${formatNum(b.targetInS2 || 0)}</td>
-             <td class="px-2.5 py-3 text-center font-black text-teal-900 bg-teal-100/50 border-b border-gray-100">${b.progressInS2 || '0,0'}%</td>` : '';
-          
-          bdHtml += `<tr class="hover:bg-gray-50 transition text-xs">
-            <td class="px-3 py-3 text-center border-b border-gray-100 font-medium text-gray-500">${idx + 1}</td>
-            <td class="px-3 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">${b.cabang}</td>
-            <td class="px-2.5 py-3 text-center font-black text-purple-700 bg-purple-50/20 border-b border-gray-100">${formatNum(b.potensi || 0)}</td>
-            <td class="px-2 py-3 text-center font-bold text-purple-900 bg-purple-50/10 border-b border-gray-100">${formatNum(b.potensiS8 || 0)}</td>
-            <td class="px-2 py-3 text-center font-bold text-purple-900 bg-purple-50/10 border-b border-gray-100">${formatNum(b.potensiS9 || 0)}</td>
-            <td class="px-2.5 py-3 text-center font-bold text-blue-700 bg-blue-50/30 border-b border-gray-100">${formatNum(b.regTarget || 0)}</td>
-            <td class="px-2.5 py-3 text-center font-black text-emerald-700 bg-blue-50/30 border-b border-gray-100">${formatNum(b.redeemTarget || 0)}</td>
-            <td class="px-2 py-3 text-center font-bold text-emerald-800 bg-emerald-50/20 border-b border-gray-100">${formatNum(b.redeemS8 || 0)}</td>
-            <td class="px-2 py-3 text-center font-bold text-emerald-800 bg-emerald-50/20 border-b border-gray-100">${formatNum(b.redeemS9 || 0)}</td>
-            <td class="px-2 py-3 text-center font-black text-indigo-700 bg-blue-50/30 border-b border-gray-100">${b.convRateTarget || '0,0'}%</td>
-            <td class="px-3 py-3 text-right font-black text-gray-900 bg-gray-50/60 border-b border-gray-100">${formatRp(b.revenue || 0)}</td>
-            ${inS2Cells}
-          </tr>`;
-        });
-      } else {
-        bdHtml = `<tr><td colspan="${dashIsJanJun ? 14 : 11}" class="px-4 py-8 text-center text-gray-400 italic font-medium">No dealership performance data available.</td></tr>`;
-      }
-      setHTML('hoBreakdownBody', bdHtml);
-
-      var avgTargetConv = totalPot > 0 ? ((totalRedT / totalPot) * 100).toFixed(1).replace('.', ',') : '0,0';
-      var avgInS2Ratio = totalPot > 0 ? ((totalInS2 / totalPot) * 100).toFixed(1).replace('.', ',') : '0,0';
-      var totalProgressS2 = totalTargetS2 > 0 ? ((totalInS2 / totalTargetS2) * 100).toFixed(1).replace('.', ',') : '0,0';
-
-      var footInS2 = dashIsJanJun ? 
-        `<td class="px-2.5 py-3 text-center font-black text-emerald-900 bg-emerald-100/70">${formatNum(totalInS2)} <span class="text-[10px] font-normal">(${avgInS2Ratio}%)</span></td>
-         <td class="px-2.5 py-3 text-center font-black text-teal-900 bg-teal-100/70">${formatNum(totalTargetS2)}</td>
-         <td class="px-2.5 py-3 text-center font-black text-teal-950 bg-teal-200/80">${totalProgressS2}%</td>` : '';
-      
-      setHTML('hoBreakdownFoot', `<tr class="bg-gray-100 text-xs">
-        <td colspan="2" class="px-3 py-3 text-center uppercase tracking-wider font-black">TOTAL ALL BRANCHES</td>
-        <td class="px-2.5 py-3 text-center font-black text-purple-800 bg-purple-100/50">${formatNum(totalPot)}</td>
-        <td class="px-2 py-3 text-center font-black text-purple-900 bg-purple-100/30">${formatNum(totalPot8)}</td>
-        <td class="px-2 py-3 text-center font-black text-purple-900 bg-purple-100/30">${formatNum(totalPot9)}</td>
-        <td class="px-2.5 py-3 text-center font-black text-blue-800 bg-blue-100/50">${formatNum(totalRegT)}</td>
-        <td class="px-2.5 py-3 text-center font-black text-emerald-800 bg-blue-100/50">${formatNum(totalRedT)}</td>
-        <td class="px-2 py-3 text-center font-black text-emerald-900 bg-emerald-100/40">${formatNum(totalRed8)}</td>
-        <td class="px-2 py-3 text-center font-black text-emerald-900 bg-emerald-100/40">${formatNum(totalRed9)}</td>
-        <td class="px-2 py-3 text-center font-black text-indigo-800 bg-blue-100/50">${avgTargetConv}%</td>
-        <td class="px-3 py-3 text-right font-black text-gray-900 text-sm bg-gray-200/60">${formatRp(totalRev)}</td>
-        ${footInS2}
-      </tr>`);
     }
 
     // ========================================================
