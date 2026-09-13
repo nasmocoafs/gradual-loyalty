@@ -16,18 +16,17 @@
 
   <script> 
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzDoS-WcWDyoMW_JC0WgDk5fboMdqaOb9NqbqiVAoIgaUbF_0AkFXSgmVCqWXfns0-T0w/exec";
-    
     const urlParams = new URLSearchParams(window.location.search);
     var globalPortalCode = urlParams.get('code') || '';
     
-    // DATA MRA & CRM STATE
+    // CRM & DATA MRA
     var globalMraDataRaw = [];
     var mraFilteredData = [];
     var mraCurrentPage = 1;
     var mraPageSize = 10;
     var mraSortOrder = 'none';
 
-    // DASBOR ANALITIK STATE
+    // ANALYTICS STATE
     var rawLeaderboardData = [];
     var lbSortCol = 'redeemed';
     var lbSortOrder = 'desc';
@@ -39,7 +38,7 @@
     var branchSearchQuery = '';
     var dashIsJanJun = false;
 
-    // DATA DRILL-DOWN PELANGGAN REDEEM & TIKET TERBIT
+    // MODAL DRILL DOWN
     var globalRedeemedDetails = [];
     var currentRedeemTab = 'all';
     var redeemSearchQuery = '';
@@ -48,7 +47,7 @@
     var currentTicketTab = 'all';
     var ticketSearchQuery = '';
     
-    // DATA MONITORING NIS (GOVERNANCE)
+    // AUDIT GOVERNANCE
     var rawAuditData = [];
     var currentAuditFilterTab = 'ALL';
     var auditSearchQuery = '';
@@ -74,20 +73,30 @@
       <div class="relative flex-1 text-center border rounded-md py-1.5 bg-gray-800 border-gray-700 text-gray-500 opacity-50 flex items-center justify-center"><p class="text-[10px] font-black tracking-wider">S-11</p></div>
     `;
 
-    // 🔴 FUNGSI PENGAMAN DOM: Mencegah TypeError jika elemen tidak ditemukan
+    // 🔴 HELPER PENGAMAN DOM: Mencegah error 'Cannot set properties of null'
     function setText(id, val) {
       var el = document.getElementById(id);
       if (el) el.innerText = (val !== undefined && val !== null) ? val : '-';
     }
-
     function setHTML(id, val) {
       var el = document.getElementById(id);
       if (el) el.innerHTML = (val !== undefined && val !== null) ? val : '-';
     }
 
+    // 🔴 FORMAT ANGKA DENGAN TITIK (MISAL 14.343)
+    function formatNum(val) {
+      if (val === null || val === undefined || isNaN(val)) return '0';
+      return Math.round(Number(val)).toLocaleString('id-ID');
+    }
+    function formatRp(num) {
+      return 'Rp ' + formatNum(num);
+    }
     function formatDateID(dateObj) {
       const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
       return dateObj.getDate().toString().padStart(2, '0') + " " + months[dateObj.getMonth()] + " " + dateObj.getFullYear();
+    }
+    function parseRate(val) {
+      return !val ? 0 : parseFloat(val.toString().replace('%', '').replace(',', '.').trim()) || 0;
     }
 
     async function fetchAPI(action, payload = {}) {
@@ -466,7 +475,7 @@
         </div>
       </div>
 
-      <!-- 🔴 TAB: ANALYTICS DASHBOARD (TOP-DOWN FUNNEL & ARPU / COO REALIZATION) -->
+      <!-- 🔴 TAB: ANALYTICS DASHBOARD -->
       <div id="view-dashboard" class="w-full max-w-7xl mx-auto fade-in hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
           <div>
@@ -498,7 +507,7 @@
         
         <div id="dashContent" class="hidden space-y-6">
 
-          <!-- 🔴 STRATEGIC PANE: 4 KARTU UTAMA DENGAN BREAKDOWN SERVIS 8 & 9 -->
+          <!-- 🔴 STRATEGIC PANE: 4 KARTU UTAMA DENGAN FORMAT RIBUAN TITIK -->
           <div class="bg-gradient-to-r from-blue-900 to-indigo-950 p-5 rounded-2xl shadow-md text-white">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 pb-3 border-b border-blue-800/60">
               <div class="flex items-center gap-2">
@@ -564,11 +573,27 @@
               </div>
             </div>
           </div>
+
+          <!-- 🔴 SEKSI BARU: POTENTIAL S2 ARRIVAL SCHEDULING BOARD (PER BULAN) -->
+          <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-gray-100">
+              <div>
+                <h3 class="text-xs font-black text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                  <span>📅 Potential S2 Arrival Scheduling Board (Target per Bulan)</span>
+                </h3>
+                <p class="text-[11px] text-gray-500">Estimasi sebaran bulan kedatangan unit di Semester 2 (Kolom G DataExpired) untuk persiapan load kapasitas bengkel.</p>
+              </div>
+              <span class="text-[10px] font-bold bg-purple-100 text-purple-800 px-2.5 py-1 rounded-full border border-purple-200">Semester 2 Workload</span>
+            </div>
+            <div id="s2MonthlyBoard" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 pt-1">
+              <div class="p-3 bg-gray-50 border rounded-xl text-center text-gray-400 text-xs italic col-span-6">Memuat jadwal kedatangan S2...</div>
+            </div>
+          </div>
           
           <!-- 🔴 SEKSI 3: TOP-DOWN STEPPED RETENTION FUNNEL & ARPU / COO REALIZATION CARD -->
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            <!-- SISI KIRI (5 KOLOM): TOP-DOWN STEPPED FUNNEL KE BAWAH -->
+            <!-- SISI KIRI (5 KOLOM): TOP-DOWN STEPPED FUNNEL -->
             <div class="lg:col-span-5 bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between">
               <div class="border-b pb-2 mb-3 flex justify-between items-center">
                 <h3 class="text-xs font-black text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
@@ -777,19 +802,20 @@
 
           </div>
 
-          <!-- 🔴 TABEL 2: BREAKDOWN PERFORMA CABANG (GRANULAR SERVIS 8 & 9) -->
+          <!-- 🔴 TABEL 2: BREAKDOWN PERFORMA CABANG LENGKAP (24 CABANG UTUH TANPA TERPOTONG) -->
           <div id="hoBreakdownSection" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-col">
             <div class="bg-gray-900 p-4 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div class="flex items-center gap-2">
                 <h3 class="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2">📊 Dealership Performance Breakdown (Servis 8 & 9 Granular)</h3>
-                <span id="branchCountBadge" class="bg-gray-800 text-yellow-400 text-xs px-2.5 py-0.5 rounded-full font-bold border border-gray-700">0 Branches</span>
+                <span id="branchCountBadge" class="bg-gray-800 text-yellow-400 text-xs px-2.5 py-0.5 rounded-full font-bold border border-gray-700">24 Branches</span>
               </div>
               <div class="relative w-full sm:w-64">
                 <input type="text" id="searchBranchInput" oninput="filterBranchBreakdown(this.value)" placeholder="Search dealership..." class="w-full pl-8 pr-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-xs text-white placeholder-gray-400 focus:outline-none focus:border-red-500 auto-upper">
                 <svg class="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
               </div>
             </div>
-            <div class="p-0 flex-1 overflow-x-auto max-h-[60vh]">
+            <!-- Container tabel diperlebar agar menampilkan 24 cabang secara utuh -->
+            <div class="p-0 flex-1 overflow-x-auto max-h-[85vh]">
               <table class="w-full text-sm text-left whitespace-nowrap">
                 <thead class="bg-gray-50 text-[10px] uppercase text-gray-500 font-bold sticky top-0 z-10 shadow-sm" id="branchBreakdownHead"></thead>
                 <tbody id="hoBreakdownBody" class="divide-y divide-gray-100"></tbody>
@@ -940,7 +966,7 @@
       <div class="bg-gray-900 p-5 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <h3 class="text-white font-black text-base uppercase tracking-wider flex items-center gap-2"><span>🎫 Ticket Issuance Breakdown (Lock-In)</span></h3>
-          <p class="text-xs text-gray-400 mt-0.5">Comprehensive audit trail of issued loyalty vouchers for active period.</p>
+          <p class="text-xs text-gray-400 mt-0.5">Audit trail tiket diterbitkan untuk periode aktif.</p>
         </div>
         <div class="flex items-center gap-2 w-full sm:w-auto">
           <button onclick="downloadTicketExcel()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center gap-1.5 shadow transition">
@@ -977,7 +1003,7 @@
       <div class="bg-gray-900 p-5 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <h3 class="text-white font-black text-base uppercase tracking-wider flex items-center gap-2"><span>📋 Realized Service Redemption Breakdown</span></h3>
-          <p class="text-xs text-gray-400 mt-0.5">Audit log of successfully realized cash billing invoices.</p>
+          <p class="text-xs text-gray-400 mt-0.5">Audit log dari faktur servis riil kasir.</p>
         </div>
         <div class="flex items-center gap-2 w-full sm:w-auto">
           <button onclick="downloadRedeemExcel()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs flex items-center gap-1.5 shadow transition">
@@ -1215,13 +1241,6 @@
       if (tabId === 'audit') loadAuditNisData();
     }
 
-    function formatWAPhone(number) { 
-      var str = number.toString().replace(/[^0-9]/g, ''); 
-      if (str.startsWith('0')) return '62' + str.substring(1); 
-      if (str.startsWith('8')) return '62' + str; 
-      return str; 
-    }
-    
     function updateBenefitPreview() { 
       var select = document.getElementById('servisKe'); 
       var selectedOption = select.options[select.selectedIndex]; 
@@ -1442,7 +1461,6 @@
 
     function resetValidationForm() { document.getElementById('uniqueCode').value = ''; document.getElementById('validateResultSection').classList.add('hidden'); }
 
-    // 🔴 BADGE CELL CRM LENGKAP & AMAN
     function buildBadgeCell(svc) {
       if (!svc || typeof svc !== 'object') return '-';
       var status = (svc.status || '').toString().toUpperCase().trim();
@@ -1692,301 +1710,36 @@
       reader.readAsArrayBuffer(file);
     }
 
-    function parseRate(val) { return !val ? 0 : parseFloat(val.toString().replace('%', '').replace(',', '.').trim()) || 0; }
-    function formatRp(num) { return 'Rp ' + Math.round(Number(num) || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
-
-    // 🔴 TOGGLE TAB SEGMENT VS MODEL
-    function switchVehicleView(viewType) {
-      currentVehicleTab = viewType;
-      var btnSeg = document.getElementById('btn-tab-segment');
-      var btnMod = document.getElementById('btn-tab-model');
-      var viewSeg = document.getElementById('view-vehicle-segment');
-      var viewMod = document.getElementById('view-vehicle-model');
-
-      if (viewType === 'segment') {
-        btnSeg.className = 'px-2.5 py-1 rounded text-[10px] font-bold transition bg-blue-600 text-white shadow-sm';
-        btnMod.className = 'px-2.5 py-1 rounded text-[10px] font-bold transition text-gray-400 hover:text-white';
-        viewSeg.classList.remove('hidden');
-        viewMod.classList.add('hidden');
-      } else {
-        btnMod.className = 'px-2.5 py-1 rounded text-[10px] font-bold transition bg-blue-600 text-white shadow-sm';
-        btnSeg.className = 'px-2.5 py-1 rounded text-[10px] font-bold transition text-gray-400 hover:text-white';
-        viewMod.classList.remove('hidden');
-        viewSeg.classList.add('hidden');
+    // 🔴 RENDER POTENTIAL S2 SCHEDULING BOARD (PER BULAN)
+    function renderS2MonthlyBoard(monthlyData) {
+      var container = document.getElementById('s2MonthlyBoard');
+      if (!container) return;
+      var months = Object.keys(monthlyData || {}).sort();
+      if (months.length === 0) {
+        container.innerHTML = '<div class="p-3 bg-gray-50 border rounded-xl text-center text-gray-400 text-xs italic col-span-6">Belum ada data proyeksi bulan jatuh tempo S2 (Kolom G kosong).</div>';
+        return;
       }
-    }
-
-    function renderModelMiniTable(modelMap, redeemedList) {
-      var tbody = document.getElementById('modelBreakdownBody');
-      if (!tbody) return;
-
-      var models = Object.keys(modelMap || {});
-      var totalUnits = Object.values(modelMap || {}).reduce((a, b) => a + b, 0);
-
-      var modelRevMap = {};
-      (redeemedList || []).forEach(r => {
-        var m = r.model || 'LAINNYA';
-        modelRevMap[m] = (modelRevMap[m] || 0) + (Number(r.revenue) || 0);
-      });
-
-      models.sort((a, b) => (modelMap[b] || 0) - (modelMap[a] || 0));
-
+      var monthNames = { "01":"Januari", "02":"Februari", "03":"Maret", "04":"April", "05":"Mei", "06":"Juni", "07":"Juli", "08":"Agustus", "09":"September", "10":"Oktober", "11":"November", "12":"Desember" };
       var html = '';
-      if (models.length > 0) {
-        models.forEach(m => {
-          var count = modelMap[m] || 0;
-          var rev = modelRevMap[m] || 0;
-          var share = totalUnits > 0 ? ((count / totalUnits) * 100).toFixed(0) : 0;
-
-          html += `<tr class="hover:bg-gray-50 transition">
-            <td class="py-2 px-2 font-bold text-gray-800 uppercase">${m}</td>
-            <td class="py-2 px-2 text-center font-black text-emerald-700 bg-emerald-50/30">${count}</td>
-            <td class="py-2 px-2 text-right font-mono text-gray-700">${formatRp(rev)}</td>
-            <td class="py-2 px-2 text-center text-blue-600 font-bold">${share}%</td>
-          </tr>`;
-        });
-      } else {
-        html = '<tr><td colspan="4" class="text-center py-6 text-gray-400 italic">No model data available.</td></tr>';
-      }
-      tbody.innerHTML = html;
-    }
-
-    // 🔴 SORTING LEADERBOARD SA
-    function toggleLeaderboardSort(col) {
-      if (lbSortCol === col) lbSortOrder = (lbSortOrder === 'asc') ? 'desc' : 'asc';
-      else { lbSortCol = col; lbSortOrder = (col === 'nama' || col === 'cabang') ? 'asc' : 'desc'; }
-      renderLeaderboard();
-    }
-
-    function renderLeaderboard() {
-      var list = rawLeaderboardData.slice();
-      list.sort((a, b) => {
-        var valA = a[lbSortCol], valB = b[lbSortCol];
-        if (typeof valA === 'string') return lbSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-        return lbSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
+      months.forEach(mKey => {
+        var item = monthlyData[mKey];
+        var parts = mKey.split('-');
+        var labelMonth = (parts.length === 2 && monthNames[parts[1]]) ? (monthNames[parts[1]] + ' ' + parts[0]) : mKey;
+        html += `<div class="bg-purple-50/70 border border-purple-200 rounded-xl p-3 text-center shadow-sm flex flex-col justify-between">
+          <div>
+            <p class="text-[10px] font-black text-purple-900 uppercase tracking-wider">${labelMonth}</p>
+            <p class="text-xl font-black text-purple-700 mt-1">${formatNum(item.total)} <span class="text-[10px] font-normal text-gray-500">Unit</span></p>
+          </div>
+          <div class="mt-2 pt-2 border-t border-purple-200 flex justify-around text-[10px] font-bold text-gray-600 bg-white/70 py-1 rounded">
+            <span>S8: <b class="text-purple-900">${formatNum(item.s8)}</b></span>
+            <span>S9: <b class="text-purple-900">${formatNum(item.s9)}</b></span>
+          </div>
+        </div>`;
       });
-
-      ['cabang', 'nama', 'registered', 'redeemed', 'revenue'].forEach(c => {
-        var el = document.getElementById('lb-sort-' + c);
-        if (el) el.innerHTML = lbSortCol === c ? (lbSortOrder === 'asc' ? '<span class="text-yellow-400 font-bold">▲</span>' : '<span class="text-yellow-400 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
-      });
-
-      var lbHtml = '';
-      if (list.length > 0) { 
-        list.slice(0, 5).forEach(function(sa, idx) { 
-          var medal = (idx === 0) ? '🥇' : (idx === 1) ? '🥈' : (idx === 2) ? '🥉' : '<span class="text-gray-400 font-bold">' + (idx + 1) + '</span>'; 
-          lbHtml += '<tr class="hover:bg-gray-50 transition">' +
-                      '<td class="px-4 py-3 font-black text-center w-12 text-base border-b border-gray-100">' + medal + '</td>' +
-                      '<td class="px-4 py-3 font-bold text-gray-600 text-xs uppercase border-b border-gray-100">' + (sa.cabang || '-') + '</td>' +
-                      '<td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">' + sa.nama + '</td>' +
-                      '<td class="px-4 py-3 text-center font-bold text-blue-700 bg-blue-50/20 border-b border-gray-100">' + (sa.registered || 0) + '</td>' +
-                      '<td class="px-4 py-3 text-center font-black text-emerald-700 bg-emerald-50/20 border-b border-gray-100">' + (sa.redeemed || 0) + '</td>' +
-                      '<td class="px-4 py-3 text-right font-black text-gray-900 border-b border-gray-100">' + formatRp(sa.revenue || 0) + '</td>' +
-                    '</tr>'; 
-        }); 
-      } else { 
-        lbHtml = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400 italic font-medium">No recorded Service Advisor performance in this period.</td></tr>'; 
-      }
-      setHTML('leaderboardBody', lbHtml);
+      container.innerHTML = html;
     }
 
-    function sortBranchTable(col) {
-      if (branchSortCol === col) branchSortOrder = (branchSortOrder === 'asc') ? 'desc' : 'asc';
-      else { branchSortCol = col; branchSortOrder = (col === 'cabang') ? 'asc' : 'desc'; }
-      renderBranchBreakdown();
-    }
-
-    function filterBranchBreakdown(query) { branchSearchQuery = (query || '').toUpperCase().trim(); renderBranchBreakdown(); }
-
-    // 🔴 DEALERSHIP BREAKDOWN
-    function renderBranchBreakdown() {
-      var headHtml = '<tr>' +
-        '<th class="px-3 py-3 border-b text-center w-10 bg-gray-50">#</th>' +
-        '<th onclick="sortBranchTable(\'cabang\')" class="px-4 py-3 border-b sortable-th bg-gray-50">Dealership <span id="br-sort-cabang">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'potensi\')" class="px-3 py-3 border-b text-center sortable-th bg-gray-50 text-purple-700">Total Leads <span id="br-sort-potensi">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'potensiS8\')" class="px-3 py-3 border-b text-center sortable-th bg-purple-50/30 text-purple-800">Leads S8 <span id="br-sort-potensiS8">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'potensiS9\')" class="px-3 py-3 border-b text-center sortable-th bg-purple-50/30 text-purple-800">Leads S9 <span id="br-sort-potensiS9">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'regTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-blue-50/50 text-blue-700">Issued <span id="br-sort-regTarget">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'redeemTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-emerald-50/50 text-emerald-700">Redeemed <span id="br-sort-redeemTarget">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'convRateTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-indigo-50/50 text-indigo-700">Conv % <span id="br-sort-convRateTarget">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'revenue\')" class="px-4 py-3 border-b text-right sortable-th bg-gray-100 font-black">Gross Revenue <span id="br-sort-revenue">↕</span></th>';
-      
-      if (dashIsJanJun) {
-        headHtml += '<th onclick="sortBranchTable(\'inS2Count\')" class="px-3 py-3 border-b text-center sortable-th bg-emerald-50 text-emerald-800">In S2 Return <span id="br-sort-inS2Count">↕</span></th>';
-      }
-      headHtml += '</tr>';
-      setHTML('branchBreakdownHead', headHtml);
-
-      var filtered = rawBranchBreakdownData.filter(b => !branchSearchQuery || (b.cabang || '').toUpperCase().includes(branchSearchQuery));
-      filtered.sort((a, b) => {
-        var valA = a[branchSortCol], valB = b[branchSortCol];
-        if (branchSortCol === 'convRateTarget' || branchSortCol === 'inS2Rate') {
-          return branchSortOrder === 'asc' ? (parseRate(valA) - parseRate(valB)) : (parseRate(valB) - parseRate(valA));
-        }
-        if (typeof valA === 'string') return branchSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-        return branchSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
-      });
-
-      ['cabang', 'potensi', 'potensiS8', 'potensiS9', 'regTarget', 'redeemTarget', 'convRateTarget', 'revenue', 'inS2Count'].forEach(c => {
-        var el = document.getElementById('br-sort-' + c);
-        if (el) el.innerHTML = branchSortCol === c ? (branchSortOrder === 'asc' ? '<span class="text-red-600 font-bold">▲</span>' : '<span class="text-red-600 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
-      });
-
-      setText('branchCountBadge', filtered.length + " Branches");
-      
-      var bdHtml = '', totalPot = 0, totalPot8 = 0, totalPot9 = 0, totalInS2 = 0, totalRegT = 0, totalRedT = 0, totalRev = 0;
-
-      if (filtered.length > 0) {
-        filtered.forEach(function(b, idx) {
-          totalPot += Number(b.potensi) || 0; 
-          totalPot8 += Number(b.potensiS8) || 0;
-          totalPot9 += Number(b.potensiS9) || 0;
-          totalInS2 += Number(b.inS2Count) || 0;
-          totalRegT += Number(b.regTarget) || 0; 
-          totalRedT += Number(b.redeemTarget) || 0; 
-          totalRev += Number(b.revenue) || 0;
-
-          var inS2Cell = dashIsJanJun ? '<td class="px-3 py-3 text-center font-bold text-emerald-800 bg-emerald-50/40 border-b border-gray-100">' + (b.inS2Count || 0) + ' <span class="text-[10px] text-gray-500 font-normal">(' + (b.inS2Rate || '0,0') + '%)</span></td>' : '';
-          
-          bdHtml += '<tr class="hover:bg-gray-50 transition text-xs">' +
-                      '<td class="px-3 py-3 text-center border-b border-gray-100 font-medium text-gray-500">' + (idx + 1) + '</td>' +
-                      '<td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">' + b.cabang + '</td>' +
-                      '<td class="px-3 py-3 text-center font-black text-purple-700 bg-purple-50/20 border-b border-gray-100">' + (b.potensi || 0) + '</td>' +
-                      '<td class="px-3 py-3 text-center font-bold text-purple-900 bg-purple-50/10 border-b border-gray-100">' + (b.potensiS8 || 0) + '</td>' +
-                      '<td class="px-3 py-3 text-center font-bold text-purple-900 bg-purple-50/10 border-b border-gray-100">' + (b.potensiS9 || 0) + '</td>' +
-                      '<td class="px-3 py-3 text-center font-bold text-blue-700 bg-blue-50/30 border-b border-gray-100">' + (b.regTarget || 0) + '</td>' +
-                      '<td class="px-3 py-3 text-center font-black text-emerald-700 bg-blue-50/30 border-b border-gray-100">' + (b.redeemTarget || 0) + '</td>' +
-                      '<td class="px-3 py-3 text-center font-black text-indigo-700 bg-blue-50/30 border-b border-gray-100">' + (b.convRateTarget || '0,0') + '%</td>' +
-                      '<td class="px-4 py-3 text-right font-black text-gray-900 bg-gray-50/60 border-b border-gray-100">' + formatRp(b.revenue || 0) + '</td>' +
-                      inS2Cell +
-                    '</tr>';
-        });
-      } else {
-        bdHtml = '<tr><td colspan="' + (dashIsJanJun ? 10 : 9) + '" class="px-4 py-8 text-center text-gray-400 italic font-medium">No dealership performance data available.</td></tr>';
-      }
-      setHTML('hoBreakdownBody', bdHtml);
-
-      var avgTargetConv = totalPot > 0 ? ((totalRedT / totalPot) * 100).toFixed(1).replace('.', ',') : '0,0';
-      var avgInS2Ratio = totalPot > 0 ? ((totalInS2 / totalPot) * 100).toFixed(1).replace('.', ',') : '0,0';
-      var footInS2 = dashIsJanJun ? '<td class="px-3 py-3 text-center font-black text-emerald-900 bg-emerald-100/70">' + totalInS2 + ' <span class="text-[10px] font-normal">(' + avgInS2Ratio + '%)</span></td>' : '';
-      
-      setHTML('hoBreakdownFoot', '<tr class="bg-gray-100 text-xs">' +
-        '<td colspan="2" class="px-4 py-3 text-center uppercase tracking-wider font-black">TOTAL ALL BRANCHES</td>' +
-        '<td class="px-3 py-3 text-center font-black text-purple-800 bg-purple-100/50">' + totalPot + '</td>' +
-        '<td class="px-3 py-3 text-center font-black text-purple-900 bg-purple-100/30">' + totalPot8 + '</td>' +
-        '<td class="px-3 py-3 text-center font-black text-purple-900 bg-purple-100/30">' + totalPot9 + '</td>' +
-        '<td class="px-3 py-3 text-center font-black text-blue-800 bg-blue-100/50">' + totalRegT + '</td>' +
-        '<td class="px-3 py-3 text-center font-black text-emerald-800 bg-blue-100/50">' + totalRedT + '</td>' +
-        '<td class="px-3 py-3 text-center font-black text-indigo-800 bg-blue-100/50">' + avgTargetConv + '%</td>' +
-        '<td class="px-4 py-3 text-right font-black text-gray-900 text-sm bg-gray-200/60">' + formatRp(totalRev) + '</td>' +
-        footInS2 +
-      '</tr>');
-    }
-
-    function openTicketModal(tabType) {
-      currentTicketTab = tabType || 'all'; 
-      document.getElementById('searchTicketInput').value = ''; 
-      ticketSearchQuery = '';
-      document.getElementById('modalTicketDetail').classList.remove('hidden'); 
-      updateTicketModalUI();
-    }
-    function closeTicketModal() { document.getElementById('modalTicketDetail').classList.add('hidden'); }
-    function switchTicketTab(tabType) { currentTicketTab = tabType; updateTicketModalUI(); }
-    function filterTicketTable(query) { ticketSearchQuery = (query || '').toUpperCase().trim(); renderTicketTableRows(); }
-
-    function updateTicketModalUI() {
-      ['all', 'target', 'nontarget'].forEach(t => {
-        var btn = document.getElementById('tab-tk-' + t);
-        if (btn) btn.className = currentTicketTab === t ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm' : 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-100';
-      });
-      setText('tk-count-all', globalAllTicketDetails.length);
-      setText('tk-count-target', globalAllTicketDetails.filter(r => r.tipe === 'TARGET').length);
-      setText('tk-count-nontarget', globalAllTicketDetails.filter(r => r.tipe === 'NON_TARGET').length);
-      renderTicketTableRows();
-    }
-
-    function renderTicketTableRows() {
-      var filtered = globalAllTicketDetails.filter(item => {
-        var matchTab = (currentTicketTab === 'all') || (currentTicketTab === 'target' && item.tipe === 'TARGET') || (currentTicketTab === 'nontarget' && item.tipe === 'NON_TARGET');
-        if (!matchTab) return false;
-        return !ticketSearchQuery || (item.nama + ' ' + item.nopol + ' ' + item.vin + ' ' + item.cabang + ' ' + item.namaSA).toUpperCase().includes(ticketSearchQuery);
-      });
-      var tbodyHtml = '';
-      if (filtered.length > 0) {
-        filtered.forEach((r, idx) => {
-          var bTipe = r.tipe === 'TARGET' ? '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-black border border-blue-300">🎯 Targeted Cohort</span>' : '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-black border border-amber-300">⚠️ Organic Inflow</span>';
-          var bSts = r.status === 'REDEEMED' ? '<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-[10px] font-bold">✅ Redeemed</span>' : (r.status === 'ACTIVE' ? '<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-[10px] font-bold">🔥 Active</span>' : '<span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-bold">✖ Expired</span>');
-          tbodyHtml += `<tr class="hover:bg-gray-50 transition"><td class="px-3 py-2 text-center text-gray-500 font-medium">${idx + 1}</td><td class="px-4 py-2"><p class="font-bold text-gray-900 uppercase">${r.nama}</p><p class="text-[10px] text-gray-500 font-medium">${r.model} (${r.nopol})</p></td><td class="px-4 py-2 font-mono font-bold text-gray-700">${r.vin}</td><td class="px-4 py-2"><p class="font-bold text-gray-800 uppercase">${r.cabang}</p><p class="text-[10px] text-gray-500">SA: ${r.namaSA}</p></td><td class="px-3 py-2 text-center font-bold text-gray-700">${r.servisKe}</td><td class="px-3 py-2 text-center font-mono text-gray-600">${r.tglTerbit}</td><td class="px-3 py-2 text-center">${bSts}</td><td class="px-3 py-2 text-center">${bTipe}</td></tr>`;
-        });
-      } else {
-        tbodyHtml = '<tr><td colspan="8" class="px-4 py-10 text-center text-gray-400 italic font-medium">No tickets match active filter.</td></tr>';
-      }
-      setHTML('ticketTableBody', tbodyHtml);
-      setText('ticketTotalFooterText', 'Total Filtered: ' + filtered.length + ' Tickets');
-    }
-
-    function downloadTicketExcel() {
-      if (!globalAllTicketDetails || globalAllTicketDetails.length === 0) return Swal.fire('No Data', 'No records to export.', 'warning');
-      var exportData = [ ["#", "Classification", "Customer Name", "Model", "Plate No", "VIN Number", "Dealership", "Service Advisor", "Service Level", "Issued Date", "Status"] ];
-      globalAllTicketDetails.forEach((r, idx) => exportData.push([idx + 1, r.tipe === 'TARGET' ? 'Targeted Cohort' : 'Organic Inflow', r.nama, r.model, r.nopol, r.vin, r.cabang, r.namaSA, r.servisKe, r.tglTerbit, r.status]));
-      var ws = XLSX.utils.aoa_to_sheet(exportData), wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Tickets_Issued");
-      XLSX.writeFile(wb, "Loyalty_Tickets_Issued.xlsx");
-    }
-
-    function openRedeemModal(tabType) {
-      currentRedeemTab = tabType || 'all'; 
-      document.getElementById('searchRedeemInput').value = ''; 
-      redeemSearchQuery = '';
-      document.getElementById('modalRedeemDetail').classList.remove('hidden'); 
-      updateRedeemModalUI();
-    }
-    function closeRedeemModal() { document.getElementById('modalRedeemDetail').classList.add('hidden'); }
-    function switchRedeemTab(tabType) { currentRedeemTab = tabType; updateRedeemModalUI(); }
-    function filterRedeemTable(query) { redeemSearchQuery = (query || '').toUpperCase().trim(); renderRedeemTableRows(); }
-
-    function updateRedeemModalUI() {
-      ['all', 'target', 'nontarget'].forEach(t => {
-        var btn = document.getElementById('tab-rd-' + t);
-        if (btn) btn.className = currentRedeemTab === t ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm' : 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-100';
-      });
-      setText('rd-count-all', globalRedeemedDetails.length);
-      setText('rd-count-target', globalRedeemedDetails.filter(r => r.tipe === 'TARGET').length);
-      setText('rd-count-nontarget', globalRedeemedDetails.filter(r => r.tipe === 'NON_TARGET').length);
-      renderRedeemTableRows();
-    }
-
-    function renderRedeemTableRows() {
-      var filtered = globalRedeemedDetails.filter(item => {
-        var matchTab = (currentRedeemTab === 'all') || (currentRedeemTab === 'target' && item.tipe === 'TARGET') || (currentRedeemTab === 'nontarget' && item.tipe === 'NON_TARGET');
-        if (!matchTab) return false;
-        return !redeemSearchQuery || (item.nama + ' ' + item.nopol + ' ' + item.vin + ' ' + item.cabang + ' ' + item.namaSA + ' ' + item.noWo).toUpperCase().includes(redeemSearchQuery);
-      });
-      var tbodyHtml = '', totalRev = 0;
-      if (filtered.length > 0) {
-        filtered.forEach((r, idx) => {
-          totalRev += Number(r.revenue) || 0;
-          var bTipe = r.tipe === 'TARGET' ? '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-black border border-blue-300">🎯 Targeted Cohort</span>' : '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-black border border-amber-300">⚠️ Organic Inflow</span>';
-          tbodyHtml += `<tr class="hover:bg-gray-50 transition"><td class="px-3 py-2 text-center text-gray-500 font-medium">${idx + 1}</td><td class="px-4 py-2"><p class="font-bold text-gray-900 uppercase">${r.nama}</p><p class="text-[10px] text-gray-500 font-medium">${r.model} (${r.nopol})</p></td><td class="px-4 py-2 font-mono font-bold text-gray-700">${r.vin}</td><td class="px-4 py-2"><p class="font-bold text-gray-800 uppercase">${r.cabang}</p><p class="text-[10px] text-gray-500">SA: ${r.namaSA}</p></td><td class="px-3 py-2 text-center font-bold text-gray-700">${r.servisKe}</td><td class="px-3 py-2 text-center font-mono font-bold text-indigo-700">${r.noWo}</td><td class="px-3 py-2 text-center font-mono text-gray-600">${r.tglRedeem}</td><td class="px-4 py-2 text-right font-black text-green-700">${formatRp(r.revenue)}</td><td class="px-3 py-2 text-center">${bTipe}</td></tr>`;
-        });
-      } else {
-        tbodyHtml = '<tr><td colspan="9" class="px-4 py-10 text-center text-gray-400 italic font-medium">No redemption records found.</td></tr>';
-      }
-      setHTML('redeemTableBody', tbodyHtml);
-      setText('redeemTotalFooterText', 'Total Transactions: ' + filtered.length + ' Units');
-      setText('redeemTotalRevenueText', 'Total Revenue: ' + formatRp(totalRev));
-    }
-
-    function downloadRedeemExcel() {
-      if (!globalRedeemedDetails || globalRedeemedDetails.length === 0) return Swal.fire('No Data', 'No records to export.', 'warning');
-      var exportData = [ ["#", "Classification", "Customer Name", "Model", "Plate No", "VIN Number", "Dealership", "Service Advisor", "Service Level", "WO No", "Redeem Date", "Actual Gross Revenue"] ];
-      globalRedeemedDetails.forEach((r, idx) => exportData.push([idx + 1, r.tipe === 'TARGET' ? 'Targeted Cohort' : 'Organic Inflow', r.nama, r.model, r.nopol, r.vin, r.cabang, r.namaSA, r.servisKe, r.noWo, r.tglRedeem, Number(r.revenue) || 0]));
-      var ws = XLSX.utils.aoa_to_sheet(exportData), wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Redemptions");
-      XLSX.writeFile(wb, "Loyalty_Redemptions.xlsx");
-    }
-
-    // 🔴 LOAD ANALYTICS DASHBOARD (DEFENSIVE CODING AGAR TIDAK CRASH)
+    // 🔴 LOAD ANALYTICS DASHBOARD TERINTEGRASI LENGKAP
     function loadDashboard() {
       document.getElementById('dashContent').classList.add('hidden'); 
       document.getElementById('dashLoading').classList.remove('hidden'); 
@@ -2008,53 +1761,56 @@
           if (badgeS2) {
             if (dashIsJanJun) {
               badgeS2.classList.remove('hidden');
-              setText('kpiLeadsInS2', (res.totalInS2 || 0) + " (" + (res.inS2Ratio || "0.0") + "%)");
+              setText('kpiLeadsInS2', formatNum(res.totalInS2 || 0) + " (" + (res.inS2Ratio || "0.0") + "%)");
             } else {
               badgeS2.classList.add('hidden');
             }
           }
 
-          // 2. Strategic Pane Metrics
+          // 2. Strategic Pane Metrics (Format Ribuan Titik)
           var totalLeads = res.leads || 0;
           var totalIssued = res.ticketsIssued || res.targetConverted || 0;
           var totalRedeemed = res.redeemedUnits || res.targetRedeemed || 0;
 
-          setText('kpiLeads', totalLeads); 
-          setText('kpiLeadsS8', res.leadsS8 || 0);
-          setText('kpiLeadsS9', res.leadsS9 || 0);
+          setText('kpiLeads', formatNum(totalLeads)); 
+          setText('kpiLeadsS8', formatNum(res.leadsS8 || 0));
+          setText('kpiLeadsS9', formatNum(res.leadsS9 || 0));
 
-          setText('kpiTargetConverted', totalIssued);
-          setText('kpiIssuedS8', res.ticketsIssuedS8 || 0);
-          setText('kpiIssuedS9', res.ticketsIssuedS9 || 0);
+          setText('kpiTargetConverted', formatNum(totalIssued));
+          setText('kpiIssuedS8', formatNum(res.ticketsIssuedS8 || 0));
+          setText('kpiIssuedS9', formatNum(res.ticketsIssuedS9 || 0));
 
-          setText('kpiTargetRedeemed', totalRedeemed);
-          setText('kpiRedeemedS8', res.redeemedUnitsS8 || 0);
-          setText('kpiRedeemedS9', res.redeemedUnitsS9 || 0);
+          setText('kpiTargetRedeemed', formatNum(totalRedeemed));
+          setText('kpiRedeemedS8', formatNum(res.redeemedUnitsS8 || 0));
+          setText('kpiRedeemedS9', formatNum(res.redeemedUnitsS9 || 0));
 
           setText('kpiTargetConvRate', (res.targetConvRate || 0) + '%');
           setText('kpiConvS8', (res.convRateS8 || 0) + '%');
           setText('kpiConvS9', (res.convRateS9 || 0) + '%');
           setText('kpiTargetLockInRate', (res.targetLockInRate || 0) + '%');
 
-          // 🔴 3. Top-Down Stepped Funnel Population
-          setText('fnLeads', totalLeads);
-          setText('fnLeadsS8', res.leadsS8 || 0);
-          setText('fnLeadsS9', res.leadsS9 || 0);
+          // 3. Render S2 Monthly Scheduling Board
+          renderS2MonthlyBoard(res.s2MonthlyLeads || {});
+
+          // 🔴 4. Top-Down Stepped Funnel Population
+          setText('fnLeads', formatNum(totalLeads));
+          setText('fnLeadsS8', formatNum(res.leadsS8 || 0));
+          setText('fnLeadsS9', formatNum(res.leadsS9 || 0));
 
           setText('fnLockInRate', `Lock-in Rate: ${res.targetLockInRate || 0}%`);
           setText('fnIssuedPct', `${res.targetLockInRate || 0}%`);
-          setText('fnIssued', totalIssued);
-          setText('fnIssuedS8', res.ticketsIssuedS8 || 0);
-          setText('fnIssuedS9', res.ticketsIssuedS9 || 0);
+          setText('fnIssued', formatNum(totalIssued));
+          setText('fnIssuedS8', formatNum(res.ticketsIssuedS8 || 0));
+          setText('fnIssuedS9', formatNum(res.ticketsIssuedS9 || 0));
 
           var relRate = totalIssued > 0 ? ((totalRedeemed / totalIssued) * 100).toFixed(1) : "0.0";
           setText('fnRealizationRate', `Realization: ${relRate}%`);
           setText('fnRedeemedPct', `${res.targetConvRate || 0}% of Leads`);
-          setText('fnRedeemed', totalRedeemed);
-          setText('fnRedeemedS8', res.redeemedUnitsS8 || 0);
-          setText('fnRedeemedS9', res.redeemedUnitsS9 || 0);
+          setText('fnRedeemed', formatNum(totalRedeemed));
+          setText('fnRedeemedS8', formatNum(res.redeemedUnitsS8 || 0));
+          setText('fnRedeemedS9', formatNum(res.redeemedUnitsS9 || 0));
 
-          // 🔴 4. Revenue, ARPU & COO Realization (Dengan Perhitungan Cadangan Jika Backend Kosong)
+          // 🔴 5. Revenue, ARPU & COO Realization
           var actualRev = res.totalActualRevenue || res.targetRevenue || 0;
           var revS8 = res.revenueS8 || 0;
           var revS9 = res.revenueS9 || 0;
@@ -2103,11 +1859,11 @@
             document.getElementById('earlyWarning').classList.remove('hidden'); 
           }
           
-          // 5. Render SA Leaderboard
+          // 6. Render SA Leaderboard
           rawLeaderboardData = res.leaderboard || [];
           renderLeaderboard();
 
-          // 6. Render Breakdown Cabang
+          // 7. Render Breakdown Cabang
           var hoSection = document.getElementById('hoBreakdownSection');
           if (sessionUser && (sessionUser.cabang.toUpperCase() === 'HEAD OFFICE' || sessionUser.cabang.toUpperCase() === 'HEADOFFICE')) {
             hoSection.classList.remove('hidden'); 
@@ -2119,7 +1875,7 @@
             hoSection.classList.remove('flex');
           }
 
-          // 🔴 7. Render Donut Chart 6 Segmen Resmi
+          // 8. Render Donut Chart 6 Segmen Resmi
           var chartCanvas = document.getElementById('vehicleSegmentChart');
           if (chartCanvas) {
             if (vehicleSegmentChartInstance) vehicleSegmentChartInstance.destroy();
@@ -2156,10 +1912,114 @@
             }
           }
 
-          // 🔴 8. Mini-Table Model Breakdown
+          // 9. Render Mini-Table Model Breakdown
           renderModelMiniTable(res.segments || {}, res.redeemedDetails || []);
         }
       });
+    }
+
+    // 🔴 DEALERSHIP BREAKDOWN LENGKAP: S8 & S9, IN S2 RETURN, TARGET S2 & PROGRESS
+    function renderBranchBreakdown() {
+      var headHtml = '<tr>' +
+        '<th class="px-3 py-3 border-b text-center w-8 bg-gray-50">#</th>' +
+        '<th onclick="sortBranchTable(\'cabang\')" class="px-3 py-3 border-b sortable-th bg-gray-50">Dealership <span id="br-sort-cabang">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'potensi\')" class="px-2.5 py-3 border-b text-center sortable-th bg-gray-50 text-purple-700">Total Leads <span id="br-sort-potensi">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'potensiS8\')" class="px-2 py-3 border-b text-center sortable-th bg-purple-50/40 text-purple-800">Leads S8 <span id="br-sort-potensiS8">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'potensiS9\')" class="px-2 py-3 border-b text-center sortable-th bg-purple-50/40 text-purple-800">Leads S9 <span id="br-sort-potensiS9">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'regTarget\')" class="px-2.5 py-3 border-b text-center sortable-th bg-blue-50/50 text-blue-700">Issued <span id="br-sort-regTarget">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'redeemTarget\')" class="px-2.5 py-3 border-b text-center sortable-th bg-emerald-50/50 text-emerald-700">Redeemed <span id="br-sort-redeemTarget">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'redeemS8\')" class="px-2 py-3 border-b text-center sortable-th bg-emerald-50/30 text-emerald-800">Redeem S8 <span id="br-sort-redeemS8">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'redeemS9\')" class="px-2 py-3 border-b text-center sortable-th bg-emerald-50/30 text-emerald-800">Redeem S9 <span id="br-sort-redeemS9">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'convRateTarget\')" class="px-2 py-3 border-b text-center sortable-th bg-indigo-50/50 text-indigo-700">Conv % <span id="br-sort-convRateTarget">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'revenue\')" class="px-3 py-3 border-b text-right sortable-th bg-gray-100 font-black">Gross Revenue <span id="br-sort-revenue">↕</span></th>';
+      
+      if (dashIsJanJun) {
+        headHtml += '<th onclick="sortBranchTable(\'inS2Count\')" class="px-2.5 py-3 border-b text-center sortable-th bg-emerald-50 text-emerald-800">Act In S2 <span id="br-sort-inS2Count">↕</span></th>' +
+                    '<th onclick="sortBranchTable(\'targetInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-50 text-teal-800">Target S2 <span id="br-sort-targetInS2">↕</span></th>' +
+                    '<th onclick="sortBranchTable(\'progressInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-100 text-teal-900 font-black">Progress S2 <span id="br-sort-progressInS2">↕</span></th>';
+      }
+      headHtml += '</tr>';
+      setHTML('branchBreakdownHead', headHtml);
+
+      var filtered = rawBranchBreakdownData.filter(b => !branchSearchQuery || (b.cabang || '').toUpperCase().includes(branchSearchQuery));
+      filtered.sort((a, b) => {
+        var valA = a[branchSortCol], valB = b[branchSortCol];
+        if (branchSortCol === 'convRateTarget' || branchSortCol === 'inS2Rate' || branchSortCol === 'progressInS2') {
+          return branchSortOrder === 'asc' ? (parseRate(valA) - parseRate(valB)) : (parseRate(valB) - parseRate(valA));
+        }
+        if (typeof valA === 'string') return branchSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        return branchSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
+      });
+
+      ['cabang', 'potensi', 'potensiS8', 'potensiS9', 'regTarget', 'redeemTarget', 'redeemS8', 'redeemS9', 'convRateTarget', 'revenue', 'inS2Count', 'targetInS2', 'progressInS2'].forEach(c => {
+        var el = document.getElementById('br-sort-' + c);
+        if (el) el.innerHTML = branchSortCol === c ? (branchSortOrder === 'asc' ? '<span class="text-red-600 font-bold">▲</span>' : '<span class="text-red-600 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
+      });
+
+      setText('branchCountBadge', filtered.length + " Branches");
+      
+      var bdHtml = '', totalPot = 0, totalPot8 = 0, totalPot9 = 0, totalInS2 = 0, totalTargetS2 = 0, totalRegT = 0, totalRedT = 0, totalRed8 = 0, totalRed9 = 0, totalRev = 0;
+
+      if (filtered.length > 0) {
+        filtered.forEach(function(b, idx) {
+          totalPot += Number(b.potensi) || 0; 
+          totalPot8 += Number(b.potensiS8) || 0;
+          totalPot9 += Number(b.potensiS9) || 0;
+          totalInS2 += Number(b.inS2Count) || 0;
+          totalTargetS2 += Number(b.targetInS2) || 0;
+          totalRegT += Number(b.regTarget) || 0; 
+          totalRedT += Number(b.redeemTarget) || 0; 
+          totalRed8 += Number(b.redeemS8) || 0; 
+          totalRed9 += Number(b.redeemS9) || 0; 
+          totalRev += Number(b.revenue) || 0;
+
+          var inS2Cells = dashIsJanJun ? 
+            `<td class="px-2.5 py-3 text-center font-bold text-emerald-800 bg-emerald-50/40 border-b border-gray-100">${formatNum(b.inS2Count || 0)} <span class="text-[10px] text-gray-500">(${b.inS2Rate || '0,0'}%)</span></td>
+             <td class="px-2.5 py-3 text-center font-bold text-teal-800 bg-teal-50/40 border-b border-gray-100">${formatNum(b.targetInS2 || 0)}</td>
+             <td class="px-2.5 py-3 text-center font-black text-teal-900 bg-teal-100/50 border-b border-gray-100">${b.progressInS2 || '0,0'}%</td>` : '';
+          
+          bdHtml += `<tr class="hover:bg-gray-50 transition text-xs">
+            <td class="px-3 py-3 text-center border-b border-gray-100 font-medium text-gray-500">${idx + 1}</td>
+            <td class="px-3 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">${b.cabang}</td>
+            <td class="px-2.5 py-3 text-center font-black text-purple-700 bg-purple-50/20 border-b border-gray-100">${formatNum(b.potensi || 0)}</td>
+            <td class="px-2 py-3 text-center font-bold text-purple-900 bg-purple-50/10 border-b border-gray-100">${formatNum(b.potensiS8 || 0)}</td>
+            <td class="px-2 py-3 text-center font-bold text-purple-900 bg-purple-50/10 border-b border-gray-100">${formatNum(b.potensiS9 || 0)}</td>
+            <td class="px-2.5 py-3 text-center font-bold text-blue-700 bg-blue-50/30 border-b border-gray-100">${formatNum(b.regTarget || 0)}</td>
+            <td class="px-2.5 py-3 text-center font-black text-emerald-700 bg-blue-50/30 border-b border-gray-100">${formatNum(b.redeemTarget || 0)}</td>
+            <td class="px-2 py-3 text-center font-bold text-emerald-800 bg-emerald-50/20 border-b border-gray-100">${formatNum(b.redeemS8 || 0)}</td>
+            <td class="px-2 py-3 text-center font-bold text-emerald-800 bg-emerald-50/20 border-b border-gray-100">${formatNum(b.redeemS9 || 0)}</td>
+            <td class="px-2 py-3 text-center font-black text-indigo-700 bg-blue-50/30 border-b border-gray-100">${b.convRateTarget || '0,0'}%</td>
+            <td class="px-3 py-3 text-right font-black text-gray-900 bg-gray-50/60 border-b border-gray-100">${formatRp(b.revenue || 0)}</td>
+            ${inS2Cells}
+          </tr>`;
+        });
+      } else {
+        bdHtml = `<tr><td colspan="${dashIsJanJun ? 14 : 11}" class="px-4 py-8 text-center text-gray-400 italic font-medium">No dealership performance data available.</td></tr>`;
+      }
+      setHTML('hoBreakdownBody', bdHtml);
+
+      var avgTargetConv = totalPot > 0 ? ((totalRedT / totalPot) * 100).toFixed(1).replace('.', ',') : '0,0';
+      var avgInS2Ratio = totalPot > 0 ? ((totalInS2 / totalPot) * 100).toFixed(1).replace('.', ',') : '0,0';
+      var totalProgressS2 = totalTargetS2 > 0 ? ((totalInS2 / totalTargetS2) * 100).toFixed(1).replace('.', ',') : '0,0';
+
+      var footInS2 = dashIsJanJun ? 
+        `<td class="px-2.5 py-3 text-center font-black text-emerald-900 bg-emerald-100/70">${formatNum(totalInS2)} <span class="text-[10px] font-normal">(${avgInS2Ratio}%)</span></td>
+         <td class="px-2.5 py-3 text-center font-black text-teal-900 bg-teal-100/70">${formatNum(totalTargetS2)}</td>
+         <td class="px-2.5 py-3 text-center font-black text-teal-950 bg-teal-200/80">${totalProgressS2}%</td>` : '';
+      
+      setHTML('hoBreakdownFoot', `<tr class="bg-gray-100 text-xs">
+        <td colspan="2" class="px-3 py-3 text-center uppercase tracking-wider font-black">TOTAL ALL BRANCHES</td>
+        <td class="px-2.5 py-3 text-center font-black text-purple-800 bg-purple-100/50">${formatNum(totalPot)}</td>
+        <td class="px-2 py-3 text-center font-black text-purple-900 bg-purple-100/30">${formatNum(totalPot8)}</td>
+        <td class="px-2 py-3 text-center font-black text-purple-900 bg-purple-100/30">${formatNum(totalPot9)}</td>
+        <td class="px-2.5 py-3 text-center font-black text-blue-800 bg-blue-100/50">${formatNum(totalRegT)}</td>
+        <td class="px-2.5 py-3 text-center font-black text-emerald-800 bg-blue-100/50">${formatNum(totalRedT)}</td>
+        <td class="px-2 py-3 text-center font-black text-emerald-900 bg-emerald-100/40">${formatNum(totalRed8)}</td>
+        <td class="px-2 py-3 text-center font-black text-emerald-900 bg-emerald-100/40">${formatNum(totalRed9)}</td>
+        <td class="px-2 py-3 text-center font-black text-indigo-800 bg-blue-100/50">${avgTargetConv}%</td>
+        <td class="px-3 py-3 text-right font-black text-gray-900 text-sm bg-gray-200/60">${formatRp(totalRev)}</td>
+        ${footInS2}
+      </tr>`);
     }
 
     // ========================================================
@@ -2175,15 +2035,15 @@
         document.getElementById('auditContent').classList.remove('hidden');
         if (res.success) {
           rawAuditData = res.data || [];
-          setText('kpiAuditTotal', res.summary.total || 0);
-          setText('kpiAuditCompliant', res.summary.compliant || 0);
+          setText('kpiAuditTotal', formatNum(res.summary.total || 0));
+          setText('kpiAuditCompliant', formatNum(res.summary.compliant || 0));
           setText('kpiAuditRate', (res.summary.compliantRate || 0) + '%');
-          setText('kpiAuditSalahJob', res.summary.salahJob || 0);
-          setText('kpiAuditKlaimLiar', res.summary.klaimLiar || 0);
+          setText('kpiAuditSalahJob', formatNum(res.summary.salahJob || 0));
+          setText('kpiAuditKlaimLiar', formatNum(res.summary.klaimLiar || 0));
           setText('kpiAuditLeakage', formatRp(res.summary.totalRevenueNis || 0));
 
-          setText('kpiGovOrganicTickets', res.summary.organicTickets || 0);
-          setText('kpiGovOrganicRedeemed', res.summary.organicRedeemed || 0);
+          setText('kpiGovOrganicTickets', formatNum(res.summary.organicTickets || 0));
+          setText('kpiGovOrganicRedeemed', formatNum(res.summary.organicRedeemed || 0));
           setText('kpiGovOrganicRevenue', formatRp(res.summary.organicRevenue || 0));
 
           renderAuditTable();
@@ -2239,23 +2099,7 @@
                 : '<span class="bg-gray-100 text-gray-800 px-2.5 py-0.5 rounded-md text-[10px] font-black border border-gray-300">❓ UNBILLED VOUCHER</span>'));
           
           var safeWo = r.noWo || '-', safeNoka = r.noka || '-';
-          tbodyHtml += '<tr class="hover:bg-slate-50 transition border-b border-gray-100">' +
-                         '<td class="px-3 py-2.5 text-center text-gray-400 font-medium">' + (idx + 1) + '</td>' +
-                         '<td class="px-4 py-2.5">' +
-                           '<p onclick="copyToClipboard(\'' + safeWo + '\', \'No. WO\')" class="font-bold text-gray-900 font-mono tracking-tight cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy WO">' + safeWo + ' <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p>' +
-                           '<p class="text-[10px] text-gray-500 font-medium">' + (r.tglWo || '-') + '</p>' +
-                         '</td>' +
-                         '<td class="px-4 py-2.5"><p class="font-bold text-gray-800 uppercase">' + (r.cabang || '-') + '</p><p class="text-[10px] text-gray-500">SA: ' + (r.namaSA || '-') + '</p></td>' +
-                         '<td class="px-4 py-2.5">' +
-                           '<p onclick="copyToClipboard(\'' + safeNoka + '\', \'VIN\')" class="font-mono font-bold text-gray-900 cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy VIN">' + safeNoka + ' <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p>' +
-                           '<p class="text-[10px] text-gray-500 font-semibold">' + (r.model || '-') + '</p>' +
-                         '</td>' +
-                         '<td class="px-4 py-2.5 font-medium text-gray-800 max-w-xs truncate" title="' + (r.pekerjaan || '-') + '">' + (r.pekerjaan || '-') + '</td>' +
-                         '<td class="px-4 py-2.5 text-right font-mono font-bold text-purple-700">' + (r.discJasa || '0%') + '</td>' +
-                         '<td class="px-4 py-2.5 text-right font-black text-gray-900 font-mono">' + formatRp(r.totalInvoice || 0) + '</td>' +
-                         '<td class="px-3 py-2.5 text-center">' + badge + '</td>' +
-                         '<td class="px-4 py-2.5 text-[11px] font-medium text-gray-600 leading-snug max-w-sm whitespace-normal">' + (r.keterangan || '-') + '</td>' +
-                       '</tr>';
+          tbodyHtml += `<tr class="hover:bg-slate-50 transition border-b border-gray-100"><td class="px-3 py-2.5 text-center text-gray-400 font-medium">${idx + 1}</td><td class="px-4 py-2.5"><p onclick="copyToClipboard('${safeWo}','No. WO')" class="font-bold text-gray-900 font-mono tracking-tight cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy WO">${safeWo} <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p><p class="text-[10px] text-gray-500 font-medium">${r.tglWo || '-'}</p></td><td class="px-4 py-2.5"><p class="font-bold text-gray-800 uppercase">${r.cabang || '-'}</p><p class="text-[10px] text-gray-500">SA: ${r.namaSA || '-'}</p></td><td class="px-4 py-2.5"><p onclick="copyToClipboard('${safeNoka}','VIN')" class="font-mono font-bold text-gray-900 cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy VIN">${safeNoka} <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p><p class="text-[10px] text-gray-500 font-semibold">${r.model || '-'}</p></td><td class="px-4 py-2.5 font-medium text-gray-800 max-w-xs truncate" title="${r.pekerjaan}">${r.pekerjaan}</td><td class="px-4 py-2.5 text-right font-mono font-bold text-purple-700">${r.discJasa}</td><td class="px-4 py-2.5 text-right font-black text-gray-900 font-mono">${formatRp(r.totalInvoice)}</td><td class="px-3 py-2.5 text-center">${badge}</td><td class="px-4 py-2.5 text-[11px] font-medium text-gray-600 leading-snug max-w-sm whitespace-normal">${r.keterangan}</td></tr>`;
         });
       } else {
         tbodyHtml = '<tr><td colspan="9" class="px-4 py-10 text-center text-gray-400 italic font-medium">No records match the active criteria.</td></tr>';
