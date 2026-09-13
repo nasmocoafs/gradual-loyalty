@@ -58,6 +58,7 @@
     var isPrefetching = false;
     var currentScannedData = null;
     var currentVehicleTab = 'segment';
+    var isBranchFullscreen = false;
 
     const bMap = {
       "8": { basic: "Diskon Jasa 15%", ontime: "FREE Wiper Fluid + Diskon Part 5.5%" },
@@ -73,7 +74,7 @@
       <div class="relative flex-1 text-center border rounded-md py-1.5 bg-gray-800 border-gray-700 text-gray-500 opacity-50 flex items-center justify-center"><p class="text-[10px] font-black tracking-wider">S-11</p></div>
     `;
 
-    // 🔴 HELPER PENGAMAN DOM: Mencegah error 'Cannot set properties of null'
+    // 🔴 DEFENSIVE DOM HELPER: Melindungi UI dari TypeError null
     function setText(id, val) {
       var el = document.getElementById(id);
       if (el) el.innerText = (val !== undefined && val !== null) ? val : '-';
@@ -83,7 +84,7 @@
       if (el) el.innerHTML = (val !== undefined && val !== null) ? val : '-';
     }
 
-    // 🔴 FORMAT ANGKA DENGAN TITIK (CONTOH: 14.343)
+    // 🔴 FORMAT ANGKA RIBUAN DENGAN TITIK (MISAL: 14.343)
     function formatNum(val) {
       if (val === null || val === undefined || isNaN(val)) return '0';
       return Math.round(Number(val)).toLocaleString('id-ID');
@@ -99,7 +100,7 @@
       return !val ? 0 : parseFloat(val.toString().replace('%', '').replace(',', '.').trim()) || 0;
     }
 
-    // 🔴 HELPER FORMAT NOMOR WHATSAPP (Mencegah error 'formatWAPhone is not defined')
+    // 🔴 FORMAT NOMOR WHATSAPP ROBUST
     function formatWAPhone(number) {
       if (!number) return '-';
       var str = number.toString().replace(/[^0-9]/g, '');
@@ -121,7 +122,7 @@
     function copyToClipboard(text, label) {
       if (!text || text === '-') return;
       navigator.clipboard.writeText(text).then(() => {
-        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: (label || 'Data') + ' copied: ' + text, showConfirmButton: false, timer: 1500 });
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: (label || 'Data') + ' tersalin: ' + text, showConfirmButton: false, timer: 1500 });
       });
     }
   </script>
@@ -143,6 +144,19 @@
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .sortable-th { cursor: pointer; user-select: none; transition: background-color 0.15s; }
     .sortable-th:hover { background-color: #1e293b; }
+    
+    /* Fullscreen Mode Styling untuk Dealership Breakdown */
+    .table-fullscreen {
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 99999 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: none !important;
+      border-radius: 0 !important;
+      margin: 0 !important;
+      background-color: #ffffff !important;
+    }
   </style>
 </head>
 <body class="flex flex-col md:flex-row h-screen overflow-hidden text-gray-800 relative">
@@ -492,6 +506,10 @@
             <p class="text-xs text-gray-500 mt-1">Strategic Performance Governance: Servis 8 vs 9 Breakdown, ARPU & COO Realization</p>
           </div>
           <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+            <!-- 🔴 QUICK FILTER TOMBOL SHORT TERM (S1) -->
+            <button onclick="applyShortTermFilter()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-2 rounded-lg text-xs transition shadow flex items-center justify-center gap-1.5 shrink-0 self-end md:self-auto">
+              <span>⚡ Short Term (S1)</span>
+            </button>
             <div class="w-full md:w-auto">
               <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Analytics Period (YTD / YTM)</label>
               <div class="flex items-center gap-2">
@@ -516,7 +534,7 @@
         
         <div id="dashContent" class="hidden space-y-6">
 
-          <!-- 🔴 STRATEGIC PANE: 4 KARTU UTAMA INTERAKTIF (BISA DIKLIK UNTUK DRILL-DOWN) -->
+          <!-- 🔴 STRATEGIC PANE: 4 KARTU UTAMA INTERAKTIF -->
           <div class="bg-gradient-to-r from-blue-900 to-indigo-950 p-5 rounded-2xl shadow-md text-white">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 pb-3 border-b border-blue-800/60">
               <div class="flex items-center gap-2">
@@ -583,7 +601,7 @@
             </div>
           </div>
 
-          <!-- 🔴 SEKSI WORKLOAD S2: SCHEDULING BOARD BULANAN (TARGET VS AKTUAL + RASIO) -->
+          <!-- 🔴 SEKSI WORKLOAD S2: SCHEDULING BOARD (SUBTITEL BERSIH DARI ISTILAH BACKEND) -->
           <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-gray-100">
               <div>
@@ -742,10 +760,10 @@
 
           </div>
 
-          <!-- 🔴 BARIS SEJAJAR: SA LEADERBOARD (KIRI 65%) & HYBRID VEHICLE ANALYSIS (KANAN 35%) -->
+          <!-- 🔴 BARIS SEJAJAR: SA LEADERBOARD (DENGAN ARPU & BENCHMARK COO) & VEHICLE ANALYSIS -->
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <!-- SA LEADERBOARD: 6 KOLOM RINGKAS -->
+            <!-- SA LEADERBOARD: 8 KOLOM LENGKAP BENCHMARK -->
             <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col justify-between">
               <div class="bg-gray-900 p-4 border-b border-gray-800 flex justify-between items-center">
                 <h3 class="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2">
@@ -757,12 +775,14 @@
                 <table class="w-full text-sm text-left">
                   <thead class="bg-gray-50 text-[10px] uppercase text-gray-500 font-bold">
                     <tr>
-                      <th class="px-4 py-3 border-b text-center w-12">Rank</th>
-                      <th onclick="toggleLeaderboardSort('cabang')" class="px-4 py-3 border-b sortable-th">Dealership <span id="lb-sort-cabang">↕</span></th>
-                      <th onclick="toggleLeaderboardSort('nama')" class="px-4 py-3 border-b sortable-th">Service Advisor <span id="lb-sort-nama">↕</span></th>
-                      <th onclick="toggleLeaderboardSort('registered')" class="px-4 py-3 border-b text-center sortable-th text-blue-700">Registered <span id="lb-sort-registered">↕</span></th>
-                      <th onclick="toggleLeaderboardSort('redeemed')" class="px-4 py-3 border-b text-center sortable-th text-emerald-700">Redeemed <span id="lb-sort-redeemed">↕</span></th>
-                      <th onclick="toggleLeaderboardSort('revenue')" class="px-4 py-3 border-b text-right sortable-th text-gray-900 font-black">Gross Revenue <span id="lb-sort-revenue">↕</span></th>
+                      <th class="px-3 py-3 border-b text-center w-10">Rank</th>
+                      <th onclick="toggleLeaderboardSort('cabang')" class="px-3 py-3 border-b sortable-th">Dealership <span id="lb-sort-cabang">↕</span></th>
+                      <th onclick="toggleLeaderboardSort('nama')" class="px-3 py-3 border-b sortable-th">Service Advisor <span id="lb-sort-nama">↕</span></th>
+                      <th onclick="toggleLeaderboardSort('registered')" class="px-2.5 py-3 border-b text-center sortable-th text-blue-700">Registered <span id="lb-sort-registered">↕</span></th>
+                      <th onclick="toggleLeaderboardSort('redeemed')" class="px-2.5 py-3 border-b text-center sortable-th text-emerald-700">Redeemed <span id="lb-sort-redeemed">↕</span></th>
+                      <th onclick="toggleLeaderboardSort('revenue')" class="px-3 py-3 border-b text-right sortable-th text-gray-900 font-black">Gross Revenue <span id="lb-sort-revenue">↕</span></th>
+                      <th onclick="toggleLeaderboardSort('arpu')" class="px-3 py-3 border-b text-right sortable-th text-indigo-700 font-black">ARPU / RO <span id="lb-sort-arpu">↕</span></th>
+                      <th class="px-2.5 py-3 border-b text-center text-gray-600 font-bold">vs COO</th>
                     </tr>
                   </thead>
                   <tbody id="leaderboardBody" class="divide-y divide-gray-100"></tbody>
@@ -811,16 +831,22 @@
 
           </div>
 
-          <!-- 🔴 TABEL 2: BREAKDOWN PERFORMA CABANG LENGKAP (24 CABANG UTUH) -->
-          <div id="hoBreakdownSection" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-col">
+          <!-- 🔴 TABEL 2: BREAKDOWN PERFORMA 24 CABANG (DILENGKAPI TOMBOL FULLSCREEN & WARNING CONTROL) -->
+          <div id="hoBreakdownSection" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-col transition-all duration-300">
             <div class="bg-gray-900 p-4 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div class="flex items-center gap-2">
                 <h3 class="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2">📊 Dealership Performance Breakdown (Servis 8 & 9 Granular)</h3>
                 <span id="branchCountBadge" class="bg-gray-800 text-yellow-400 text-xs px-2.5 py-0.5 rounded-full font-bold border border-gray-700">24 Branches</span>
               </div>
-              <div class="relative w-full sm:w-64">
-                <input type="text" id="searchBranchInput" oninput="filterBranchBreakdown(this.value)" placeholder="Search dealership..." class="w-full pl-8 pr-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-xs text-white placeholder-gray-400 focus:outline-none focus:border-red-500 auto-upper">
-                <svg class="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              <div class="flex items-center gap-2 w-full sm:w-auto">
+                <div class="relative w-full sm:w-64">
+                  <input type="text" id="searchBranchInput" oninput="filterBranchBreakdown(this.value)" placeholder="Search dealership..." class="w-full pl-8 pr-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-xs text-white placeholder-gray-400 focus:outline-none focus:border-red-500 auto-upper">
+                  <svg class="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <!-- 🔴 TOMBOL FULLSCREEN EVALUASI CABANG -->
+                <button onclick="toggleBranchFullscreen()" id="btnFullscreenBranch" class="bg-gray-800 hover:bg-gray-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-gray-700 flex items-center gap-1.5 shadow transition shrink-0">
+                  <span id="fsIcon">⛶</span> <span id="fsText">Fullscreen</span>
+                </button>
               </div>
             </div>
             <div class="p-0 flex-1 overflow-x-auto max-h-[85vh]">
@@ -1111,6 +1137,33 @@
         switchTab('register'); 
       }
     });
+
+    // 🔴 QUICK FILTER SHORT TERM (S1: 1 JAN - 30 JUN)
+    function applyShortTermFilter() {
+      var yyyy = new Date().getFullYear();
+      document.getElementById('dashStartDate').value = yyyy + '-01-01';
+      document.getElementById('dashEndDate').value = yyyy + '-06-30';
+      loadDashboard();
+      Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Filter Short Term (S1) diterapkan', showConfirmButton: false, timer: 1500 });
+    }
+
+    // 🔴 TOGGLE FULLSCREEN MODAL PADA DEALERSHIP BREAKDOWN
+    function toggleBranchFullscreen() {
+      var section = document.getElementById('hoBreakdownSection');
+      var icon = document.getElementById('fsIcon');
+      var text = document.getElementById('fsText');
+      if (!isBranchFullscreen) {
+        section.classList.add('table-fullscreen');
+        icon.innerText = '✕';
+        text.innerText = 'Exit Fullscreen';
+        isBranchFullscreen = true;
+      } else {
+        section.classList.remove('table-fullscreen');
+        icon.innerText = '⛶';
+        text.innerText = 'Fullscreen';
+        isBranchFullscreen = false;
+      }
+    }
 
     function loadSADropdown() {
       var select = document.getElementById('namaSA');
@@ -1774,7 +1827,7 @@
       tbody.innerHTML = html;
     }
 
-    // 🔴 SORTING LEADERBOARD SA
+    // 🔴 SORTING LEADERBOARD SA LENGKAP BENCHMARK COO
     function toggleLeaderboardSort(col) {
       if (lbSortCol === col) lbSortOrder = (lbSortOrder === 'asc') ? 'desc' : 'asc';
       else { lbSortCol = col; lbSortOrder = (col === 'nama' || col === 'cabang') ? 'asc' : 'desc'; }
@@ -1789,7 +1842,7 @@
         return lbSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
       });
 
-      ['cabang', 'nama', 'registered', 'redeemed', 'revenue'].forEach(c => {
+      ['cabang', 'nama', 'registered', 'redeemed', 'revenue', 'arpu'].forEach(c => {
         var el = document.getElementById('lb-sort-' + c);
         if (el) el.innerHTML = lbSortCol === c ? (lbSortOrder === 'asc' ? '<span class="text-yellow-400 font-bold">▲</span>' : '<span class="text-yellow-400 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
       });
@@ -1798,17 +1851,23 @@
       if (list.length > 0) { 
         list.slice(0, 5).forEach(function(sa, idx) { 
           var medal = (idx === 0) ? '🥇' : (idx === 1) ? '🥈' : (idx === 2) ? '🥉' : '<span class="text-gray-400 font-bold">' + (idx + 1) + '</span>'; 
-          lbHtml += '<tr class="hover:bg-gray-50 transition">' +
-                      '<td class="px-4 py-3 font-black text-center w-12 text-base border-b border-gray-100">' + medal + '</td>' +
-                      '<td class="px-4 py-3 font-bold text-gray-600 text-xs uppercase border-b border-gray-100">' + (sa.cabang || '-') + '</td>' +
-                      '<td class="px-4 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">' + sa.nama + '</td>' +
-                      '<td class="px-4 py-3 text-center font-bold text-blue-700 bg-blue-50/20 border-b border-gray-100">' + formatNum(sa.registered || 0) + '</td>' +
-                      '<td class="px-4 py-3 text-center font-black text-emerald-700 bg-emerald-50/20 border-b border-gray-100">' + formatNum(sa.redeemed || 0) + '</td>' +
-                      '<td class="px-4 py-3 text-right font-black text-gray-900 border-b border-gray-100">' + formatRp(sa.revenue || 0) + '</td>' +
-                    '</tr>'; 
+          var cooBadge = parseFloat(sa.cooRatio || 0) >= 100 
+            ? `<span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[9px] font-black border border-emerald-300">${sa.cooRatio}%</span>` 
+            : `<span class="bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded text-[9px] font-bold border border-amber-300">${sa.cooRatio}%</span>`;
+
+          lbHtml += `<tr class="hover:bg-gray-50 transition">
+            <td class="px-3 py-3 font-black text-center w-10 text-base border-b border-gray-100">${medal}</td>
+            <td class="px-3 py-3 font-bold text-gray-600 text-xs uppercase border-b border-gray-100">${sa.cabang || '-'}</td>
+            <td class="px-3 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">${sa.nama}</td>
+            <td class="px-2.5 py-3 text-center font-bold text-blue-700 bg-blue-50/20 border-b border-gray-100">${formatNum(sa.registered || 0)}</td>
+            <td class="px-2.5 py-3 text-center font-black text-emerald-700 bg-emerald-50/20 border-b border-gray-100">${formatNum(sa.redeemed || 0)}</td>
+            <td class="px-3 py-3 text-right font-black text-gray-900 border-b border-gray-100">${formatRp(sa.revenue || 0)}</td>
+            <td class="px-3 py-3 text-right font-bold text-indigo-700 bg-indigo-50/20 border-b border-gray-100">${formatRp(sa.arpu || 0)}</td>
+            <td class="px-2.5 py-3 text-center border-b border-gray-100">${cooBadge}</td>
+          </tr>`; 
         }); 
       } else { 
-        lbHtml = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400 italic font-medium">No recorded Service Advisor performance in this period.</td></tr>'; 
+        lbHtml = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-400 italic font-medium">No recorded Service Advisor performance in this period.</td></tr>'; 
       }
       setHTML('leaderboardBody', lbHtml);
     }
@@ -1821,7 +1880,7 @@
 
     function filterBranchBreakdown(query) { branchSearchQuery = (query || '').toUpperCase().trim(); renderBranchBreakdown(); }
 
-    // 🔴 RENDER SCHEDULING BOARD S2: TARGET VS AKTUAL + RASIO + KLIK FILTER
+    // 🔴 RENDER SCHEDULING BOARD S2: SUBTITEL BERSIH & INTERAKTIF KLIK DRILLDOWN
     function renderS2MonthlyBoard(monthlyData) {
       var container = document.getElementById('s2MonthlyBoard');
       if (!container) return;
@@ -1869,7 +1928,7 @@
       container.innerHTML = html;
     }
 
-    // 🔴 FITUR INTERAKTIF: KLIK BULAN S2 LANGSUNG MEMBUKA MODAL TRANSAKSI BULAN TERSEBUT
+    // 🔴 DRILL-DOWN KLIK BULAN S2 KE TRANSAKSI
     function openRedeemModalFilteredByMonth(monthKey) {
       currentRedeemTab = 'target';
       document.getElementById('searchRedeemInput').value = monthKey;
@@ -1878,7 +1937,7 @@
       updateRedeemModalUI();
     }
 
-    // 🔴 DEALERSHIP BREAKDOWN (24 CABANG UTUH, BREAKDOWN REDEEM S8 & S9, TARGET S2 & PROGRESS %)
+    // 🔴 DEALERSHIP BREAKDOWN: 24 CABANG LENGKAP, KONTRIBUSI LOYALTY, TARGET S2 & WARNING CONTROL
     function renderBranchBreakdown() {
       var headHtml = '<tr>' +
         '<th class="px-3 py-3 border-b text-center w-8 bg-gray-50">#</th>' +
@@ -1895,6 +1954,7 @@
       
       if (dashIsJanJun) {
         headHtml += '<th onclick="sortBranchTable(\'inS2Count\')" class="px-2.5 py-3 border-b text-center sortable-th bg-emerald-50 text-emerald-800">Act In S2 <span id="br-sort-inS2Count">↕</span></th>' +
+                    '<th onclick="sortBranchTable(\'inS2LoyaltyRedeemed\')" class="px-2.5 py-3 border-b text-center sortable-th bg-blue-50 text-blue-800">Loyalty In S2 <span id="br-sort-inS2LoyaltyRedeemed">↕</span></th>' +
                     '<th onclick="sortBranchTable(\'targetInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-50 text-teal-800">Target S2 <span id="br-sort-targetInS2">↕</span></th>' +
                     '<th onclick="sortBranchTable(\'progressInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-100 text-teal-900 font-black">Progress S2 <span id="br-sort-progressInS2">↕</span></th>';
       }
@@ -1904,21 +1964,21 @@
       var filtered = rawBranchBreakdownData.filter(b => !branchSearchQuery || (b.cabang || '').toUpperCase().includes(branchSearchQuery));
       filtered.sort((a, b) => {
         var valA = a[branchSortCol], valB = b[branchSortCol];
-        if (branchSortCol === 'convRateTarget' || branchSortCol === 'inS2Rate' || branchSortCol === 'progressInS2') {
+        if (branchSortCol === 'convRateTarget' || branchSortCol === 'inS2Rate' || branchSortCol === 'progressInS2' || branchSortCol === 'inS2LoyaltyShare') {
           return branchSortOrder === 'asc' ? (parseRate(valA) - parseRate(valB)) : (parseRate(valB) - parseRate(valA));
         }
         if (typeof valA === 'string') return branchSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
         return branchSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
       });
 
-      ['cabang', 'potensi', 'potensiS8', 'potensiS9', 'regTarget', 'redeemTarget', 'redeemS8', 'redeemS9', 'convRateTarget', 'revenue', 'inS2Count', 'targetInS2', 'progressInS2'].forEach(c => {
+      ['cabang', 'potensi', 'potensiS8', 'potensiS9', 'regTarget', 'redeemTarget', 'redeemS8', 'redeemS9', 'convRateTarget', 'revenue', 'inS2Count', 'inS2LoyaltyRedeemed', 'targetInS2', 'progressInS2'].forEach(c => {
         var el = document.getElementById('br-sort-' + c);
         if (el) el.innerHTML = branchSortCol === c ? (branchSortOrder === 'asc' ? '<span class="text-red-600 font-bold">▲</span>' : '<span class="text-red-600 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
       });
 
       setText('branchCountBadge', filtered.length + " Branches");
       
-      var bdHtml = '', totalPot = 0, totalPot8 = 0, totalPot9 = 0, totalInS2 = 0, totalTargetS2 = 0, totalRegT = 0, totalRedT = 0, totalRed8 = 0, totalRed9 = 0, totalRev = 0;
+      var bdHtml = '', totalPot = 0, totalPot8 = 0, totalPot9 = 0, totalInS2 = 0, totalLoyaltyInS2 = 0, totalTargetS2 = 0, totalRegT = 0, totalRedT = 0, totalRed8 = 0, totalRed9 = 0, totalRev = 0;
 
       if (filtered.length > 0) {
         filtered.forEach(function(b, idx) {
@@ -1926,6 +1986,7 @@
           totalPot8 += Number(b.potensiS8) || 0;
           totalPot9 += Number(b.potensiS9) || 0;
           totalInS2 += Number(b.inS2Count) || 0;
+          totalLoyaltyInS2 += Number(b.inS2LoyaltyRedeemed) || 0;
           totalTargetS2 += Number(b.targetInS2) || 0;
           totalRegT += Number(b.regTarget) || 0; 
           totalRedT += Number(b.redeemTarget) || 0; 
@@ -1933,10 +1994,20 @@
           totalRed9 += Number(b.redeemS9) || 0; 
           totalRev += Number(b.revenue) || 0;
 
+          // 🔴 KONTROL IRREGULARITAS / WARNING COLOR PROGRESS S2
+          var progVal = parseRate(b.progressInS2);
+          var progBadgeClass = 'bg-gray-100 text-gray-800 border-gray-300';
+          if (b.targetInS2 > 0) {
+            if (progVal >= 100) progBadgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300 font-black';
+            else if (progVal >= 50) progBadgeClass = 'bg-amber-100 text-amber-800 border-amber-300 font-bold';
+            else progBadgeClass = 'bg-rose-100 text-rose-800 border-rose-300 font-black animate-pulse'; // Irregularity Alert!
+          }
+
           var inS2Cells = dashIsJanJun ? 
-            `<td class="px-2.5 py-3 text-center font-bold text-emerald-800 bg-emerald-50/40 border-b border-gray-100">${formatNum(b.inS2Count || 0)} <span class="text-[10px] text-gray-500">(${b.inS2Rate || '0,0'}%)</span></td>
+            `<td class="px-2.5 py-3 text-center font-bold text-emerald-800 bg-emerald-50/40 border-b border-gray-100">${formatNum(b.inS2Count || 0)} <span class="text-[10px] text-gray-500 font-normal">(${b.inS2Rate || '0,0'}%)</span></td>
+             <td class="px-2.5 py-3 text-center font-bold text-blue-800 bg-blue-50/40 border-b border-gray-100">${formatNum(b.inS2LoyaltyRedeemed || 0)} <span class="text-[10px] text-blue-600 font-normal">(${b.inS2LoyaltyShare || '0,0'}%)</span></td>
              <td class="px-2.5 py-3 text-center font-bold text-teal-800 bg-teal-50/40 border-b border-gray-100">${formatNum(b.targetInS2 || 0)}</td>
-             <td class="px-2.5 py-3 text-center font-black text-teal-900 bg-teal-100/50 border-b border-gray-100">${b.progressInS2 || '0,0'}%</td>` : '';
+             <td class="px-2.5 py-3 text-center border-b border-gray-100"><span class="px-2 py-0.5 rounded text-xs border ${progBadgeClass}">${b.progressInS2 || '0,0'}%</span></td>` : '';
           
           bdHtml += `<tr class="hover:bg-gray-50 transition text-xs">
             <td class="px-3 py-3 text-center border-b border-gray-100 font-medium text-gray-500">${idx + 1}</td>
@@ -1954,16 +2025,18 @@
           </tr>`;
         });
       } else {
-        bdHtml = `<tr><td colspan="${dashIsJanJun ? 14 : 11}" class="px-4 py-8 text-center text-gray-400 italic font-medium">No dealership performance data available.</td></tr>`;
+        bdHtml = `<tr><td colspan="${dashIsJanJun ? 15 : 11}" class="px-4 py-8 text-center text-gray-400 italic font-medium">No dealership performance data available.</td></tr>`;
       }
       setHTML('hoBreakdownBody', bdHtml);
 
       var avgTargetConv = totalPot > 0 ? ((totalRedT / totalPot) * 100).toFixed(1).replace('.', ',') : '0,0';
       var avgInS2Ratio = totalPot > 0 ? ((totalInS2 / totalPot) * 100).toFixed(1).replace('.', ',') : '0,0';
+      var avgLoyaltyShare = totalInS2 > 0 ? ((totalLoyaltyInS2 / totalInS2) * 100).toFixed(1).replace('.', ',') : '0,0';
       var totalProgressS2 = totalTargetS2 > 0 ? ((totalInS2 / totalTargetS2) * 100).toFixed(1).replace('.', ',') : '0,0';
 
       var footInS2 = dashIsJanJun ? 
         `<td class="px-2.5 py-3 text-center font-black text-emerald-900 bg-emerald-100/70">${formatNum(totalInS2)} <span class="text-[10px] font-normal">(${avgInS2Ratio}%)</span></td>
+         <td class="px-2.5 py-3 text-center font-black text-blue-900 bg-blue-100/70">${formatNum(totalLoyaltyInS2)} <span class="text-[10px] font-normal">(${avgLoyaltyShare}%)</span></td>
          <td class="px-2.5 py-3 text-center font-black text-teal-900 bg-teal-100/70">${formatNum(totalTargetS2)}</td>
          <td class="px-2.5 py-3 text-center font-black text-teal-950 bg-teal-200/80">${totalProgressS2}%</td>` : '';
       
@@ -1982,6 +2055,7 @@
       </tr>`);
     }
 
+    // 🔴 DRILLDOWN MODAL DETAIL TIKET & REDEEM
     function openTicketModal(tabType) {
       currentTicketTab = tabType || 'all'; 
       document.getElementById('searchTicketInput').value = ''; 
@@ -2085,7 +2159,7 @@
       XLSX.writeFile(wb, "Loyalty_Redemptions.xlsx");
     }
 
-    // 🔴 LOAD ANALYTICS DASHBOARD TERINTEGRASI (DEFENSIVE + FULL CALCULATION)
+    // 🔴 LOAD ANALYTICS DASHBOARD TERINTEGRASI (LENGKAP ARPU, BENCHMARK SA & SCHEDULING BOARD)
     function loadDashboard() {
       document.getElementById('dashContent').classList.add('hidden'); 
       document.getElementById('dashLoading').classList.remove('hidden'); 
@@ -2113,7 +2187,7 @@
             }
           }
 
-          // 2. Strategic Pane Metrics (Format Ribuan Titik)
+          // 2. Strategic Pane Metrics
           var totalLeads = res.leads || 0;
           var totalIssued = res.ticketsIssued || res.targetConverted || 0;
           var totalRedeemed = res.redeemedUnits || res.targetRedeemed || 0;
@@ -2205,7 +2279,7 @@
             document.getElementById('earlyWarning').classList.remove('hidden'); 
           }
           
-          // 6. Render SA Leaderboard
+          // 6. Render SA Leaderboard (Beserta Benchmark ARPU vs COO)
           rawLeaderboardData = res.leaderboard || [];
           renderLeaderboard();
 
