@@ -20,12 +20,14 @@
     const urlParams = new URLSearchParams(window.location.search);
     var globalPortalCode = urlParams.get('code') || '';
     
+    // DATA MRA & CRM STATE
     var globalMraDataRaw = [];
     var mraFilteredData = [];
     var mraCurrentPage = 1;
     var mraPageSize = 10;
     var mraSortOrder = 'none';
 
+    // DASBOR ANALITIK STATE
     var rawLeaderboardData = [];
     var lbSortCol = 'redeemed';
     var lbSortOrder = 'desc';
@@ -37,6 +39,7 @@
     var branchSearchQuery = '';
     var dashIsJanJun = false;
 
+    // DATA DRILL-DOWN PELANGGAN REDEEM & TIKET TERBIT
     var globalRedeemedDetails = [];
     var currentRedeemTab = 'all';
     var redeemSearchQuery = '';
@@ -45,6 +48,7 @@
     var currentTicketTab = 'all';
     var ticketSearchQuery = '';
     
+    // DATA MONITORING NIS (GOVERNANCE)
     var rawAuditData = [];
     var currentAuditFilterTab = 'ALL';
     var auditSearchQuery = '';
@@ -54,6 +58,7 @@
     var cachedHistoryData = {};
     var isPrefetching = false;
     var currentScannedData = null;
+    var currentVehicleTab = 'segment';
 
     const bMap = {
       "8": { basic: "Diskon Jasa 15%", ontime: "FREE Wiper Fluid + Diskon Part 5.5%" },
@@ -68,6 +73,17 @@
       <div class="relative flex-1 text-center border rounded-md py-1.5 bg-gray-800 border-gray-700 text-gray-500 opacity-50 flex items-center justify-center"><p class="text-[10px] font-black tracking-wider">S-10</p></div>
       <div class="relative flex-1 text-center border rounded-md py-1.5 bg-gray-800 border-gray-700 text-gray-500 opacity-50 flex items-center justify-center"><p class="text-[10px] font-black tracking-wider">S-11</p></div>
     `;
+
+    // 🔴 FUNGSI PENGAMAN DOM: Mencegah TypeError jika elemen tidak ditemukan
+    function setText(id, val) {
+      var el = document.getElementById(id);
+      if (el) el.innerText = (val !== undefined && val !== null) ? val : '-';
+    }
+
+    function setHTML(id, val) {
+      var el = document.getElementById(id);
+      if (el) el.innerHTML = (val !== undefined && val !== null) ? val : '-';
+    }
 
     function formatDateID(dateObj) {
       const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
@@ -1010,10 +1026,8 @@
   <script>
     Chart.register(ChartDataLabels); 
     var sessionUser = null; 
-    var segmentChartInstance = null;
     var vehicleSegmentChartInstance = null;
     var html5QrCode = null; 
-    var currentVehicleTab = 'segment';
 
     document.addEventListener("DOMContentLoaded", function() {
       if (globalPortalCode && globalPortalCode !== '') {
@@ -1507,7 +1521,6 @@
     function goToMraPage(page) { mraCurrentPage = page; renderMraTable(); }
     function goToMraLastPage() { mraCurrentPage = Math.ceil(mraFilteredData.length / mraPageSize) || 1; renderMraTable(); }
 
-    // 🔴 RENDER TABEL CRM SOLID & BEBAS CRASH
     function renderMraTable() {
       var totalData = mraFilteredData.length;
       var totalPages = Math.ceil(totalData / mraPageSize) || 1;
@@ -1774,7 +1787,7 @@
       } else { 
         lbHtml = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400 italic font-medium">No recorded Service Advisor performance in this period.</td></tr>'; 
       }
-      document.getElementById('leaderboardBody').innerHTML = lbHtml;
+      setHTML('leaderboardBody', lbHtml);
     }
 
     function sortBranchTable(col) {
@@ -1802,7 +1815,7 @@
         headHtml += '<th onclick="sortBranchTable(\'inS2Count\')" class="px-3 py-3 border-b text-center sortable-th bg-emerald-50 text-emerald-800">In S2 Return <span id="br-sort-inS2Count">↕</span></th>';
       }
       headHtml += '</tr>';
-      document.getElementById('branchBreakdownHead').innerHTML = headHtml;
+      setHTML('branchBreakdownHead', headHtml);
 
       var filtered = rawBranchBreakdownData.filter(b => !branchSearchQuery || (b.cabang || '').toUpperCase().includes(branchSearchQuery));
       filtered.sort((a, b) => {
@@ -1819,7 +1832,8 @@
         if (el) el.innerHTML = branchSortCol === c ? (branchSortOrder === 'asc' ? '<span class="text-red-600 font-bold">▲</span>' : '<span class="text-red-600 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
       });
 
-      var badgeEl = document.getElementById('branchCountBadge'); if (badgeEl) badgeEl.innerText = filtered.length + " Branches";
+      setText('branchCountBadge', filtered.length + " Branches");
+      
       var bdHtml = '', totalPot = 0, totalPot8 = 0, totalPot9 = 0, totalInS2 = 0, totalRegT = 0, totalRedT = 0, totalRev = 0;
 
       if (filtered.length > 0) {
@@ -1850,13 +1864,13 @@
       } else {
         bdHtml = '<tr><td colspan="' + (dashIsJanJun ? 10 : 9) + '" class="px-4 py-8 text-center text-gray-400 italic font-medium">No dealership performance data available.</td></tr>';
       }
-      document.getElementById('hoBreakdownBody').innerHTML = bdHtml;
+      setHTML('hoBreakdownBody', bdHtml);
 
       var avgTargetConv = totalPot > 0 ? ((totalRedT / totalPot) * 100).toFixed(1).replace('.', ',') : '0,0';
       var avgInS2Ratio = totalPot > 0 ? ((totalInS2 / totalPot) * 100).toFixed(1).replace('.', ',') : '0,0';
       var footInS2 = dashIsJanJun ? '<td class="px-3 py-3 text-center font-black text-emerald-900 bg-emerald-100/70">' + totalInS2 + ' <span class="text-[10px] font-normal">(' + avgInS2Ratio + '%)</span></td>' : '';
       
-      document.getElementById('hoBreakdownFoot').innerHTML = '<tr class="bg-gray-100 text-xs">' +
+      setHTML('hoBreakdownFoot', '<tr class="bg-gray-100 text-xs">' +
         '<td colspan="2" class="px-4 py-3 text-center uppercase tracking-wider font-black">TOTAL ALL BRANCHES</td>' +
         '<td class="px-3 py-3 text-center font-black text-purple-800 bg-purple-100/50">' + totalPot + '</td>' +
         '<td class="px-3 py-3 text-center font-black text-purple-900 bg-purple-100/30">' + totalPot8 + '</td>' +
@@ -1866,12 +1880,15 @@
         '<td class="px-3 py-3 text-center font-black text-indigo-800 bg-blue-100/50">' + avgTargetConv + '%</td>' +
         '<td class="px-4 py-3 text-right font-black text-gray-900 text-sm bg-gray-200/60">' + formatRp(totalRev) + '</td>' +
         footInS2 +
-      '</tr>';
+      '</tr>');
     }
 
     function openTicketModal(tabType) {
-      currentTicketTab = tabType || 'all'; document.getElementById('searchTicketInput').value = ''; ticketSearchQuery = '';
-      document.getElementById('modalTicketDetail').classList.remove('hidden'); updateTicketModalUI();
+      currentTicketTab = tabType || 'all'; 
+      document.getElementById('searchTicketInput').value = ''; 
+      ticketSearchQuery = '';
+      document.getElementById('modalTicketDetail').classList.remove('hidden'); 
+      updateTicketModalUI();
     }
     function closeTicketModal() { document.getElementById('modalTicketDetail').classList.add('hidden'); }
     function switchTicketTab(tabType) { currentTicketTab = tabType; updateTicketModalUI(); }
@@ -1882,9 +1899,9 @@
         var btn = document.getElementById('tab-tk-' + t);
         if (btn) btn.className = currentTicketTab === t ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm' : 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-100';
       });
-      document.getElementById('tk-count-all').innerText = globalAllTicketDetails.length;
-      document.getElementById('tk-count-target').innerText = globalAllTicketDetails.filter(r => r.tipe === 'TARGET').length;
-      document.getElementById('tk-count-nontarget').innerText = globalAllTicketDetails.filter(r => r.tipe === 'NON_TARGET').length;
+      setText('tk-count-all', globalAllTicketDetails.length);
+      setText('tk-count-target', globalAllTicketDetails.filter(r => r.tipe === 'TARGET').length);
+      setText('tk-count-nontarget', globalAllTicketDetails.filter(r => r.tipe === 'NON_TARGET').length);
       renderTicketTableRows();
     }
 
@@ -1904,8 +1921,8 @@
       } else {
         tbodyHtml = '<tr><td colspan="8" class="px-4 py-10 text-center text-gray-400 italic font-medium">No tickets match active filter.</td></tr>';
       }
-      document.getElementById('ticketTableBody').innerHTML = tbodyHtml;
-      document.getElementById('ticketTotalFooterText').innerText = 'Total Filtered: ' + filtered.length + ' Tickets';
+      setHTML('ticketTableBody', tbodyHtml);
+      setText('ticketTotalFooterText', 'Total Filtered: ' + filtered.length + ' Tickets');
     }
 
     function downloadTicketExcel() {
@@ -1918,8 +1935,11 @@
     }
 
     function openRedeemModal(tabType) {
-      currentRedeemTab = tabType || 'all'; document.getElementById('searchRedeemInput').value = ''; redeemSearchQuery = '';
-      document.getElementById('modalRedeemDetail').classList.remove('hidden'); updateRedeemModalUI();
+      currentRedeemTab = tabType || 'all'; 
+      document.getElementById('searchRedeemInput').value = ''; 
+      redeemSearchQuery = '';
+      document.getElementById('modalRedeemDetail').classList.remove('hidden'); 
+      updateRedeemModalUI();
     }
     function closeRedeemModal() { document.getElementById('modalRedeemDetail').classList.add('hidden'); }
     function switchRedeemTab(tabType) { currentRedeemTab = tabType; updateRedeemModalUI(); }
@@ -1930,9 +1950,9 @@
         var btn = document.getElementById('tab-rd-' + t);
         if (btn) btn.className = currentRedeemTab === t ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm' : 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-100';
       });
-      document.getElementById('rd-count-all').innerText = globalRedeemedDetails.length;
-      document.getElementById('rd-count-target').innerText = globalRedeemedDetails.filter(r => r.tipe === 'TARGET').length;
-      document.getElementById('rd-count-nontarget').innerText = globalRedeemedDetails.filter(r => r.tipe === 'NON_TARGET').length;
+      setText('rd-count-all', globalRedeemedDetails.length);
+      setText('rd-count-target', globalRedeemedDetails.filter(r => r.tipe === 'TARGET').length);
+      setText('rd-count-nontarget', globalRedeemedDetails.filter(r => r.tipe === 'NON_TARGET').length);
       renderRedeemTableRows();
     }
 
@@ -1952,9 +1972,9 @@
       } else {
         tbodyHtml = '<tr><td colspan="9" class="px-4 py-10 text-center text-gray-400 italic font-medium">No redemption records found.</td></tr>';
       }
-      document.getElementById('redeemTableBody').innerHTML = tbodyHtml;
-      document.getElementById('redeemTotalFooterText').innerText = 'Total Transactions: ' + filtered.length + ' Units';
-      document.getElementById('redeemTotalRevenueText').innerText = 'Total Revenue: ' + formatRp(totalRev);
+      setHTML('redeemTableBody', tbodyHtml);
+      setText('redeemTotalFooterText', 'Total Transactions: ' + filtered.length + ' Units');
+      setText('redeemTotalRevenueText', 'Total Revenue: ' + formatRp(totalRev));
     }
 
     function downloadRedeemExcel() {
@@ -1966,7 +1986,7 @@
       XLSX.writeFile(wb, "Loyalty_Redemptions.xlsx");
     }
 
-    // 🔴 LOAD ANALYTICS DASHBOARD TERINTEGRASI (S8 & S9, ARPU & COO)
+    // 🔴 LOAD ANALYTICS DASHBOARD (DEFENSIVE CODING AGAR TIDAK CRASH)
     function loadDashboard() {
       document.getElementById('dashContent').classList.add('hidden'); 
       document.getElementById('dashLoading').classList.remove('hidden'); 
@@ -1983,77 +2003,73 @@
           globalRedeemedDetails = res.redeemedDetails || [];
           dashIsJanJun = (res.isJanJun === true);
 
-          // Badge In S2 Return
+          // 1. Badge In S2 Return
           var badgeS2 = document.getElementById('leadsInS2Badge');
           if (badgeS2) {
             if (dashIsJanJun) {
               badgeS2.classList.remove('hidden');
-              document.getElementById('kpiLeadsInS2').innerText = (res.totalInS2 || 0) + " (" + (res.inS2Ratio || "0.0") + "%)";
+              setText('kpiLeadsInS2', (res.totalInS2 || 0) + " (" + (res.inS2Ratio || "0.0") + "%)");
             } else {
               badgeS2.classList.add('hidden');
             }
           }
 
-          // 1. KPI Leads (Total + S8 & S9)
-          document.getElementById('kpiLeads').innerText = res.leads || 0; 
-          document.getElementById('kpiLeadsS8').innerText = res.leadsS8 || 0;
-          document.getElementById('kpiLeadsS9').innerText = res.leadsS9 || 0;
-
-          // 2. KPI Tickets Issued (Total + S8 & S9)
-          document.getElementById('kpiTargetConverted').innerText = res.ticketsIssued || res.targetConverted || 0;
-          document.getElementById('kpiIssuedS8').innerText = res.ticketsIssuedS8 || 0;
-          document.getElementById('kpiIssuedS9').innerText = res.ticketsIssuedS9 || 0;
-
-          // 3. KPI Redeemed Units (Total + S8 & S9)
-          document.getElementById('kpiTargetRedeemed').innerText = res.redeemedUnits || res.targetRedeemed || 0;
-          document.getElementById('kpiRedeemedS8').innerText = res.redeemedUnitsS8 || 0;
-          document.getElementById('kpiRedeemedS9').innerText = res.redeemedUnitsS9 || 0;
-
-          // 4. KPI Conversion Rate (Total + S8 & S9)
-          document.getElementById('kpiTargetConvRate').innerText = (res.targetConvRate || 0) + '%';
-          document.getElementById('kpiConvS8').innerText = (res.convRateS8 || 0) + '%';
-          document.getElementById('kpiConvS9').innerText = (res.convRateS9 || 0) + '%';
-          document.getElementById('kpiTargetLockInRate').innerText = (res.targetLockInRate || 0) + '%';
-
-          // 🔴 5. TOP-DOWN STEPPED FUNNEL POPULATION
-          document.getElementById('fnLeads').innerText = res.leads || 0;
-          document.getElementById('fnLeadsS8').innerText = res.leadsS8 || 0;
-          document.getElementById('fnLeadsS9').innerText = res.leadsS9 || 0;
-
-          document.getElementById('fnLockInRate').innerText = `Lock-in Rate: ${res.targetLockInRate || 0}%`;
-          document.getElementById('fnIssuedPct').innerText = `${res.targetLockInRate || 0}%`;
-          document.getElementById('fnIssued').innerText = res.ticketsIssued || res.targetConverted || 0;
-          document.getElementById('fnIssuedS8').innerText = res.ticketsIssuedS8 || 0;
-          document.getElementById('fnIssuedS9').innerText = res.ticketsIssuedS9 || 0;
-
+          // 2. Strategic Pane Metrics
+          var totalLeads = res.leads || 0;
           var totalIssued = res.ticketsIssued || res.targetConverted || 0;
           var totalRedeemed = res.redeemedUnits || res.targetRedeemed || 0;
-          var relRate = totalIssued > 0 ? ((totalRedeemed / totalIssued) * 100).toFixed(1) : "0.0";
-          document.getElementById('fnRealizationRate').innerText = `Realization: ${relRate}%`;
-          document.getElementById('fnRedeemedPct').innerText = `${res.targetConvRate || 0}% of Leads`;
-          document.getElementById('fnRedeemed').innerText = totalRedeemed;
-          document.getElementById('fnRedeemedS8').innerText = res.redeemedUnitsS8 || 0;
-          document.getElementById('fnRedeemedS9').innerText = res.redeemedUnitsS9 || 0;
 
-          // 🔴 6. REVENUE, ARPU & COO REALIZATION (DENGAN FALLBACK AMAN)
+          setText('kpiLeads', totalLeads); 
+          setText('kpiLeadsS8', res.leadsS8 || 0);
+          setText('kpiLeadsS9', res.leadsS9 || 0);
+
+          setText('kpiTargetConverted', totalIssued);
+          setText('kpiIssuedS8', res.ticketsIssuedS8 || 0);
+          setText('kpiIssuedS9', res.ticketsIssuedS9 || 0);
+
+          setText('kpiTargetRedeemed', totalRedeemed);
+          setText('kpiRedeemedS8', res.redeemedUnitsS8 || 0);
+          setText('kpiRedeemedS9', res.redeemedUnitsS9 || 0);
+
+          setText('kpiTargetConvRate', (res.targetConvRate || 0) + '%');
+          setText('kpiConvS8', (res.convRateS8 || 0) + '%');
+          setText('kpiConvS9', (res.convRateS9 || 0) + '%');
+          setText('kpiTargetLockInRate', (res.targetLockInRate || 0) + '%');
+
+          // 🔴 3. Top-Down Stepped Funnel Population
+          setText('fnLeads', totalLeads);
+          setText('fnLeadsS8', res.leadsS8 || 0);
+          setText('fnLeadsS9', res.leadsS9 || 0);
+
+          setText('fnLockInRate', `Lock-in Rate: ${res.targetLockInRate || 0}%`);
+          setText('fnIssuedPct', `${res.targetLockInRate || 0}%`);
+          setText('fnIssued', totalIssued);
+          setText('fnIssuedS8', res.ticketsIssuedS8 || 0);
+          setText('fnIssuedS9', res.ticketsIssuedS9 || 0);
+
+          var relRate = totalIssued > 0 ? ((totalRedeemed / totalIssued) * 100).toFixed(1) : "0.0";
+          setText('fnRealizationRate', `Realization: ${relRate}%`);
+          setText('fnRedeemedPct', `${res.targetConvRate || 0}% of Leads`);
+          setText('fnRedeemed', totalRedeemed);
+          setText('fnRedeemedS8', res.redeemedUnitsS8 || 0);
+          setText('fnRedeemedS9', res.redeemedUnitsS9 || 0);
+
+          // 🔴 4. Revenue, ARPU & COO Realization (Dengan Perhitungan Cadangan Jika Backend Kosong)
           var actualRev = res.totalActualRevenue || res.targetRevenue || 0;
           var revS8 = res.revenueS8 || 0;
           var revS9 = res.revenueS9 || 0;
           var redS8 = res.redeemedUnitsS8 || 0;
           var redS9 = res.redeemedUnitsS9 || 0;
 
-          document.getElementById('kpiActual').innerText = formatRp(actualRev);
-          document.getElementById('kpiTargetRevenueText').innerText = formatRp(actualRev);
-          document.getElementById('kpiRevS8').innerText = formatRp(revS8);
-          document.getElementById('kpiRevS9').innerText = formatRp(revS9);
-          document.getElementById('kpiSaved').innerText = formatRp(res.savedEstimasi || 0);
+          setText('kpiActual', formatRp(actualRev));
+          setText('kpiRevS8', formatRp(revS8));
+          setText('kpiRevS9', formatRp(revS9));
+          setText('kpiSaved', formatRp(res.savedEstimasi || 0));
 
-          // Kalkulasi ARPU (Fallback jika backend belum kirim)
           var arpuTotal = res.arpuTotal !== undefined ? res.arpuTotal : (totalRedeemed > 0 ? Math.round(actualRev / totalRedeemed) : 0);
           var arpuS8 = res.arpuS8 !== undefined ? res.arpuS8 : (redS8 > 0 ? Math.round(revS8 / redS8) : 0);
           var arpuS9 = res.arpuS9 !== undefined ? res.arpuS9 : (redS9 > 0 ? Math.round(revS9 / redS9) : 0);
 
-          // COO Ideal
           var idealCooTotal = res.idealCooTotal || 0;
           var idealCooS8 = res.idealCooS8 || 0;
           var idealCooS9 = res.idealCooS9 || 0;
@@ -2062,79 +2078,85 @@
           var cooRatioS8 = res.cooRatioS8 !== undefined ? res.cooRatioS8 : (idealCooS8 > 0 ? ((arpuS8 / idealCooS8) * 100).toFixed(1) : "0.0");
           var cooRatioS9 = res.cooRatioS9 !== undefined ? res.cooRatioS9 : (idealCooS9 > 0 ? ((arpuS9 / idealCooS9) * 100).toFixed(1) : "0.0");
 
-          document.getElementById('kpiArpuTotal').innerText = formatRp(arpuTotal);
-          document.getElementById('kpiIdealCooTotal').innerText = formatRp(idealCooTotal);
-          document.getElementById('kpiCooRatioTotalBadge').innerText = `${cooRatioTotal}% vs COO`;
+          setText('kpiArpuTotal', formatRp(arpuTotal));
+          setText('kpiIdealCooTotal', formatRp(idealCooTotal));
+          setText('kpiCooRatioTotalBadge', `${cooRatioTotal}% vs COO`);
 
-          document.getElementById('kpiArpuS8').innerText = formatRp(arpuS8);
-          document.getElementById('kpiIdealCooS8').innerText = formatRp(idealCooS8);
-          document.getElementById('kpiCooRatioS8').innerText = `${cooRatioS8}%`;
+          setText('kpiArpuS8', formatRp(arpuS8));
+          setText('kpiIdealCooS8', formatRp(idealCooS8));
+          setText('kpiCooRatioS8', `${cooRatioS8}%`);
 
-          document.getElementById('kpiArpuS9').innerText = formatRp(arpuS9);
-          document.getElementById('kpiIdealCooS9').innerText = formatRp(idealCooS9);
-          document.getElementById('kpiCooRatioS9').innerText = `${cooRatioS9}%`;
+          setText('kpiArpuS9', formatRp(arpuS9));
+          setText('kpiIdealCooS9', formatRp(idealCooS9));
+          setText('kpiCooRatioS9', `${cooRatioS9}%`);
 
-          // Potential Outstanding (Fallback jika backend belum kirim)
           var outTotal = res.potentialRevenueOutstanding !== undefined ? res.potentialRevenueOutstanding : (res.lost || 0);
           var outS8 = res.potentialRevenueOutstandingS8 !== undefined ? res.potentialRevenueOutstandingS8 : Math.max(0, (res.leadsS8 || 0) - redS8) * idealCooS8;
           var outS9 = res.potentialRevenueOutstandingS9 !== undefined ? res.potentialRevenueOutstandingS9 : Math.max(0, (res.leadsS9 || 0) - redS9) * idealCooS9;
 
-          document.getElementById('kpiLost').innerText = formatRp(outTotal);
-          document.getElementById('kpiOutS8').innerText = formatRp(outS8);
-          document.getElementById('kpiOutS9').innerText = formatRp(outS9);
+          setText('kpiLost', formatRp(outTotal));
+          setText('kpiOutS8', formatRp(outS8));
+          setText('kpiOutS9', formatRp(outS9));
           
           var today = new Date(); 
-          if (today.getDate() >= 15 && parseFloat(res.targetConvRate) < 20 && res.leads > 0) { 
+          if (today.getDate() >= 15 && parseFloat(res.targetConvRate) < 20 && totalLeads > 0) { 
             document.getElementById('earlyWarning').classList.remove('hidden'); 
           }
           
-          // Render SA Leaderboard
+          // 5. Render SA Leaderboard
           rawLeaderboardData = res.leaderboard || [];
           renderLeaderboard();
 
-          // Render Breakdown Cabang
+          // 6. Render Breakdown Cabang
           var hoSection = document.getElementById('hoBreakdownSection');
           if (sessionUser && (sessionUser.cabang.toUpperCase() === 'HEAD OFFICE' || sessionUser.cabang.toUpperCase() === 'HEADOFFICE')) {
-            hoSection.classList.remove('hidden'); hoSection.classList.add('flex');
+            hoSection.classList.remove('hidden'); 
+            hoSection.classList.add('flex');
             rawBranchBreakdownData = res.branchBreakdown || [];
             renderBranchBreakdown();
           } else if (hoSection) {
-            hoSection.classList.add('hidden'); hoSection.classList.remove('flex');
+            hoSection.classList.add('hidden'); 
+            hoSection.classList.remove('flex');
           }
 
-          // 🔴 7. CHART: VEHICLE SEGMENT DISTRIBUTION (6 KATEGORI RESMI)
-          if (vehicleSegmentChartInstance) vehicleSegmentChartInstance.destroy();
-          var vSeg = res.vehicleSegments || {};
-          var vSegLabels = ['New Entry', 'Economy', 'Standard', 'Medium Luxury', 'Luxury', 'Commercial'];
-          var vSegData = vSegLabels.map(k => vSeg[k] || 0);
-          var totalVSeg = vSegData.reduce((a,b) => a+b, 0);
+          // 🔴 7. Render Donut Chart 6 Segmen Resmi
+          var chartCanvas = document.getElementById('vehicleSegmentChart');
+          if (chartCanvas) {
+            if (vehicleSegmentChartInstance) vehicleSegmentChartInstance.destroy();
+            var vSeg = res.vehicleSegments || {};
+            var vSegLabels = ['New Entry', 'Economy', 'Standard', 'Medium Luxury', 'Luxury', 'Commercial'];
+            var vSegData = vSegLabels.map(k => vSeg[k] || 0);
+            var totalVSeg = vSegData.reduce((a,b) => a+b, 0);
 
-          if (totalVSeg > 0) {
-            vehicleSegmentChartInstance = new Chart(document.getElementById('vehicleSegmentChart').getContext('2d'), {
-              type: 'doughnut',
-              data: {
-                labels: vSegLabels,
-                datasets: [{
-                  data: vSegData,
-                  backgroundColor: ['#06b6d4', '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#64748b']
-                }]
-              },
-              options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: {
-                  legend: { position: 'right', labels: { boxWidth: 11, font: { size: 9 } } },
-                  datalabels: { color: '#ffffff', font: { weight: 'bold', size: 11 }, formatter: v => v > 0 ? (Math.round((v/totalVSeg)*100) + '%') : '' }
+            if (totalVSeg > 0) {
+              vehicleSegmentChartInstance = new Chart(chartCanvas.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                  labels: vSegLabels,
+                  datasets: [{
+                    data: vSegData,
+                    backgroundColor: ['#06b6d4', '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#64748b']
+                  }]
+                },
+                options: {
+                  responsive: true, 
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: { position: 'right', labels: { boxWidth: 11, font: { size: 9 } } },
+                    datalabels: { color: '#ffffff', font: { weight: 'bold', size: 11 }, formatter: v => v > 0 ? (Math.round((v/totalVSeg)*100) + '%') : '' }
+                  }
                 }
-              }
-            });
-          } else {
-            vehicleSegmentChartInstance = new Chart(document.getElementById('vehicleSegmentChart').getContext('2d'), {
-              type: 'doughnut', data: { labels: ['No Segment Data'], datasets: [{ data: [1], backgroundColor: ['#e2e8f0'] }] },
-              options: { plugins: { legend: { display: false }, datalabels: { display: false } }, cutout: '65%' }
-            });
+              });
+            } else {
+              vehicleSegmentChartInstance = new Chart(chartCanvas.getContext('2d'), {
+                type: 'doughnut', 
+                data: { labels: ['No Segment Data'], datasets: [{ data: [1], backgroundColor: ['#e2e8f0'] }] },
+                options: { plugins: { legend: { display: false }, datalabels: { display: false } }, cutout: '65%' }
+              });
+            }
           }
 
-          // 🔴 8. MINI-TABLE MODEL BREAKDOWN
+          // 🔴 8. Mini-Table Model Breakdown
           renderModelMiniTable(res.segments || {}, res.redeemedDetails || []);
         }
       });
@@ -2145,22 +2167,24 @@
     // ========================================================
     function loadAuditNisData() {
       var sDate = document.getElementById('auditStartDate').value, eDate = document.getElementById('auditEndDate').value;
-      document.getElementById('auditLoading').classList.remove('hidden'); document.getElementById('auditContent').classList.add('hidden');
+      document.getElementById('auditLoading').classList.remove('hidden'); 
+      document.getElementById('auditContent').classList.add('hidden');
 
       fetchAPI('getAuditNisData', { startDate: sDate, endDate: eDate, cabang: sessionUser.cabang }).then(function(res) {
-        document.getElementById('auditLoading').classList.add('hidden'); document.getElementById('auditContent').classList.remove('hidden');
+        document.getElementById('auditLoading').classList.add('hidden'); 
+        document.getElementById('auditContent').classList.remove('hidden');
         if (res.success) {
           rawAuditData = res.data || [];
-          document.getElementById('kpiAuditTotal').innerText = res.summary.total || 0;
-          document.getElementById('kpiAuditCompliant').innerText = res.summary.compliant || 0;
-          document.getElementById('kpiAuditRate').innerText = (res.summary.compliantRate || 0) + '%';
-          document.getElementById('kpiAuditSalahJob').innerText = res.summary.salahJob || 0;
-          document.getElementById('kpiAuditKlaimLiar').innerText = res.summary.klaimLiar || 0;
-          document.getElementById('kpiAuditLeakage').innerText = formatRp(res.summary.totalRevenueNis || 0);
+          setText('kpiAuditTotal', res.summary.total || 0);
+          setText('kpiAuditCompliant', res.summary.compliant || 0);
+          setText('kpiAuditRate', (res.summary.compliantRate || 0) + '%');
+          setText('kpiAuditSalahJob', res.summary.salahJob || 0);
+          setText('kpiAuditKlaimLiar', res.summary.klaimLiar || 0);
+          setText('kpiAuditLeakage', formatRp(res.summary.totalRevenueNis || 0));
 
-          document.getElementById('kpiGovOrganicTickets').innerText = res.summary.organicTickets || 0;
-          document.getElementById('kpiGovOrganicRedeemed').innerText = res.summary.organicRedeemed || 0;
-          document.getElementById('kpiGovOrganicRevenue').innerText = formatRp(res.summary.organicRevenue || 0);
+          setText('kpiGovOrganicTickets', res.summary.organicTickets || 0);
+          setText('kpiGovOrganicRedeemed', res.summary.organicRedeemed || 0);
+          setText('kpiGovOrganicRevenue', formatRp(res.summary.organicRevenue || 0));
 
           renderAuditTable();
         } else Swal.fire('Information', res.message, 'warning');
@@ -2215,14 +2239,30 @@
                 : '<span class="bg-gray-100 text-gray-800 px-2.5 py-0.5 rounded-md text-[10px] font-black border border-gray-300">❓ UNBILLED VOUCHER</span>'));
           
           var safeWo = r.noWo || '-', safeNoka = r.noka || '-';
-          tbodyHtml += `<tr class="hover:bg-slate-50 transition border-b border-gray-100"><td class="px-3 py-2.5 text-center text-gray-400 font-medium">${idx + 1}</td><td class="px-4 py-2.5"><p onclick="copyToClipboard('${safeWo}','No. WO')" class="font-bold text-gray-900 font-mono tracking-tight cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy WO">${safeWo} <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p><p class="text-[10px] text-gray-500 font-medium">${r.tglWo}</p></td><td class="px-4 py-2.5"><p class="font-bold text-gray-800 uppercase">${r.cabang}</p><p class="text-[10px] text-gray-500">SA: ${r.namaSA}</p></td><td class="px-4 py-2.5"><p onclick="copyToClipboard('${safeNoka}','VIN')" class="font-mono font-bold text-gray-900 cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy VIN">${safeNoka} <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p><p class="text-[10px] text-gray-500 font-semibold">${r.model || '-'}</p></td><td class="px-4 py-2.5 font-medium text-gray-800 max-w-xs truncate" title="${r.pekerjaan}">${r.pekerjaan}</td><td class="px-4 py-2.5 text-right font-mono font-bold text-purple-700">${r.discJasa}</td><td class="px-4 py-2.5 text-right font-black text-gray-900 font-mono">${formatRp(r.totalInvoice)}</td><td class="px-3 py-2.5 text-center">${badge}</td><td class="px-4 py-2.5 text-[11px] font-medium text-gray-600 leading-snug max-w-sm whitespace-normal">${r.keterangan}</td></tr>`;
+          tbodyHtml += '<tr class="hover:bg-slate-50 transition border-b border-gray-100">' +
+                         '<td class="px-3 py-2.5 text-center text-gray-400 font-medium">' + (idx + 1) + '</td>' +
+                         '<td class="px-4 py-2.5">' +
+                           '<p onclick="copyToClipboard(\'' + safeWo + '\', \'No. WO\')" class="font-bold text-gray-900 font-mono tracking-tight cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy WO">' + safeWo + ' <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p>' +
+                           '<p class="text-[10px] text-gray-500 font-medium">' + (r.tglWo || '-') + '</p>' +
+                         '</td>' +
+                         '<td class="px-4 py-2.5"><p class="font-bold text-gray-800 uppercase">' + (r.cabang || '-') + '</p><p class="text-[10px] text-gray-500">SA: ' + (r.namaSA || '-') + '</p></td>' +
+                         '<td class="px-4 py-2.5">' +
+                           '<p onclick="copyToClipboard(\'' + safeNoka + '\', \'VIN\')" class="font-mono font-bold text-gray-900 cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy VIN">' + safeNoka + ' <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p>' +
+                           '<p class="text-[10px] text-gray-500 font-semibold">' + (r.model || '-') + '</p>' +
+                         '</td>' +
+                         '<td class="px-4 py-2.5 font-medium text-gray-800 max-w-xs truncate" title="' + (r.pekerjaan || '-') + '">' + (r.pekerjaan || '-') + '</td>' +
+                         '<td class="px-4 py-2.5 text-right font-mono font-bold text-purple-700">' + (r.discJasa || '0%') + '</td>' +
+                         '<td class="px-4 py-2.5 text-right font-black text-gray-900 font-mono">' + formatRp(r.totalInvoice || 0) + '</td>' +
+                         '<td class="px-3 py-2.5 text-center">' + badge + '</td>' +
+                         '<td class="px-4 py-2.5 text-[11px] font-medium text-gray-600 leading-snug max-w-sm whitespace-normal">' + (r.keterangan || '-') + '</td>' +
+                       '</tr>';
         });
       } else {
         tbodyHtml = '<tr><td colspan="9" class="px-4 py-10 text-center text-gray-400 italic font-medium">No records match the active criteria.</td></tr>';
       }
 
-      document.getElementById('auditTableBody').innerHTML = tbodyHtml;
-      document.getElementById('auditFooterCount').innerText = 'Displaying ' + filtered.length + ' of ' + rawAuditData.length + ' records';
+      setHTML('auditTableBody', tbodyHtml);
+      setText('auditFooterCount', 'Displaying ' + filtered.length + ' of ' + rawAuditData.length + ' records');
     }
 
     function downloadAuditExcel() {
