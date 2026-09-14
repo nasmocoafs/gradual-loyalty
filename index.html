@@ -519,14 +519,35 @@
         </div>
       </div>
 
-      <!-- 🔴 TAB: ANALYTICS DASHBOARD -->
-      <div id="view-dashboard" class="w-full max-w-7xl mx-auto fade-in hidden">
-        <div class="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-4 mb-6">
-          <div>
-            <h2 class="text-xl md:text-2xl font-black text-gray-900 tracking-tight">Predictive Analytics & Executive Dashboard</h2>
-            <p class="text-xs text-gray-500 mt-1">Strategic Performance Governance: Servis 8 vs 9 Breakdown, ARPU & COO Realization</p>
-          </div>
-          
+      <!-- 🔴 TAB: ANALYTICS DASHBOARD --><div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
+  <div class="min-w-0 flex-1 pr-4">
+    <h2 class="text-lg md:text-xl lg:text-2xl font-black text-gray-900 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
+      Predictive Analytics & Executive Dashboard
+    </h2>
+    <p class="text-[11px] md:text-xs text-gray-500 mt-0.5 truncate">
+      Strategic Performance Governance: Servis 8 vs 9 Breakdown, ARPU & COO Realization
+    </p>
+  </div>
+
+  <!-- 🔴 TOOLBAR TERPADU RAPI ANTI-TABRAKAN -->
+  <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full xl:w-auto bg-white p-2 rounded-xl border border-gray-200 shadow-sm shrink-0">
+    <button type="button" onclick="applyShortTermFilter()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition shadow flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0">
+      <span>⚡ Short Term (S1)</span>
+    </button>
+    <div class="h-5 border-l border-gray-200 hidden sm:block"></div>
+    <div class="flex items-center gap-1.5 w-full sm:w-auto">
+      <input type="date" id="dashStartDate" class="px-2 py-1 border border-gray-300 rounded-lg font-bold bg-gray-50 focus:bg-white outline-none text-xs w-28">
+      <span class="font-bold text-gray-400 text-xs">-</span>
+      <input type="date" id="dashEndDate" class="px-2 py-1 border border-gray-300 rounded-lg font-bold bg-gray-50 focus:bg-white outline-none text-xs w-28">
+      <button type="button" onclick="loadDashboard()" class="bg-gray-900 hover:bg-black text-white font-bold px-3 py-1.5 rounded-lg text-xs transition shadow whitespace-nowrap">
+        Apply
+      </button>
+    </div>
+    <button type="button" id="btnUploadTarget" onclick="openUploadModal()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-1.5 rounded-lg shadow transition text-xs whitespace-nowrap flex items-center justify-center gap-1 hidden shrink-0">
+      <span>⬆ Upload Target</span>
+    </button>
+  </div>
+</div>       
           <!-- 🔴 TOOLBAR TERPADU RAPI ANTI-TABRAKAN -->
           <div class="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full xl:w-auto bg-white p-2.5 rounded-xl border border-gray-200 shadow-sm">
             <button type="button" onclick="applyShortTermFilter()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3.5 py-2 rounded-lg text-xs transition shadow flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0">
