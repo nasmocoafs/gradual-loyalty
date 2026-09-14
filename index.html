@@ -74,7 +74,7 @@
       <div class="relative flex-1 text-center border rounded-md py-1.5 bg-gray-800 border-gray-700 text-gray-500 opacity-50 flex items-center justify-center"><p class="text-[10px] font-black tracking-wider">S-11</p></div>
     `;
 
-    // 🔴 DEFENSIVE DOM HELPER: Menjamin tidak pernah crash karena null
+    // 🔴 DEFENSIVE DOM HELPER
     function setText(id, val) {
       var el = document.getElementById(id);
       if (el) el.innerText = (val !== undefined && val !== null) ? val : '-';
@@ -143,7 +143,7 @@
     .sortable-th { cursor: pointer; user-select: none; transition: background-color 0.15s; }
     .sortable-th:hover { background-color: #1e293b; }
 
-    /* 🔴 FULLSCREEN MODE: Menghilangkan Sidebar & Tampil Penuh 100% Layar */
+    /* 🔴 FULLSCREEN MODE: Hapus Sidebar, Header & Tampil Penuh 100% Layar */
     body.branch-fs-mode aside,
     body.branch-fs-mode header,
     body.branch-fs-mode nav {
@@ -519,51 +519,36 @@
         </div>
       </div>
 
-      <!-- 🔴 TAB: ANALYTICS DASHBOARD --><div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
-  <div class="min-w-0 flex-1 pr-4">
-    <h2 class="text-lg md:text-xl lg:text-2xl font-black text-gray-900 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
-      Predictive Analytics & Executive Dashboard
-    </h2>
-    <p class="text-[11px] md:text-xs text-gray-500 mt-0.5 truncate">
-      Strategic Performance Governance: Servis 8 vs 9 Breakdown, ARPU & COO Realization
-    </p>
-  </div>
-
-  <!-- 🔴 TOOLBAR TERPADU RAPI ANTI-TABRAKAN -->
-  <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full xl:w-auto bg-white p-2 rounded-xl border border-gray-200 shadow-sm shrink-0">
-    <button type="button" onclick="applyShortTermFilter()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition shadow flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0">
-      <span>⚡ Short Term (S1)</span>
-    </button>
-    <div class="h-5 border-l border-gray-200 hidden sm:block"></div>
-    <div class="flex items-center gap-1.5 w-full sm:w-auto">
-      <input type="date" id="dashStartDate" class="px-2 py-1 border border-gray-300 rounded-lg font-bold bg-gray-50 focus:bg-white outline-none text-xs w-28">
-      <span class="font-bold text-gray-400 text-xs">-</span>
-      <input type="date" id="dashEndDate" class="px-2 py-1 border border-gray-300 rounded-lg font-bold bg-gray-50 focus:bg-white outline-none text-xs w-28">
-      <button type="button" onclick="loadDashboard()" class="bg-gray-900 hover:bg-black text-white font-bold px-3 py-1.5 rounded-lg text-xs transition shadow whitespace-nowrap">
-        Apply
-      </button>
-    </div>
-    <button type="button" id="btnUploadTarget" onclick="openUploadModal()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-1.5 rounded-lg shadow transition text-xs whitespace-nowrap flex items-center justify-center gap-1 hidden shrink-0">
-      <span>⬆ Upload Target</span>
-    </button>
-  </div>
-</div>       
+      <!-- 🔴 TAB: ANALYTICS DASHBOARD -->
+      <div id="view-dashboard" class="w-full max-w-7xl mx-auto fade-in hidden">
+        
+        <!-- 🔴 HEADER DASBOR TEGAS 1 BARIS (SINGLE-ROW) DENGAN TOOLBAR RAPI ANTI-TABRAKAN -->
+        <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
+          <div class="min-w-0 flex-1 pr-4">
+            <h2 class="text-lg md:text-xl lg:text-2xl font-black text-gray-900 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
+              Predictive Analytics & Executive Dashboard
+            </h2>
+            <p class="text-[11px] md:text-xs text-gray-500 mt-0.5 truncate">
+              Strategic Performance Governance: Servis 8 vs 9 Breakdown, ARPU & COO Realization
+            </p>
+          </div>
+          
           <!-- 🔴 TOOLBAR TERPADU RAPI ANTI-TABRAKAN -->
-          <div class="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full xl:w-auto bg-white p-2.5 rounded-xl border border-gray-200 shadow-sm">
-            <button type="button" onclick="applyShortTermFilter()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3.5 py-2 rounded-lg text-xs transition shadow flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0">
+          <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full xl:w-auto bg-white p-2 rounded-xl border border-gray-200 shadow-sm shrink-0">
+            <button type="button" onclick="applyShortTermFilter()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition shadow flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0">
               <span>⚡ Short Term (S1)</span>
             </button>
-            <div class="h-6 border-l border-gray-200 hidden sm:block"></div>
+            <div class="h-5 border-l border-gray-200 hidden sm:block"></div>
             <div class="flex items-center gap-1.5 w-full sm:w-auto">
-              <input type="date" id="dashStartDate" class="px-2.5 py-1.5 border border-gray-300 rounded-lg font-bold bg-gray-50 focus:bg-white outline-none text-xs w-32">
+              <input type="date" id="dashStartDate" class="px-2 py-1 border border-gray-300 rounded-lg font-bold bg-gray-50 focus:bg-white outline-none text-xs w-28">
               <span class="font-bold text-gray-400 text-xs">-</span>
-              <input type="date" id="dashEndDate" class="px-2.5 py-1.5 border border-gray-300 rounded-lg font-bold bg-gray-50 focus:bg-white outline-none text-xs w-32">
-              <button type="button" onclick="loadDashboard()" class="bg-gray-900 hover:bg-black text-white font-bold px-3.5 py-1.5 rounded-lg text-xs transition shadow whitespace-nowrap">
+              <input type="date" id="dashEndDate" class="px-2 py-1 border border-gray-300 rounded-lg font-bold bg-gray-50 focus:bg-white outline-none text-xs w-28">
+              <button type="button" onclick="loadDashboard()" class="bg-gray-900 hover:bg-black text-white font-bold px-3 py-1.5 rounded-lg text-xs transition shadow whitespace-nowrap">
                 Apply
               </button>
             </div>
-            <button type="button" id="btnUploadTarget" onclick="openUploadModal()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-3.5 py-2 rounded-lg shadow transition text-xs whitespace-nowrap flex items-center justify-center gap-1.5 hidden shrink-0">
-              <span>⬆ Upload Master Target</span>
+            <button type="button" id="btnUploadTarget" onclick="openUploadModal()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-1.5 rounded-lg shadow transition text-xs whitespace-nowrap flex items-center justify-center gap-1 hidden shrink-0">
+              <span>⬆ Upload Target</span>
             </button>
           </div>
         </div>
@@ -646,7 +631,7 @@
             </div>
           </div>
 
-          <!-- 🔴 SEKSI WORKLOAD S2: SCHEDULING BOARD (BREAKDOWN WITH VS WITHOUT PROGRAM) -->
+          <!-- 🔴 SEKSI WORKLOAD S2: SCHEDULING BOARD (SUBTITEL BERSIH & BREAKDOWN WITH VS WITHOUT PROGRAM) -->
           <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-gray-100">
               <div>
@@ -876,7 +861,7 @@
 
           </div>
 
-          <!-- 🔴 TABEL 2: BREAKDOWN PERFORMA 24 CABANG (DENGAN TOMBOL FULLSCREEN & WARNING IRREGULARITY CONTROL) -->
+          <!-- 🔴 TABEL 2: BREAKDOWN PERFORMA 24 CABANG (FULLSCREEN KELAS ATAS & KONTROL IRREGULARITAS) -->
           <div id="hoBreakdownSection" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-col transition-all duration-300">
             <div class="bg-gray-900 p-4 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div class="flex items-center gap-2">
@@ -1194,7 +1179,7 @@
 
     // 🔴 FULLSCREEN MODE TANPA TERPOTONG SIDEBAR
     function toggleBranchFullscreen() {
-      var body = document.body;
+      var section = document.getElementById('hoBreakdownSection');
       var icon = document.getElementById('fsIcon');
       var text = document.getElementById('fsText');
       var aside = document.querySelector('aside');
@@ -1208,7 +1193,8 @@
           main.style.setProperty('padding', '0', 'important');
           main.style.setProperty('z-index', '99999', 'important');
         }
-        body.classList.add('branch-fs-mode');
+        document.body.classList.add('branch-fs-mode');
+        section.classList.add('table-fullscreen');
         if (icon) icon.innerText = '✕';
         if (text) text.innerText = 'Exit Fullscreen';
         isBranchFullscreen = true;
@@ -1219,7 +1205,8 @@
           main.style.removeProperty('padding');
           main.style.removeProperty('z-index');
         }
-        body.classList.remove('branch-fs-mode');
+        document.body.classList.remove('branch-fs-mode');
+        section.classList.remove('table-fullscreen');
         if (icon) icon.innerText = '⛶';
         if (text) text.innerText = 'Fullscreen';
         isBranchFullscreen = false;
@@ -1313,7 +1300,7 @@
           document.getElementById('sessNama').innerText = sessionUser.nama; 
           document.getElementById('sessCabang').innerText = sessionUser.cabang;
           loadSADropdown(); 
-          switchTab('register');
+          switchTab('register'); 
         } else { 
           Swal.fire('Ditolak', res.message, 'error'); 
           btn.innerText = 'Otorisasi Masuk'; 
@@ -2077,7 +2064,7 @@
           totalRed9 += Number(b.redeemS9) || 0; 
           totalRev += Number(b.revenue) || 0;
 
-          // 🔴 KONTROL IRREGULARITAS / WARNING COLOR PROGRESS S2
+          // 🔴 KONTROL IRREGULARITAS PROGRESS S2
           var progVal = parseRate(b.progressInS2);
           var progBadgeClass = 'bg-gray-100 text-gray-800 border-gray-300';
           if (b.targetInS2 > 0) {
@@ -2294,7 +2281,7 @@
           setText('kpiConvS9', (res.convRateS9 || 0) + '%');
           setText('kpiTargetLockInRate', (res.targetLockInRate || 0) + '%');
 
-          // 3. Render S2 Monthly Scheduling Board (Dengan Breakdown With vs Without Program)
+          // 3. Render S2 Monthly Scheduling Board (Breakdown With vs Without Program)
           renderS2MonthlyBoard(res.s2MonthlyLeads || {});
 
           // 🔴 4. Top-Down Stepped Funnel Population
@@ -2364,7 +2351,7 @@
             document.getElementById('earlyWarning').classList.remove('hidden'); 
           }
           
-          // 6. Render SA Leaderboard (ARPU + Benchmark COO)
+          // 6. Render SA Leaderboard (Lengkap dengan ARPU & Rasio vs COO)
           rawLeaderboardData = res.leaderboard || [];
           renderLeaderboard();
 
@@ -2511,7 +2498,7 @@
     }
 
     function downloadAuditExcel() {
-      if (!rawAuditData || rawAuditData.length === 0) return Swal.fire('No Data', 'No governance records available for export.', 'warning');
+      if (!rawAuditData || rawAuditData.length === 0) return Swal.fire('No Data', 'No records to export.', 'warning');
       var exportData = [ ["#", "Governance Status", "WO Number", "Invoice Date", "Dealership", "Service Advisor", "VIN Number", "Vehicle Model", "Billed Job Scope (NIS)", "Labor Discount", "Parts Discount", "Total Gross Invoicing", "Audit Trail & Remarks"] ];
       rawAuditData.forEach((r, idx) => {
         var statusLabel = r.statusAudit === 'COMPLIANT' ? 'Verified Match' : (r.statusAudit === 'SALAH_PEKERJAAN' ? 'Scope Exception' : (r.statusAudit === 'KLAIM_LIAR' ? 'Unlinked Invoice' : 'Unbilled Voucher'));
