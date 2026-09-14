@@ -19,7 +19,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     var globalPortalCode = urlParams.get('code') || '';
     
-    // CRM & DATA MRA
+    // CRM & DATA MRA STATE
     var globalMraDataRaw = [];
     var mraFilteredData = [];
     var mraCurrentPage = 1;
@@ -38,7 +38,7 @@
     var branchSearchQuery = '';
     var dashIsJanJun = false;
 
-    // MODAL DRILL DOWN
+    // DRILL DOWN STATE
     var globalRedeemedDetails = [];
     var currentRedeemTab = 'all';
     var redeemSearchQuery = '';
@@ -47,7 +47,7 @@
     var currentTicketTab = 'all';
     var ticketSearchQuery = '';
     
-    // AUDIT GOVERNANCE
+    // AUDIT GOVERNANCE STATE
     var rawAuditData = [];
     var currentAuditFilterTab = 'ALL';
     var auditSearchQuery = '';
@@ -74,7 +74,7 @@
       <div class="relative flex-1 text-center border rounded-md py-1.5 bg-gray-800 border-gray-700 text-gray-500 opacity-50 flex items-center justify-center"><p class="text-[10px] font-black tracking-wider">S-11</p></div>
     `;
 
-    // 🔴 DEFENSIVE DOM HELPER: Melindungi UI dari TypeError null
+    // 🔴 DEFENSIVE DOM HELPER: Menjamin tidak pernah crash karena null
     function setText(id, val) {
       var el = document.getElementById(id);
       if (el) el.innerText = (val !== undefined && val !== null) ? val : '-';
@@ -84,7 +84,7 @@
       if (el) el.innerHTML = (val !== undefined && val !== null) ? val : '-';
     }
 
-    // 🔴 FORMAT ANGKA RIBUAN DENGAN TITIK (MISAL: 14.343)
+    // 🔴 FORMAT ANGKA DENGAN TITIK (MISAL: 14.343)
     function formatNum(val) {
       if (val === null || val === undefined || isNaN(val)) return '0';
       return Math.round(Number(val)).toLocaleString('id-ID');
@@ -99,8 +99,6 @@
     function parseRate(val) {
       return !val ? 0 : parseFloat(val.toString().replace('%', '').replace(',', '.').trim()) || 0;
     }
-
-    // 🔴 FORMAT NOMOR WHATSAPP ROBUST
     function formatWAPhone(number) {
       if (!number) return '-';
       var str = number.toString().replace(/[^0-9]/g, '');
@@ -144,18 +142,41 @@
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .sortable-th { cursor: pointer; user-select: none; transition: background-color 0.15s; }
     .sortable-th:hover { background-color: #1e293b; }
-    
-    /* Fullscreen Mode Styling untuk Dealership Breakdown */
-    .table-fullscreen {
-      position: fixed !important;
-      inset: 0 !important;
+
+    /* 🔴 FULLSCREEN MODE: Menghilangkan Sidebar & Tampil Penuh 100% Layar */
+    body.branch-fs-mode aside,
+    body.branch-fs-mode header,
+    body.branch-fs-mode nav {
+      display: none !important;
+    }
+    body.branch-fs-mode main {
+      padding: 0 !important;
+      margin: 0 !important;
+      overflow: hidden !important;
+      position: static !important;
       z-index: 99999 !important;
+    }
+    body.branch-fs-mode #hoBreakdownSection {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
       width: 100vw !important;
       height: 100vh !important;
-      max-width: none !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      z-index: 999999 !important;
       border-radius: 0 !important;
       margin: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
       background-color: #ffffff !important;
+    }
+    body.branch-fs-mode #hoBreakdownSection > div:last-child {
+      max-height: none !important;
+      flex: 1 1 0% !important;
+      overflow: auto !important;
     }
   </style>
 </head>
@@ -500,26 +521,29 @@
 
       <!-- 🔴 TAB: ANALYTICS DASHBOARD -->
       <div id="view-dashboard" class="w-full max-w-7xl mx-auto fade-in hidden">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
+        <div class="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-4 mb-6">
           <div>
             <h2 class="text-xl md:text-2xl font-black text-gray-900 tracking-tight">Predictive Analytics & Executive Dashboard</h2>
             <p class="text-xs text-gray-500 mt-1">Strategic Performance Governance: Servis 8 vs 9 Breakdown, ARPU & COO Realization</p>
           </div>
-          <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-            <!-- 🔴 QUICK FILTER TOMBOL SHORT TERM (S1) -->
-            <button onclick="applyShortTermFilter()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-2 rounded-lg text-xs transition shadow flex items-center justify-center gap-1.5 shrink-0 self-end md:self-auto">
+          
+          <!-- 🔴 TOOLBAR TERPADU RAPI ANTI-TABRAKAN -->
+          <div class="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full xl:w-auto bg-white p-2.5 rounded-xl border border-gray-200 shadow-sm">
+            <button type="button" onclick="applyShortTermFilter()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3.5 py-2 rounded-lg text-xs transition shadow flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0">
               <span>⚡ Short Term (S1)</span>
             </button>
-            <div class="w-full md:w-auto">
-              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Analytics Period (YTD / YTM)</label>
-              <div class="flex items-center gap-2">
-                <input type="date" id="dashStartDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg font-bold bg-white outline-none text-xs">
-                <span class="font-bold text-gray-400">-</span>
-                <input type="date" id="dashEndDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg font-bold bg-white outline-none text-xs">
-                <button onclick="loadDashboard()" class="bg-gray-900 hover:bg-black text-white font-bold px-4 py-2 rounded-lg text-xs transition shadow shrink-0">Apply Period</button>
-              </div>
+            <div class="h-6 border-l border-gray-200 hidden sm:block"></div>
+            <div class="flex items-center gap-1.5 w-full sm:w-auto">
+              <input type="date" id="dashStartDate" class="px-2.5 py-1.5 border border-gray-300 rounded-lg font-bold bg-gray-50 focus:bg-white outline-none text-xs w-32">
+              <span class="font-bold text-gray-400 text-xs">-</span>
+              <input type="date" id="dashEndDate" class="px-2.5 py-1.5 border border-gray-300 rounded-lg font-bold bg-gray-50 focus:bg-white outline-none text-xs w-32">
+              <button type="button" onclick="loadDashboard()" class="bg-gray-900 hover:bg-black text-white font-bold px-3.5 py-1.5 rounded-lg text-xs transition shadow whitespace-nowrap">
+                Apply
+              </button>
             </div>
-            <button id="btnUploadTarget" onclick="openUploadModal()" class="w-full md:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center justify-center gap-2 h-fit md:mt-auto text-xs hidden">Upload Master Target</button>
+            <button type="button" id="btnUploadTarget" onclick="openUploadModal()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-3.5 py-2 rounded-lg shadow transition text-xs whitespace-nowrap flex items-center justify-center gap-1.5 hidden shrink-0">
+              <span>⬆ Upload Master Target</span>
+            </button>
           </div>
         </div>
         
@@ -583,7 +607,7 @@
                     <span class="border-l border-white/20 pl-2">S9: <b id="kpiRedeemedS9" class="text-white">0</b></span>
                   </div>
                 </div>
-                <button class="mt-3 text-[10px] font-bold bg-emerald-500/30 group-hover:bg-emerald-500 text-white px-2.5 py-1 rounded-lg border border-emerald-400/40 transition shadow-sm">🔍 Customer Details</button>
+                <button class="mt-3 text-[10px] font-bold bg-emerald-50/30 group-hover:bg-emerald-500 text-white px-2.5 py-1 rounded-lg border border-emerald-400/40 transition shadow-sm">🔍 Customer Details</button>
               </div>
 
               <!-- KARTU 4: COHORT CONVERSION RATE -->
@@ -601,7 +625,7 @@
             </div>
           </div>
 
-          <!-- 🔴 SEKSI WORKLOAD S2: SCHEDULING BOARD (SUBTITEL BERSIH DARI ISTILAH BACKEND) -->
+          <!-- 🔴 SEKSI WORKLOAD S2: SCHEDULING BOARD (BREAKDOWN WITH VS WITHOUT PROGRAM) -->
           <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-gray-100">
               <div>
@@ -760,7 +784,7 @@
 
           </div>
 
-          <!-- 🔴 BARIS SEJAJAR: SA LEADERBOARD (DENGAN ARPU & BENCHMARK COO) & VEHICLE ANALYSIS -->
+          <!-- 🔴 BARIS SEJAJAR: SA LEADERBOARD (ARPU & BENCHMARK COO) & VEHICLE ANALYSIS -->
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             <!-- SA LEADERBOARD: 8 KOLOM LENGKAP BENCHMARK -->
@@ -831,7 +855,7 @@
 
           </div>
 
-          <!-- 🔴 TABEL 2: BREAKDOWN PERFORMA 24 CABANG (DILENGKAPI TOMBOL FULLSCREEN & WARNING CONTROL) -->
+          <!-- 🔴 TABEL 2: BREAKDOWN PERFORMA 24 CABANG (DENGAN TOMBOL FULLSCREEN & WARNING IRREGULARITY CONTROL) -->
           <div id="hoBreakdownSection" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-col transition-all duration-300">
             <div class="bg-gray-900 p-4 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div class="flex items-center gap-2">
@@ -844,7 +868,7 @@
                   <svg class="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>
                 <!-- 🔴 TOMBOL FULLSCREEN EVALUASI CABANG -->
-                <button onclick="toggleBranchFullscreen()" id="btnFullscreenBranch" class="bg-gray-800 hover:bg-gray-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-gray-700 flex items-center gap-1.5 shadow transition shrink-0">
+                <button type="button" onclick="toggleBranchFullscreen()" id="btnFullscreenBranch" class="bg-gray-800 hover:bg-gray-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-gray-700 flex items-center gap-1.5 shadow transition shrink-0">
                   <span id="fsIcon">⛶</span> <span id="fsText">Fullscreen</span>
                 </button>
               </div>
@@ -1147,20 +1171,36 @@
       Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Filter Short Term (S1) diterapkan', showConfirmButton: false, timer: 1500 });
     }
 
-    // 🔴 TOGGLE FULLSCREEN MODAL PADA DEALERSHIP BREAKDOWN
+    // 🔴 FULLSCREEN MODE TANPA TERPOTONG SIDEBAR
     function toggleBranchFullscreen() {
-      var section = document.getElementById('hoBreakdownSection');
+      var body = document.body;
       var icon = document.getElementById('fsIcon');
       var text = document.getElementById('fsText');
+      var aside = document.querySelector('aside');
+      var header = document.querySelector('header');
+      var main = document.querySelector('main');
+
       if (!isBranchFullscreen) {
-        section.classList.add('table-fullscreen');
-        icon.innerText = '✕';
-        text.innerText = 'Exit Fullscreen';
+        if (aside) aside.style.setProperty('display', 'none', 'important');
+        if (header) header.style.setProperty('display', 'none', 'important');
+        if (main) {
+          main.style.setProperty('padding', '0', 'important');
+          main.style.setProperty('z-index', '99999', 'important');
+        }
+        body.classList.add('branch-fs-mode');
+        if (icon) icon.innerText = '✕';
+        if (text) text.innerText = 'Exit Fullscreen';
         isBranchFullscreen = true;
       } else {
-        section.classList.remove('table-fullscreen');
-        icon.innerText = '⛶';
-        text.innerText = 'Fullscreen';
+        if (aside) aside.style.removeProperty('display');
+        if (header) header.style.removeProperty('display');
+        if (main) {
+          main.style.removeProperty('padding');
+          main.style.removeProperty('z-index');
+        }
+        body.classList.remove('branch-fs-mode');
+        if (icon) icon.innerText = '⛶';
+        if (text) text.innerText = 'Fullscreen';
         isBranchFullscreen = false;
       }
     }
@@ -1880,7 +1920,7 @@
 
     function filterBranchBreakdown(query) { branchSearchQuery = (query || '').toUpperCase().trim(); renderBranchBreakdown(); }
 
-    // 🔴 RENDER SCHEDULING BOARD S2: SUBTITEL BERSIH & INTERAKTIF KLIK DRILLDOWN
+    // 🔴 RENDER SCHEDULING BOARD S2: AKTUAL IN DIBREAKDOWN (IN WITH PROGRAM VS IN WITHOUT PROGRAM)
     function renderS2MonthlyBoard(monthlyData) {
       var container = document.getElementById('s2MonthlyBoard');
       if (!container) return;
@@ -1897,7 +1937,9 @@
         var labelMonth = (parts.length === 2 && monthNames[parts[1]]) ? (monthNames[parts[1]] + ' ' + parts[0]) : mKey;
         
         var targetTotal = item.targetTotal || item.total || 0;
-        var actualTotal = item.actualTotal || item.actual || 0;
+        var actWith = item.actualWithProgram !== undefined ? item.actualWithProgram : (item.actualTotal || item.actual || 0);
+        var actWithout = item.actualWithoutProgram !== undefined ? item.actualWithoutProgram : 0;
+        var actualTotal = item.actualTotal || (actWith + actWithout);
         var ratioVal = item.ratio || item.progressPct || (targetTotal > 0 ? ((actualTotal / targetTotal) * 100).toFixed(1) : "0.0");
         
         var badgeColor = parseFloat(ratioVal) >= 50 ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : (parseFloat(ratioVal) >= 20 ? 'bg-blue-100 text-blue-800 border-blue-300' : 'bg-amber-100 text-amber-800 border-amber-300');
@@ -1908,18 +1950,33 @@
               <span class="text-[10px] font-black text-purple-900 tracking-wider">${labelMonth}</span>
               <span class="text-[9px] font-black px-1.5 py-0.5 rounded border ${badgeColor}">${ratioVal}%</span>
             </div>
+            
+            <!-- Target In vs Total Actual In -->
             <div class="grid grid-cols-2 gap-1 my-1.5 py-1.5 bg-white/80 rounded-lg border border-purple-100 text-center">
               <div>
                 <p class="text-[8px] font-bold text-gray-500 uppercase">Target In</p>
-                <p class="text-base font-black text-purple-800">${formatNum(targetTotal)}</p>
+                <p class="text-sm font-black text-purple-800">${formatNum(targetTotal)}</p>
               </div>
               <div class="border-l border-purple-100">
-                <p class="text-[8px] font-bold text-emerald-700 uppercase">Aktual In</p>
-                <p class="text-base font-black text-emerald-700">${formatNum(actualTotal)}</p>
+                <p class="text-[8px] font-bold text-gray-700 uppercase">Total Act In</p>
+                <p class="text-sm font-black text-gray-900">${formatNum(actualTotal)}</p>
+              </div>
+            </div>
+
+            <!-- 🔴 BREAKDOWN ACTUAL IN: IN WITH PROGRAM VS IN WITHOUT PROGRAM -->
+            <div class="bg-purple-100/50 p-1.5 rounded-lg mb-1.5 text-[9px] border border-purple-200/60 space-y-0.5 text-left">
+              <div class="flex justify-between items-center">
+                <span class="text-emerald-700 font-bold flex items-center gap-1">● In W/ Program:</span>
+                <b class="text-emerald-800 font-black">${formatNum(actWith)}</b>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-600 font-bold flex items-center gap-1">○ In W/o Program:</span>
+                <b class="text-slate-700 font-black">${formatNum(actWithout)}</b>
               </div>
             </div>
           </div>
-          <div class="pt-1 border-t border-purple-200/60 flex justify-around text-[9px] font-bold text-gray-600 bg-white/50 py-1 rounded">
+
+          <div class="pt-1 border-t border-purple-200/60 flex justify-around text-[9px] font-bold text-gray-600 bg-white/50 py-0.5 rounded">
             <span>S8: <b class="text-purple-950">${formatNum(item.targetS8 || item.s8 || 0)}</b></span>
             <span>S9: <b class="text-purple-950">${formatNum(item.targetS9 || item.s9 || 0)}</b></span>
           </div>
@@ -1953,8 +2010,9 @@
         '<th onclick="sortBranchTable(\'revenue\')" class="px-3 py-3 border-b text-right sortable-th bg-gray-100 font-black">Gross Revenue <span id="br-sort-revenue">↕</span></th>';
       
       if (dashIsJanJun) {
-        headHtml += '<th onclick="sortBranchTable(\'inS2Count\')" class="px-2.5 py-3 border-b text-center sortable-th bg-emerald-50 text-emerald-800">Act In S2 <span id="br-sort-inS2Count">↕</span></th>' +
-                    '<th onclick="sortBranchTable(\'inS2LoyaltyRedeemed\')" class="px-2.5 py-3 border-b text-center sortable-th bg-blue-50 text-blue-800">Loyalty In S2 <span id="br-sort-inS2LoyaltyRedeemed">↕</span></th>' +
+        headHtml += '<th onclick="sortBranchTable(\'inS2Count\')" class="px-2.5 py-3 border-b text-center sortable-th bg-emerald-50 text-emerald-800">Total Act In <span id="br-sort-inS2Count">↕</span></th>' +
+                    '<th onclick="sortBranchTable(\'inS2LoyaltyRedeemed\')" class="px-2.5 py-3 border-b text-center sortable-th bg-blue-50 text-blue-800">In W/ Program <span id="br-sort-inS2LoyaltyRedeemed">↕</span></th>' +
+                    '<th class="px-2.5 py-3 border-b text-center bg-slate-50 text-slate-700">In W/o Program</th>' +
                     '<th onclick="sortBranchTable(\'targetInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-50 text-teal-800">Target S2 <span id="br-sort-targetInS2">↕</span></th>' +
                     '<th onclick="sortBranchTable(\'progressInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-100 text-teal-900 font-black">Progress S2 <span id="br-sort-progressInS2">↕</span></th>';
       }
@@ -1978,7 +2036,7 @@
 
       setText('branchCountBadge', filtered.length + " Branches");
       
-      var bdHtml = '', totalPot = 0, totalPot8 = 0, totalPot9 = 0, totalInS2 = 0, totalLoyaltyInS2 = 0, totalTargetS2 = 0, totalRegT = 0, totalRedT = 0, totalRed8 = 0, totalRed9 = 0, totalRev = 0;
+      var bdHtml = '', totalPot = 0, totalPot8 = 0, totalPot9 = 0, totalInS2 = 0, totalLoyaltyInS2 = 0, totalWithoutInS2 = 0, totalTargetS2 = 0, totalRegT = 0, totalRedT = 0, totalRed8 = 0, totalRed9 = 0, totalRev = 0;
 
       if (filtered.length > 0) {
         filtered.forEach(function(b, idx) {
@@ -1987,6 +2045,10 @@
           totalPot9 += Number(b.potensiS9) || 0;
           totalInS2 += Number(b.inS2Count) || 0;
           totalLoyaltyInS2 += Number(b.inS2LoyaltyRedeemed) || 0;
+          
+          var withoutProg = Math.max(0, (Number(b.inS2Count) || 0) - (Number(b.inS2LoyaltyRedeemed) || 0));
+          totalWithoutInS2 += withoutProg;
+
           totalTargetS2 += Number(b.targetInS2) || 0;
           totalRegT += Number(b.regTarget) || 0; 
           totalRedT += Number(b.redeemTarget) || 0; 
@@ -2006,6 +2068,7 @@
           var inS2Cells = dashIsJanJun ? 
             `<td class="px-2.5 py-3 text-center font-bold text-emerald-800 bg-emerald-50/40 border-b border-gray-100">${formatNum(b.inS2Count || 0)} <span class="text-[10px] text-gray-500 font-normal">(${b.inS2Rate || '0,0'}%)</span></td>
              <td class="px-2.5 py-3 text-center font-bold text-blue-800 bg-blue-50/40 border-b border-gray-100">${formatNum(b.inS2LoyaltyRedeemed || 0)} <span class="text-[10px] text-blue-600 font-normal">(${b.inS2LoyaltyShare || '0,0'}%)</span></td>
+             <td class="px-2.5 py-3 text-center font-medium text-slate-700 bg-slate-50/50 border-b border-gray-100">${formatNum(withoutProg)}</td>
              <td class="px-2.5 py-3 text-center font-bold text-teal-800 bg-teal-50/40 border-b border-gray-100">${formatNum(b.targetInS2 || 0)}</td>
              <td class="px-2.5 py-3 text-center border-b border-gray-100"><span class="px-2 py-0.5 rounded text-xs border ${progBadgeClass}">${b.progressInS2 || '0,0'}%</span></td>` : '';
           
@@ -2037,6 +2100,7 @@
       var footInS2 = dashIsJanJun ? 
         `<td class="px-2.5 py-3 text-center font-black text-emerald-900 bg-emerald-100/70">${formatNum(totalInS2)} <span class="text-[10px] font-normal">(${avgInS2Ratio}%)</span></td>
          <td class="px-2.5 py-3 text-center font-black text-blue-900 bg-blue-100/70">${formatNum(totalLoyaltyInS2)} <span class="text-[10px] font-normal">(${avgLoyaltyShare}%)</span></td>
+         <td class="px-2.5 py-3 text-center font-black text-slate-900 bg-slate-100/70">${formatNum(totalWithoutInS2)}</td>
          <td class="px-2.5 py-3 text-center font-black text-teal-900 bg-teal-100/70">${formatNum(totalTargetS2)}</td>
          <td class="px-2.5 py-3 text-center font-black text-teal-950 bg-teal-200/80">${totalProgressS2}%</td>` : '';
       
@@ -2159,7 +2223,7 @@
       XLSX.writeFile(wb, "Loyalty_Redemptions.xlsx");
     }
 
-    // 🔴 LOAD ANALYTICS DASHBOARD TERINTEGRASI (LENGKAP ARPU, BENCHMARK SA & SCHEDULING BOARD)
+    // 🔴 LOAD ANALYTICS DASHBOARD TERINTEGRASI LENGKAP
     function loadDashboard() {
       document.getElementById('dashContent').classList.add('hidden'); 
       document.getElementById('dashLoading').classList.remove('hidden'); 
@@ -2187,7 +2251,7 @@
             }
           }
 
-          // 2. Strategic Pane Metrics
+          // 2. Strategic Pane Metrics (Format Ribuan Titik)
           var totalLeads = res.leads || 0;
           var totalIssued = res.ticketsIssued || res.targetConverted || 0;
           var totalRedeemed = res.redeemedUnits || res.targetRedeemed || 0;
@@ -2209,7 +2273,7 @@
           setText('kpiConvS9', (res.convRateS9 || 0) + '%');
           setText('kpiTargetLockInRate', (res.targetLockInRate || 0) + '%');
 
-          // 3. Render S2 Monthly Scheduling Board
+          // 3. Render S2 Monthly Scheduling Board (Dengan Breakdown With vs Without Program)
           renderS2MonthlyBoard(res.s2MonthlyLeads || {});
 
           // 🔴 4. Top-Down Stepped Funnel Population
@@ -2279,7 +2343,7 @@
             document.getElementById('earlyWarning').classList.remove('hidden'); 
           }
           
-          // 6. Render SA Leaderboard (Beserta Benchmark ARPU vs COO)
+          // 6. Render SA Leaderboard (ARPU + Benchmark COO)
           rawLeaderboardData = res.leaderboard || [];
           renderLeaderboard();
 
