@@ -47,12 +47,17 @@
     var currentTicketTab = 'all';
     var ticketSearchQuery = '';
     
-    // AUDIT GOVERNANCE STATE
+    // AUDIT GOVERNANCE STATE (3-LEVEL ARCHITECTURE)
     var rawAuditData = [];
+    var rawAuditBranchData = [];
     var currentAuditFilterTab = 'ALL';
+    var currentAuditBranchFilter = '';
     var auditSearchQuery = '';
+    var auditBranchSearchQuery = '';
     var auditSortCol = 'tglWo';
     var auditSortOrder = 'desc';
+    var auditBranchSortCol = 'totalWo';
+    var auditBranchSortOrder = 'desc';
 
     var cachedHistoryData = {};
     var isPrefetching = false;
@@ -143,7 +148,7 @@
     .sortable-th { cursor: pointer; user-select: none; transition: background-color 0.15s; }
     .sortable-th:hover { background-color: #1e293b; }
 
-    /* 🔴 FULLSCREEN MODE: Hapus Sidebar, Header & Tampil Penuh 100% Layar */
+    /* 🔴 FULLSCREEN MODE DEALERSHIP BREAKDOWN (MENGHAPUS SIDEBAR & HEADER) */
     body.branch-fs-mode aside,
     body.branch-fs-mode header,
     body.branch-fs-mode nav {
@@ -533,7 +538,6 @@
             </p>
           </div>
           
-          <!-- 🔴 TOOLBAR TERPADU RAPI ANTI-TABRAKAN -->
           <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full xl:w-auto bg-white p-2 rounded-xl border border-gray-200 shadow-sm shrink-0">
             <button type="button" onclick="applyShortTermFilter()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition shadow flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0">
               <span>⚡ Short Term (S1)</span>
@@ -659,9 +663,8 @@
                 <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">Top-Down Flow</span>
               </div>
 
-              <!-- Stepped Funnel Container -->
               <div class="space-y-2 flex flex-col items-center w-full">
-                <!-- STEP 1: TARGET LEADS (WIDE TOP) -->
+                <!-- STEP 1: TARGET LEADS -->
                 <div class="w-full bg-slate-100 border border-slate-300 rounded-xl p-3 text-center shadow-sm">
                   <div class="flex justify-between items-center mb-1">
                     <span class="text-[10px] font-black text-slate-700 uppercase">1. Target Leads Cohort</span>
@@ -681,7 +684,7 @@
                   <span>↓</span>
                 </div>
 
-                <!-- STEP 2: TICKETS ISSUED (MEDIUM) -->
+                <!-- STEP 2: TICKETS ISSUED -->
                 <div onclick="openTicketModal('target')" class="w-[84%] bg-blue-50 hover:bg-blue-100/70 cursor-pointer border border-blue-300 rounded-xl p-2.5 text-center shadow-sm transition">
                   <div class="flex justify-between items-center mb-0.5">
                     <span class="text-[10px] font-black text-blue-800 uppercase">2. Tickets Issued (Lock-in)</span>
@@ -701,7 +704,7 @@
                   <span>↓</span>
                 </div>
 
-                <!-- STEP 3: REDEEMED UNITS (NARROW BOTTOM) -->
+                <!-- STEP 3: REDEEMED UNITS -->
                 <div onclick="openRedeemModal('target')" class="w-[68%] bg-emerald-50 hover:bg-emerald-100/70 cursor-pointer border border-emerald-300 rounded-xl p-2.5 text-center shadow-sm transition">
                   <div class="flex justify-between items-center mb-0.5">
                     <span class="text-[10px] font-black text-emerald-800 uppercase">3. Redeemed Units</span>
@@ -726,7 +729,6 @@
                 <div class="absolute top-0 right-0 bg-green-200 text-green-900 text-[9px] font-black px-3 py-1 rounded-bl-lg tracking-wider">REALIZED BILLING</div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
-                  <!-- KIRI: TOTAL ACTUAL REVENUE -->
                   <div class="md:col-span-6">
                     <p class="text-xs font-bold text-green-800 uppercase tracking-widest">Total Actual Revenue (Gross)</p>
                     <p class="text-3xl font-black text-green-700 mt-1" id="kpiActual">Rp 0</p>
@@ -737,7 +739,6 @@
                     </div>
                   </div>
 
-                  <!-- KANAN: REVENUE PER UNIT (ARPU) & COO REALIZATION RATIO -->
                   <div class="md:col-span-6 bg-white/80 border border-green-200 rounded-xl p-3 shadow-sm">
                     <div class="flex justify-between items-center pb-1 border-b border-green-200 mb-2">
                       <span class="text-[10px] font-black text-green-900 uppercase">Revenue Per Unit (ARPU)</span>
@@ -750,7 +751,6 @@
                       <p class="text-[9px] text-gray-400">Ideal COO: <span id="kpiIdealCooTotal" class="font-bold text-gray-600">Rp 0</span></p>
                     </div>
 
-                    <!-- Breakdown S8 vs S9 ARPU & COO -->
                     <div class="grid grid-cols-2 gap-2 pt-2 border-t border-green-100 text-[10px]">
                       <div class="bg-emerald-50 p-1.5 rounded border border-emerald-200">
                         <p class="font-black text-emerald-900 uppercase text-[9px]">S8 (70k KM)</p>
@@ -837,12 +837,10 @@
               </div>
 
               <div class="p-4 flex-1 flex flex-col justify-center min-h-[300px]">
-                <!-- Donut Chart 6 Segmen Resmi -->
                 <div id="view-vehicle-segment" class="w-full h-full relative flex items-center justify-center min-h-[260px]">
                   <canvas id="vehicleSegmentChart"></canvas>
                 </div>
 
-                <!-- Mini-Table Model Breakdown -->
                 <div id="view-vehicle-model" class="w-full h-full hidden overflow-y-auto max-h-[280px]">
                   <table class="w-full text-xs text-left">
                     <thead class="bg-gray-50 text-[9px] uppercase text-gray-500 font-bold sticky top-0">
@@ -891,125 +889,186 @@
         </div>
       </div>
 
-      <!-- TAB: NIS PROGRAM GOVERNANCE -->
+      <!-- 🔴 TAB: NIS PROGRAM GOVERNANCE & INTEGRITY (REKAYASA ULANG INTERAKTIF 3 TINGKAT) -->
       <div id="view-audit" class="w-full max-w-7xl mx-auto fade-in hidden">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6">
-          <div>
-            <h2 class="text-xl md:text-2xl font-black text-gray-900 tracking-tight">NIS Program Governance & Integrity</h2>
-            <p class="text-xs text-gray-500 mt-1">Cross-System Compliance, Invoicing Audit & Non-Target Discretionary Oversight</p>
+        
+        <!-- HEADER TEGAS 1 BARIS -->
+        <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
+          <div class="min-w-0 flex-1 pr-4">
+            <h2 class="text-lg md:text-xl lg:text-2xl font-black text-gray-900 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
+              NIS Program Governance & Integrity
+            </h2>
+            <p class="text-[11px] md:text-xs text-gray-500 mt-0.5 truncate">
+              Cross-System Compliance, Invoicing Audit & Dealership Discretionary Oversight
+            </p>
           </div>
-          <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-            <div class="w-full sm:w-auto">
-              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Billing Invoicing Period</label>
-              <div class="flex items-center gap-2">
-                <input type="date" id="auditStartDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg font-bold bg-white outline-none text-xs">
-                <span class="font-bold text-gray-400">-</span>
-                <input type="date" id="auditEndDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg font-bold bg-white outline-none text-xs">
-                <button onclick="loadAuditNisData()" class="bg-purple-700 hover:bg-purple-800 text-white font-bold px-4 py-2 rounded-lg text-xs transition shadow shrink-0">Reconcile Data</button>
-              </div>
+          <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full xl:w-auto bg-white p-2 rounded-xl border border-gray-200 shadow-sm shrink-0">
+            <div class="flex items-center gap-1.5">
+              <input type="date" id="auditStartDate" class="px-2 py-1 border border-gray-300 rounded-lg font-bold bg-gray-50 focus:bg-white outline-none text-xs w-28">
+              <span class="font-bold text-gray-400 text-xs">-</span>
+              <input type="date" id="auditEndDate" class="px-2 py-1 border border-gray-300 rounded-lg font-bold bg-gray-50 focus:bg-white outline-none text-xs w-28">
+              <button onclick="loadAuditNisData()" class="bg-purple-700 hover:bg-purple-800 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition shadow whitespace-nowrap">
+                Reconcile Data
+              </button>
             </div>
-            <button onclick="downloadAuditExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-xs transition shadow flex items-center justify-center gap-2 sm:mt-auto">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-              Export Report
+            <button onclick="downloadAuditExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition shadow flex items-center justify-center gap-1.5 whitespace-nowrap">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              <span>Export</span>
             </button>
           </div>
         </div>
 
         <div id="auditLoading" class="text-center py-12 text-gray-500 font-bold hidden">Synchronizing Invoicing Records with Loyalty Engine...</div>
 
-        <div id="auditContent" class="space-y-5">
-          <div class="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
-            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-center">
-              <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total Invoiced WO</p>
-              <p class="text-2xl font-black text-gray-900 mt-1" id="kpiAuditTotal">0</p>
-              <p class="text-[9px] text-gray-400 font-medium mt-0.5">NIS Billing Records</p>
+        <div id="auditContent" class="space-y-6">
+
+          <!-- 🔴 TINGKAT 1: RESUME KARTU SECARA REGIONAL (CLICK-TO-FILTER INTERACTIVE CARDS) -->
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">1. REGIONAL EXECUTIVE RESUME</span>
+              <span class="text-[10px] text-purple-700 font-bold">💡 Klik kartu untuk langsung memfilter data audit</span>
             </div>
-            <div class="bg-emerald-50/80 p-4 rounded-xl border border-emerald-200 shadow-sm text-center">
-              <p class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Verified & Aligned</p>
-              <p class="text-2xl font-black text-emerald-700 mt-1" id="kpiAuditCompliant">0</p>
-              <p class="text-[9px] text-emerald-600 font-bold mt-0.5"><span id="kpiAuditRate">0%</span> Compliance Rate</p>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
+              <div onclick="filterAuditTable('ALL')" class="bg-white hover:bg-slate-50 cursor-pointer p-4 rounded-xl border border-gray-200 shadow-sm text-center transition transform hover:scale-[1.02]">
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total Invoiced WO</p>
+                <p class="text-2xl font-black text-gray-900 mt-1" id="kpiAuditTotal">0</p>
+                <p class="text-[9px] text-gray-400 font-medium mt-0.5">NIS Billing Records</p>
+              </div>
+              <div onclick="filterAuditTable('COMPLIANT')" class="bg-emerald-50/80 hover:bg-emerald-100/70 cursor-pointer p-4 rounded-xl border border-emerald-200 shadow-sm text-center transition transform hover:scale-[1.02]">
+                <p class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Verified & Aligned</p>
+                <p class="text-2xl font-black text-emerald-700 mt-1" id="kpiAuditCompliant">0</p>
+                <p class="text-[9px] text-emerald-600 font-bold mt-0.5"><span id="kpiAuditRate">0%</span> Compliance Rate</p>
+              </div>
+              <div onclick="filterAuditTable('SALAH_PEKERJAAN')" class="bg-amber-50/80 hover:bg-amber-100/70 cursor-pointer p-4 rounded-xl border border-amber-200 shadow-sm text-center transition transform hover:scale-[1.02]">
+                <p class="text-[10px] font-bold text-amber-800 uppercase tracking-wider">Scope Exception</p>
+                <p class="text-2xl font-black text-amber-700 mt-1" id="kpiAuditSalahJob">0</p>
+                <p class="text-[9px] text-amber-600 font-bold mt-0.5">Non-Standard Scope</p>
+              </div>
+              <div onclick="filterAuditTable('KLAIM_LIAR')" class="bg-blue-50/80 hover:bg-blue-100/70 cursor-pointer p-4 rounded-xl border border-blue-200 shadow-sm text-center transition transform hover:scale-[1.02]">
+                <p class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Unlinked Invoices</p>
+                <p class="text-2xl font-black text-blue-700 mt-1" id="kpiAuditKlaimLiar">0</p>
+                <p class="text-[9px] text-blue-600 font-bold mt-0.5">Pending Web Redemption</p>
+              </div>
+              <div class="bg-purple-50/80 p-4 rounded-xl border border-purple-200 shadow-sm text-center col-span-2 md:col-span-1 flex flex-col justify-center">
+                <p class="text-[10px] font-bold text-purple-800 uppercase tracking-wider">Total Billed Gross</p>
+                <p class="text-lg md:text-base font-black text-purple-900 mt-1" id="kpiAuditLeakage">Rp 0</p>
+                <p class="text-[9px] text-purple-600 font-bold mt-0.5">Actual Realized Invoicing</p>
+              </div>
             </div>
-            <div class="bg-amber-50/80 p-4 rounded-xl border border-amber-200 shadow-sm text-center">
-              <p class="text-[10px] font-bold text-amber-800 uppercase tracking-wider">Scope Exception</p>
-              <p class="text-2xl font-black text-amber-700 mt-1" id="kpiAuditSalahJob">0</p>
-              <p class="text-[9px] text-amber-600 font-bold mt-0.5">Non-Standard Scope</p>
-            </div>
-            <div class="bg-blue-50/80 p-4 rounded-xl border border-blue-200 shadow-sm text-center">
-              <p class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Unlinked Invoices</p>
-              <p class="text-2xl font-black text-blue-700 mt-1" id="kpiAuditKlaimLiar">0</p>
-              <p class="text-[9px] text-blue-600 font-bold mt-0.5">Pending Web Redemption</p>
-            </div>
-            <div class="bg-purple-50/80 p-4 rounded-xl border border-purple-200 shadow-sm text-center col-span-2 md:col-span-1">
-              <p class="text-[10px] font-bold text-purple-800 uppercase tracking-wider">Total Billed Gross</p>
-              <p class="text-xl md:text-lg font-black text-purple-900 mt-1" id="kpiAuditLeakage">Rp 0</p>
-              <p class="text-[9px] text-purple-600 font-bold mt-0.5">Actual Realized Invoicing</p>
+
+            <!-- Discretionary Oversight Panel -->
+            <div class="bg-amber-50/60 border border-amber-200 p-3.5 rounded-xl shadow-sm mt-3">
+              <div class="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-amber-200/80">
+                <div class="flex items-center gap-2">
+                  <span class="bg-amber-500 text-white text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider">DISCRETIONARY OVERSIGHT</span>
+                  <h4 class="text-xs font-black text-amber-900">Organic & Discretionary Inflow Audit (Non-Target VIN)</h4>
+                </div>
+                <span class="text-[10px] text-amber-700 font-semibold">Walk-in transactions outside active cohort</span>
+              </div>
+              <div class="grid grid-cols-3 gap-3 text-center">
+                <div class="bg-white p-2 rounded-lg border border-amber-200">
+                  <p class="text-[9px] font-bold text-gray-500 uppercase">Organic Tickets</p>
+                  <p class="text-base font-black text-amber-700" id="kpiGovOrganicTickets">0</p>
+                </div>
+                <div class="bg-white p-2 rounded-lg border border-amber-200">
+                  <p class="text-[9px] font-bold text-gray-500 uppercase">Organic Redeemed</p>
+                  <p class="text-base font-black text-amber-800" id="kpiGovOrganicRedeemed">0</p>
+                </div>
+                <div class="bg-white p-2 rounded-lg border border-amber-200">
+                  <p class="text-[9px] font-bold text-gray-500 uppercase">Organic Revenue (Gross)</p>
+                  <p class="text-base font-black text-amber-900" id="kpiGovOrganicRevenue">Rp 0</p>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- DISCRETIONARY OVERSIGHT / ORGANIC INFLOW -->
-          <div class="bg-amber-50/60 border border-amber-200 p-4 rounded-2xl shadow-sm">
-            <div class="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-amber-200">
-              <div class="flex items-center gap-2">
-                <span class="bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">DISCRETIONARY OVERSIGHT</span>
-                <h4 class="text-xs md:text-sm font-black text-amber-900">Organic & Discretionary Inflow Audit (Non-Target VIN)</h4>
-              </div>
-              <span class="text-[11px] text-amber-700 font-semibold">Walk-in transactions outside active target cohort</span>
-            </div>
-            <div class="grid grid-cols-3 gap-3 text-center">
-              <div class="bg-white p-3 rounded-xl border border-amber-200">
-                <p class="text-[10px] font-bold text-gray-500 uppercase">Organic Tickets</p>
-                <p class="text-xl font-black text-amber-700 mt-0.5" id="kpiGovOrganicTickets">0</p>
-              </div>
-              <div class="bg-white p-3 rounded-xl border border-amber-200">
-                <p class="text-[10px] font-bold text-gray-500 uppercase">Organic Redeemed</p>
-                <p class="text-xl font-black text-amber-800 mt-0.5" id="kpiGovOrganicRedeemed">0</p>
-              </div>
-              <div class="bg-white p-3 rounded-xl border border-amber-200">
-                <p class="text-[10px] font-bold text-gray-500 uppercase">Organic Revenue (Gross)</p>
-                <p class="text-xl font-black text-amber-900 mt-0.5" id="kpiGovOrganicRevenue">Rp 0</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-3">
-            <div class="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
-              <button id="btn-audit-ALL" onclick="filterAuditTable('ALL')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm">All Records</button>
-              <button id="btn-audit-COMPLIANT" onclick="filterAuditTable('COMPLIANT')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-50">✔ Verified Match</button>
-              <button id="btn-audit-SALAH_PEKERJAAN" onclick="filterAuditTable('SALAH_PEKERJAAN')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-amber-700 border border-amber-300 hover:bg-amber-50">⚠️ Scope Exception</button>
-              <button id="btn-audit-KLAIM_LIAR" onclick="filterAuditTable('KLAIM_LIAR')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-blue-700 border border-blue-300 hover:bg-blue-50">ℹ️ Unlinked</button>
-              <button id="btn-audit-REDEEM_FIKTIF" onclick="filterAuditTable('REDEEM_FIKTIF')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-100">❓ Unbilled Voucher</button>
-            </div>
-            <div class="w-full md:w-80">
-              <input type="text" id="searchAuditInput" oninput="searchAuditTable(this.value)" placeholder="Search VIN, WO, Dealer, or SA..." class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs bg-gray-50 outline-none focus:bg-white focus:border-purple-500 auto-upper">
-            </div>
-          </div>
-
+          <!-- 🔴 TINGKAT 2: TABEL BREAKDOWN MASING-MASING CABANG ATAS CROSSCHECK NIS PROGRAM -->
           <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div class="overflow-x-auto max-h-[65vh]">
+            <div class="bg-gray-900 p-3.5 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5">
+              <div class="flex items-center gap-2">
+                <span class="text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2">
+                  🏢 2. Dealership Compliance Breakdown (Crosscheck NIS vs Web)
+                </span>
+                <span id="auditBranchCountBadge" class="bg-gray-800 text-yellow-400 text-[10px] px-2 py-0.5 rounded-full font-bold border border-gray-700">0 Branches</span>
+              </div>
+              <div class="relative w-full sm:w-60">
+                <input type="text" id="searchAuditBranchInput" oninput="filterAuditBranchTable(this.value)" placeholder="Cari cabang..." class="w-full pl-8 pr-3 py-1 bg-gray-800 border border-gray-700 rounded-lg text-xs text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 auto-upper">
+                <svg class="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              </div>
+            </div>
+            <div class="p-0 overflow-x-auto max-h-[45vh]">
               <table class="w-full text-xs text-left whitespace-nowrap">
-                <thead class="bg-gray-900 text-white uppercase text-[10px] font-bold sticky top-0 z-10 shadow-sm">
+                <thead class="bg-gray-50 text-[10px] uppercase text-gray-500 font-bold sticky top-0 z-10 shadow-sm">
                   <tr>
-                    <th class="px-3 py-3 text-center w-8 bg-gray-900">#</th>
-                    <th onclick="sortAuditTable('noWo')" class="px-4 py-3 sortable-th bg-gray-900">WO No. & Date <span id="aud-sort-noWo">↕</span></th>
-                    <th onclick="sortAuditTable('cabang')" class="px-4 py-3 sortable-th bg-gray-900">Dealer & SA <span id="aud-sort-cabang">↕</span></th>
-                    <th onclick="sortAuditTable('noka')" class="px-4 py-3 sortable-th bg-gray-900">VIN & Model <span id="aud-sort-noka">↕</span></th>
-                    <th class="px-4 py-3 bg-gray-900">Job Scope (NIS)</th>
-                    <th class="px-4 py-3 text-right bg-gray-900">Labor Discount</th>
-                    <th onclick="sortAuditTable('totalInvoice')" class="px-4 py-3 text-right sortable-th bg-gray-900 font-black">Gross Invoice <span id="aud-sort-totalInvoice">↕</span></th>
-                    <th onclick="sortAuditTable('statusAudit')" class="px-3 py-3 text-center sortable-th bg-gray-900">Compliance Status <span id="aud-sort-statusAudit">↕</span></th>
-                    <th class="px-4 py-3 bg-gray-900">Audit Trail / Remarks</th>
+                    <th class="px-3 py-2.5 border-b text-center w-8">#</th>
+                    <th onclick="sortAuditBranchTable('cabang')" class="px-3 py-2.5 border-b sortable-th">Dealership <span id="audbr-sort-cabang">↕</span></th>
+                    <th onclick="sortAuditBranchTable('totalWo')" class="px-2.5 py-2.5 border-b text-center sortable-th text-gray-900 font-black">Invoiced WO <span id="audbr-sort-totalWo">↕</span></th>
+                    <th onclick="sortAuditBranchTable('compliant')" class="px-2.5 py-2.5 border-b text-center sortable-th text-emerald-700">Verified <span id="audbr-sort-compliant">↕</span></th>
+                    <th onclick="sortAuditBranchTable('salahJob')" class="px-2.5 py-2.5 border-b text-center sortable-th text-amber-700">Scope Exc <span id="audbr-sort-salahJob">↕</span></th>
+                    <th onclick="sortAuditBranchTable('klaimLiar')" class="px-2.5 py-2.5 border-b text-center sortable-th text-blue-700">Unlinked <span id="audbr-sort-klaimLiar">↕</span></th>
+                    <th onclick="sortAuditBranchTable('redeemFiktif')" class="px-2.5 py-2.5 border-b text-center sortable-th text-gray-600">Unbilled <span id="audbr-sort-redeemFiktif">↕</span></th>
+                    <th onclick="sortAuditBranchTable('complianceRate')" class="px-2.5 py-2.5 border-b text-center sortable-th text-purple-700 font-black">Compliance % <span id="audbr-sort-complianceRate">↕</span></th>
+                    <th onclick="sortAuditBranchTable('totalInvoice')" class="px-3 py-2.5 border-b text-right sortable-th text-gray-900 font-black">Gross Billed <span id="audbr-sort-totalInvoice">↕</span></th>
+                    <th class="px-3 py-2.5 border-b text-center">Action</th>
                   </tr>
                 </thead>
-                <tbody id="auditTableBody" class="divide-y divide-gray-100 bg-white">
-                  <tr><td colspan="9" class="px-4 py-12 text-center text-gray-400 font-medium italic">Click "Reconcile Data" to initialize automated verification.</td></tr>
-                </tbody>
+                <tbody id="auditBranchTableBody" class="divide-y divide-gray-100"></tbody>
+                <tfoot id="auditBranchTableFoot" class="bg-gray-100 font-bold text-gray-900 border-t-2 border-gray-300"></tfoot>
               </table>
             </div>
-            <div class="p-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center text-xs font-bold text-gray-700">
-              <span id="auditFooterCount">Displaying 0 records</span>
-              <span class="text-[10px] text-gray-400">💡 Tip: Klik No. WO atau VIN untuk menyalin instan.</span>
+          </div>
+
+          <!-- 🔴 TINGKAT 3: DETAIL DATA TRANSAKSI NIS (GRANULAR LOG) -->
+          <div id="auditDetailSection">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">3. GRANULAR AUDIT & INVOICING LOG</span>
+              <div id="activeAuditBranchBadge" class="hidden items-center gap-1.5 bg-purple-100 text-purple-900 border border-purple-300 px-2.5 py-0.5 rounded-full text-xs font-bold">
+                <span>Filter Cabang: <b id="activeAuditBranchName">-</b></span>
+                <button onclick="clearAuditBranchFilter()" class="ml-1 text-purple-700 hover:text-red-600 font-black">✕</button>
+              </div>
+            </div>
+
+            <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-3 mb-3">
+              <div class="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
+                <button id="btn-audit-ALL" onclick="filterAuditTable('ALL')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm">All Records</button>
+                <button id="btn-audit-COMPLIANT" onclick="filterAuditTable('COMPLIANT')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-50">✔ Verified Match</button>
+                <button id="btn-audit-SALAH_PEKERJAAN" onclick="filterAuditTable('SALAH_PEKERJAAN')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-amber-700 border border-amber-300 hover:bg-amber-50">⚠️ Scope Exception</button>
+                <button id="btn-audit-KLAIM_LIAR" onclick="filterAuditTable('KLAIM_LIAR')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-blue-700 border border-blue-300 hover:bg-blue-50">ℹ️ Unlinked</button>
+                <button id="btn-audit-REDEEM_FIKTIF" onclick="filterAuditTable('REDEEM_FIKTIF')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-100">❓ Unbilled Voucher</button>
+              </div>
+              <div class="w-full md:w-80">
+                <input type="text" id="searchAuditInput" oninput="searchAuditTable(this.value)" placeholder="Search VIN, WO, Dealer, or SA..." class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs bg-gray-50 outline-none focus:bg-white focus:border-purple-500 auto-upper">
+              </div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div class="overflow-x-auto max-h-[60vh]">
+                <table class="w-full text-xs text-left whitespace-nowrap">
+                  <thead class="bg-gray-900 text-white uppercase text-[10px] font-bold sticky top-0 z-10 shadow-sm">
+                    <tr>
+                      <th class="px-3 py-3 text-center w-8 bg-gray-900">#</th>
+                      <th onclick="sortAuditTable('noWo')" class="px-4 py-3 sortable-th bg-gray-900">WO No. & Date <span id="aud-sort-noWo">↕</span></th>
+                      <th onclick="sortAuditTable('cabang')" class="px-4 py-3 sortable-th bg-gray-900">Dealer & SA <span id="aud-sort-cabang">↕</span></th>
+                      <th onclick="sortAuditTable('noka')" class="px-4 py-3 sortable-th bg-gray-900">VIN & Model <span id="aud-sort-noka">↕</span></th>
+                      <th class="px-4 py-3 bg-gray-900">Job Scope (NIS)</th>
+                      <th class="px-4 py-3 text-right bg-gray-900">Labor Discount</th>
+                      <th onclick="sortAuditTable('totalInvoice')" class="px-4 py-3 text-right sortable-th bg-gray-900 font-black">Gross Invoice <span id="aud-sort-totalInvoice">↕</span></th>
+                      <th onclick="sortAuditTable('statusAudit')" class="px-3 py-3 text-center sortable-th bg-gray-900">Compliance Status <span id="aud-sort-statusAudit">↕</span></th>
+                      <th class="px-4 py-3 bg-gray-900">Audit Trail / Remarks</th>
+                    </tr>
+                  </thead>
+                  <tbody id="auditTableBody" class="divide-y divide-gray-100 bg-white">
+                    <tr><td colspan="9" class="px-4 py-12 text-center text-gray-400 font-medium italic">Click "Reconcile Data" to initialize automated verification.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="p-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center text-xs font-bold text-gray-700">
+                <span id="auditFooterCount">Displaying 0 records</span>
+                <span class="text-[10px] text-gray-400">💡 Tip: Klik No. WO atau VIN untuk menyalin instan.</span>
+              </div>
             </div>
           </div>
+
         </div>
       </div>
     </main>
@@ -2064,13 +2123,12 @@
           totalRed9 += Number(b.redeemS9) || 0; 
           totalRev += Number(b.revenue) || 0;
 
-          // 🔴 KONTROL IRREGULARITAS PROGRESS S2
           var progVal = parseRate(b.progressInS2);
           var progBadgeClass = 'bg-gray-100 text-gray-800 border-gray-300';
           if (b.targetInS2 > 0) {
             if (progVal >= 100) progBadgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300 font-black';
             else if (progVal >= 50) progBadgeClass = 'bg-amber-100 text-amber-800 border-amber-300 font-bold';
-            else progBadgeClass = 'bg-rose-100 text-rose-800 border-rose-300 font-black animate-pulse'; // Irregularity Alert!
+            else progBadgeClass = 'bg-rose-100 text-rose-800 border-rose-300 font-black animate-pulse';
           }
 
           var inS2Cells = dashIsJanJun ? 
@@ -2231,7 +2289,7 @@
       XLSX.writeFile(wb, "Loyalty_Redemptions.xlsx");
     }
 
-    // 🔴 LOAD ANALYTICS DASHBOARD TERINTEGRASI LENGKAP
+    // 🔴 LOAD ANALYTICS DASHBOARD
     function loadDashboard() {
       document.getElementById('dashContent').classList.add('hidden'); 
       document.getElementById('dashLoading').classList.remove('hidden'); 
@@ -2248,7 +2306,6 @@
           globalRedeemedDetails = res.redeemedDetails || [];
           dashIsJanJun = (res.isJanJun === true);
 
-          // 1. Badge In S2 Return
           var badgeS2 = document.getElementById('leadsInS2Badge');
           if (badgeS2) {
             if (dashIsJanJun) {
@@ -2259,7 +2316,6 @@
             }
           }
 
-          // 2. Strategic Pane Metrics (Format Ribuan Titik)
           var totalLeads = res.leads || 0;
           var totalIssued = res.ticketsIssued || res.targetConverted || 0;
           var totalRedeemed = res.redeemedUnits || res.targetRedeemed || 0;
@@ -2281,10 +2337,8 @@
           setText('kpiConvS9', (res.convRateS9 || 0) + '%');
           setText('kpiTargetLockInRate', (res.targetLockInRate || 0) + '%');
 
-          // 3. Render S2 Monthly Scheduling Board (Breakdown With vs Without Program)
           renderS2MonthlyBoard(res.s2MonthlyLeads || {});
 
-          // 🔴 4. Top-Down Stepped Funnel Population
           setText('fnLeads', formatNum(totalLeads));
           setText('fnLeadsS8', formatNum(res.leadsS8 || 0));
           setText('fnLeadsS9', formatNum(res.leadsS9 || 0));
@@ -2302,7 +2356,6 @@
           setText('fnRedeemedS8', formatNum(res.redeemedUnitsS8 || 0));
           setText('fnRedeemedS9', formatNum(res.redeemedUnitsS9 || 0));
 
-          // 🔴 5. Revenue, ARPU & COO Realization
           var actualRev = res.totalActualRevenue || res.targetRevenue || 0;
           var revS8 = res.revenueS8 || 0;
           var revS9 = res.revenueS9 || 0;
@@ -2351,11 +2404,9 @@
             document.getElementById('earlyWarning').classList.remove('hidden'); 
           }
           
-          // 6. Render SA Leaderboard (Lengkap dengan ARPU & Rasio vs COO)
           rawLeaderboardData = res.leaderboard || [];
           renderLeaderboard();
 
-          // 7. Render Breakdown Cabang
           var hoSection = document.getElementById('hoBreakdownSection');
           if (sessionUser && (sessionUser.cabang.toUpperCase() === 'HEAD OFFICE' || sessionUser.cabang.toUpperCase() === 'HEADOFFICE')) {
             hoSection.classList.remove('hidden'); 
@@ -2367,7 +2418,6 @@
             hoSection.classList.remove('flex');
           }
 
-          // 8. Render Donut Chart 6 Segmen Resmi
           var chartCanvas = document.getElementById('vehicleSegmentChart');
           if (chartCanvas) {
             if (vehicleSegmentChartInstance) vehicleSegmentChartInstance.destroy();
@@ -2404,109 +2454,9 @@
             }
           }
 
-          // 9. Render Mini-Table Model Breakdown
           renderModelMiniTable(res.segments || {}, res.redeemedDetails || []);
         }
       });
-    }
-
-    // ========================================================
-    // TAB: NIS PROGRAM GOVERNANCE & INTEGRITY
-    // ========================================================
-    function loadAuditNisData() {
-      var sDate = document.getElementById('auditStartDate').value, eDate = document.getElementById('auditEndDate').value;
-      document.getElementById('auditLoading').classList.remove('hidden'); 
-      document.getElementById('auditContent').classList.add('hidden');
-
-      fetchAPI('getAuditNisData', { startDate: sDate, endDate: eDate, cabang: sessionUser.cabang }).then(function(res) {
-        document.getElementById('auditLoading').classList.add('hidden'); 
-        document.getElementById('auditContent').classList.remove('hidden');
-        if (res.success) {
-          rawAuditData = res.data || [];
-          setText('kpiAuditTotal', formatNum(res.summary.total || 0));
-          setText('kpiAuditCompliant', formatNum(res.summary.compliant || 0));
-          setText('kpiAuditRate', (res.summary.compliantRate || 0) + '%');
-          setText('kpiAuditSalahJob', formatNum(res.summary.salahJob || 0));
-          setText('kpiAuditKlaimLiar', formatNum(res.summary.klaimLiar || 0));
-          setText('kpiAuditLeakage', formatRp(res.summary.totalRevenueNis || 0));
-
-          setText('kpiGovOrganicTickets', formatNum(res.summary.organicTickets || 0));
-          setText('kpiGovOrganicRedeemed', formatNum(res.summary.organicRedeemed || 0));
-          setText('kpiGovOrganicRevenue', formatRp(res.summary.organicRevenue || 0));
-
-          renderAuditTable();
-        } else Swal.fire('Information', res.message, 'warning');
-      });
-    }
-
-    function filterAuditTable(tab) {
-      currentAuditFilterTab = tab;
-      ['ALL', 'COMPLIANT', 'SALAH_PEKERJAAN', 'KLAIM_LIAR', 'REDEEM_FIKTIF'].forEach(t => {
-        var btn = document.getElementById('btn-audit-' + t);
-        if (btn) btn.className = currentAuditFilterTab === t ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm' : 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300 hover:bg-gray-50';
-      });
-      renderAuditTable();
-    }
-
-    function searchAuditTable(query) { auditSearchQuery = (query || '').toUpperCase().trim(); renderAuditTable(); }
-
-    function sortAuditTable(col) {
-      if (auditSortCol === col) auditSortOrder = (auditSortOrder === 'asc') ? 'desc' : 'asc';
-      else { auditSortCol = col; auditSortOrder = (col === 'totalInvoice') ? 'desc' : 'asc'; }
-      renderAuditTable();
-    }
-
-    function renderAuditTable() {
-      var filtered = rawAuditData.filter(row => {
-        var matchTab = (currentAuditFilterTab === 'ALL') || (row.statusAudit === currentAuditFilterTab);
-        if (!matchTab) return false;
-        return !auditSearchQuery || (row.noWo + ' ' + row.noka + ' ' + row.cabang + ' ' + row.namaSA + ' ' + row.pekerjaan + ' ' + (row.model || '')).toUpperCase().includes(auditSearchQuery);
-      });
-
-      filtered.sort((a, b) => {
-        var valA = a[auditSortCol], valB = b[auditSortCol];
-        if (auditSortCol === 'totalInvoice') return auditSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
-        if (typeof valA === 'string') return auditSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-        return 0;
-      });
-
-      ['noWo', 'cabang', 'noka', 'totalInvoice', 'statusAudit'].forEach(c => {
-        var el = document.getElementById('aud-sort-' + c);
-        if (el) el.innerHTML = auditSortCol === c ? (auditSortOrder === 'asc' ? '<span class="text-purple-400 font-bold">▲</span>' : '<span class="text-purple-400 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
-      });
-
-      var tbodyHtml = '';
-      if (filtered.length > 0) {
-        filtered.forEach((r, idx) => {
-          var badge = r.statusAudit === 'COMPLIANT' 
-            ? '<span class="bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-md text-[10px] font-black border border-emerald-300">✔ VERIFIED MATCH</span>'
-            : (r.statusAudit === 'SALAH_PEKERJAAN' 
-              ? '<span class="bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-md text-[10px] font-black border border-amber-300">⚠️ SCOPE EXCEPTION</span>'
-              : (r.statusAudit === 'KLAIM_LIAR' 
-                ? '<span class="bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-md text-[10px] font-black border border-blue-300">ℹ️ UNLINKED INVOICE</span>'
-                : '<span class="bg-gray-100 text-gray-800 px-2.5 py-0.5 rounded-md text-[10px] font-black border border-gray-300">❓ UNBILLED VOUCHER</span>'));
-          
-          var safeWo = r.noWo || '-', safeNoka = r.noka || '-';
-          tbodyHtml += `<tr class="hover:bg-slate-50 transition border-b border-gray-100"><td class="px-3 py-2.5 text-center text-gray-400 font-medium">${idx + 1}</td><td class="px-4 py-2.5"><p onclick="copyToClipboard('${safeWo}','No. WO')" class="font-bold text-gray-900 font-mono tracking-tight cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy WO">${safeWo} <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p><p class="text-[10px] text-gray-500 font-medium">${r.tglWo || '-'}</p></td><td class="px-4 py-2.5"><p class="font-bold text-gray-800 uppercase">${r.cabang || '-'}</p><p class="text-[10px] text-gray-500">SA: ${r.namaSA || '-'}</p></td><td class="px-4 py-2.5"><p onclick="copyToClipboard('${safeNoka}','VIN')" class="font-mono font-bold text-gray-900 cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Click to copy VIN">${safeNoka} <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p><p class="text-[10px] text-gray-500 font-semibold">${r.model || '-'}</p></td><td class="px-4 py-2.5 font-medium text-gray-800 max-w-xs truncate" title="${r.pekerjaan}">${r.pekerjaan}</td><td class="px-4 py-2.5 text-right font-mono font-bold text-purple-700">${r.discJasa}</td><td class="px-4 py-2.5 text-right font-black text-gray-900 font-mono">${formatRp(r.totalInvoice)}</td><td class="px-3 py-2.5 text-center">${badge}</td><td class="px-4 py-2.5 text-[11px] font-medium text-gray-600 leading-snug max-w-sm whitespace-normal">${r.keterangan}</td></tr>`;
-        });
-      } else {
-        tbodyHtml = '<tr><td colspan="9" class="px-4 py-10 text-center text-gray-400 italic font-medium">No records match the active criteria.</td></tr>';
-      }
-
-      setHTML('auditTableBody', tbodyHtml);
-      setText('auditFooterCount', 'Displaying ' + filtered.length + ' of ' + rawAuditData.length + ' records');
-    }
-
-    function downloadAuditExcel() {
-      if (!rawAuditData || rawAuditData.length === 0) return Swal.fire('No Data', 'No records to export.', 'warning');
-      var exportData = [ ["#", "Governance Status", "WO Number", "Invoice Date", "Dealership", "Service Advisor", "VIN Number", "Vehicle Model", "Billed Job Scope (NIS)", "Labor Discount", "Parts Discount", "Total Gross Invoicing", "Audit Trail & Remarks"] ];
-      rawAuditData.forEach((r, idx) => {
-        var statusLabel = r.statusAudit === 'COMPLIANT' ? 'Verified Match' : (r.statusAudit === 'SALAH_PEKERJAAN' ? 'Scope Exception' : (r.statusAudit === 'KLAIM_LIAR' ? 'Unlinked Invoice' : 'Unbilled Voucher'));
-        exportData.push([idx + 1, statusLabel, r.noWo, r.tglWo, r.cabang, r.namaSA, r.noka, r.model, r.pekerjaan, r.discJasa, r.discPart, Number(r.totalInvoice) || 0, r.keterangan]);
-      });
-      var ws = XLSX.utils.aoa_to_sheet(exportData), wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "NIS_Program_Governance");
-      XLSX.writeFile(wb, "NIS_Program_Governance_Report.xlsx");
     }
   </script>
 </body>
