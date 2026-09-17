@@ -2808,13 +2808,41 @@
   }
 
   Swal.fire({
-    title: 'Menyusun A3 Executive Report...',
-    text: 'Menyesuaikan layout kertas A3 Landscape & merender seluruh metrik...',
+    title: 'Menyiapkan A3 Executive Report...',
+    text: 'Mengonversi visual grafik & menyusun layout kertas A3 Landscape...',
     allowOutsideClick: false,
     didOpen: () => Swal.showLoading()
   });
 
-  // 1. Injeksi styling khusus A3 agar tabel melebar utuh dan elemen web disembunyikan
+  // 1. Amankan elemen <canvas> agar tidak memicu error width/height 0 di html2canvas
+  const originalCanvases = element.querySelectorAll('canvas');
+  const canvasBackups = [];
+
+  originalCanvases.forEach(cv => {
+    const parent = cv.parentNode;
+    const img = document.createElement('img');
+    
+    if (cv.width > 0 && cv.height > 0) {
+      try {
+        img.src = cv.toDataURL('image/png');
+        img.style.width = '100%';
+        img.style.height = 'auto';
+        img.style.maxHeight = '260px';
+        img.style.objectFit = 'contain';
+        img.style.display = 'block';
+        img.style.margin = '0 auto';
+      } catch(e) {
+        img.style.display = 'none';
+      }
+    } else {
+      img.style.display = 'none';
+    }
+
+    parent.replaceChild(img, cv);
+    canvasBackups.push({ canvas: cv, placeholder: img, parent: parent });
+  });
+
+  // 2. Terapkan styling kertas A3 Landscape & buka tabel
   const printStyle = document.createElement('style');
   printStyle.id = 'a3-report-temp-style';
   printStyle.innerHTML = `
@@ -2825,7 +2853,6 @@
       padding: 24px !important;
       color: #111827 !important;
     }
-    /* Buka semua scrollbar tabel agar seluruh 15 kolom dan 24 baris tampil utuh */
     .a3-export-mode .overflow-x-auto,
     .a3-export-mode [class*="max-h-"] {
       overflow: visible !important;
@@ -2835,14 +2862,12 @@
       width: 100% !important;
       table-layout: auto !important;
     }
-    /* Sembunyikan elemen interaktif web yang tidak perlu ada di kertas print */
     .a3-export-mode button,
     .a3-export-mode input,
     .a3-export-mode #searchBranchInput,
     .a3-export-mode #btnFullscreenBranch {
       display: none !important;
     }
-    /* Header Report Resmi PDCA */
     .a3-header-banner {
       display: flex;
       justify-content: space-between;
@@ -2854,7 +2879,7 @@
   `;
   document.head.appendChild(printStyle);
 
-  // 2. Pasang Banner Header PDCA di atas dasbor
+  // 3. Tambahkan Banner Header Resmi PDCA
   const sDate = document.getElementById('dashStartDate').value || '-';
   const eDate = document.getElementById('dashEndDate').value || '-';
   const cabang = sessionUser ? sessionUser.cabang : 'HEAD OFFICE';
@@ -2885,7 +2910,19 @@
 
   const filename = `A3_Executive_Report_Loyalty_${cabang.replace(/\s+/g, '_')}_${sDate}_sd_${eDate}.pdf`;
 
-  // 3. Konfigurasi A3 Landscape
+  const cleanup = () => {
+    element.classList.remove('a3-export-mode');
+    const h = document.getElementById('tempA3Header');
+    if (h) h.remove();
+    const s = document.getElementById('a3-report-temp-style');
+    if (s) s.remove();
+    canvasBackups.forEach(b => {
+      if (b.placeholder.parentNode === b.parent) {
+        b.parent.replaceChild(b.canvas, b.placeholder);
+      }
+    });
+  };
+
   const opt = {
     margin: [8, 8, 8, 8],
     filename: filename,
@@ -2895,23 +2932,17 @@
       useCORS: true, 
       logging: false, 
       scrollY: 0,
-      windowWidth: 1600 // Mengunci resolusi desktop lebar
+      windowWidth: 1600
     },
     jsPDF: { unit: 'mm', format: 'a3', orientation: 'landscape' },
     pagebreak: { 
       mode: ['avoid-all', 'css', 'legacy'],
-      avoid: ['.bg-gradient-to-r', '.bg-white', 'tr', 'canvas', '.a3-header-banner']
+      avoid: ['.bg-gradient-to-r', '.bg-white', 'tr', '.a3-header-banner']
     }
   };
 
   html2pdf().set(opt).from(element).save().then(() => {
-    // Kembalikan tampilan web seperti semula
-    element.classList.remove('a3-export-mode');
-    const h = document.getElementById('tempA3Header');
-    if (h) h.remove();
-    const s = document.getElementById('a3-report-temp-style');
-    if (s) s.remove();
-
+    cleanup();
     Swal.fire({
       icon: 'success',
       title: 'A3 Report Berhasil Diterbitkan!',
@@ -2921,11 +2952,7 @@
     });
   }).catch((err) => {
     console.error(err);
-    element.classList.remove('a3-export-mode');
-    const h = document.getElementById('tempA3Header');
-    if (h) h.remove();
-    const s = document.getElementById('a3-report-temp-style');
-    if (s) s.remove();
+    cleanup();
     Swal.fire('Error', 'Gagal memproses dokumen A3 PDF.', 'error');
   });
 }
