@@ -2808,149 +2808,206 @@
   }
 
   Swal.fire({
-    title: 'Menyusun 1 Lembar A3 Portrait...',
-    text: 'Mengompilasi seluruh modul analitik & mengunci 1 halaman utuh...',
+    title: 'Menyusun A3 Portrait (1 Lembar)...',
+    text: 'Mengunci tabel SA, menstabilkan grafik donut & merapikan cabang...',
     allowOutsideClick: false,
     didOpen: () => Swal.showLoading()
   });
 
-  // 1. Simpan posisi scroll pengguna
   const prevScrollY = window.scrollY;
   window.scrollTo(0, 0);
 
-  // 2. Amankan grafik donat (ganti canvas ke <img> statis sementara)
+  // 1. Amankan Grafik Donut Vehicle Analysis tepat pada ukuran aslinya
   const canvas = document.getElementById('vehicleSegmentChart');
   let tempImg = null;
   if (canvas && canvas.width > 0 && canvas.height > 0) {
     try {
       tempImg = document.createElement('img');
       tempImg.id = 'tempVehicleImg';
-      tempImg.src = canvas.toDataURL('image/png');
-      tempImg.style.width = '100%';
-      tempImg.style.maxHeight = '140px';
-      tempImg.style.objectFit = 'contain';
-      tempImg.style.display = 'block';
-      tempImg.style.margin = '0 auto';
+      tempImg.src = canvas.toDataURL('image/png', 1.0);
+      tempImg.style.cssText = 'width: 220px !important; height: 145px !important; object-fit: contain !important; display: block !important; margin: 0 auto !important;';
       canvas.parentNode.insertBefore(tempImg, canvas);
       canvas.style.display = 'none';
     } catch(e) {}
   }
 
-  // Pastikan tab segmen donat yang aktif
   const vSeg = document.getElementById('view-vehicle-segment');
-  if (vSeg) vSeg.classList.remove('hidden');
+  if (vSeg) {
+    vSeg.classList.remove('hidden');
+    vSeg.style.cssText = 'display: flex !important; align-items: center !important; justify-content: center !important; height: 150px !important; min-height: 150px !important;';
+  }
   const vMod = document.getElementById('view-vehicle-model');
   if (vMod) vMod.classList.add('hidden');
 
-  // 3. Tambahkan Banner Kop Resmi A3 PDCA
+  // 2. Kop Header Resmi A3 PDCA
   const sDate = document.getElementById('dashStartDate').value || '-';
   const eDate = document.getElementById('dashEndDate').value || '-';
   const cabang = sessionUser ? sessionUser.cabang : 'HEAD OFFICE';
 
   const tempHeader = document.createElement('div');
   tempHeader.id = 'tempA3PdfHeader';
-  tempHeader.style.cssText = 'display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:5px;margin-bottom:6px;border-bottom:2.5px solid #dc2626;';
+  tempHeader.style.cssText = 'display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:4px;margin-bottom:6px;border-bottom:2.5px solid #dc2626;';
   tempHeader.innerHTML = `
     <div>
-      <h1 style="font-size:17px;font-weight:900;color:#111827;text-transform:uppercase;margin:0;letter-spacing:-0.5px;">
+      <h1 style="font-size:16px;font-weight:900;color:#111827;text-transform:uppercase;margin:0;letter-spacing:-0.5px;">
         A3 EXECUTIVE EVALUATION REPORT — GRADUAL LOYALTY SYSTEM
       </h1>
-      <p style="font-size:9px;color:#6b7280;margin-top:2px;margin-bottom:0;font-weight:600;">
-        Toyota Aftersales Retention Framework: Cohort Conversion, Workload S2, ARPU & Integrity Oversight
+      <p style="font-size:8.5px;color:#6b7280;margin-top:2px;margin-bottom:0;font-weight:600;">
+        Toyota Aftersales Retention Framework: Cohort Conversion, Workload S2, ARPU & Dealership Governance
       </p>
     </div>
     <div style="text-align:right;">
       <p style="font-size:13px;font-weight:900;color:#dc2626;text-transform:uppercase;margin:0;">
         ${cabang}
       </p>
-      <p style="font-size:8.5px;color:#4b5563;margin-top:2px;margin-bottom:0;">
+      <p style="font-size:8px;color:#4b5563;margin-top:2px;margin-bottom:0;">
         Periode: <b>${sDate}</b> s/d <b>${eDate}</b>
       </p>
     </div>
   `;
   dashContent.insertBefore(tempHeader, dashContent.firstChild);
 
-  // 4. Injeksi Style Pemadatan (Sembunyikan Sidebar & Kunci Lebar 1000px agar muat 1 halaman)
+  // 3. Styling Presisi (Mengunci Kolom SA Leaderboard, Donut & 24 Cabang)
   const printStyle = document.createElement('style');
   printStyle.id = 'a3-direct-print-style';
   printStyle.innerHTML = `
+    html.a3-printing-mode,
+    body.a3-printing-mode {
+      height: auto !important;
+      min-height: auto !important;
+      overflow: visible !important;
+      background: #ffffff !important;
+    }
     body.a3-printing-mode aside,
     body.a3-printing-mode header,
     body.a3-printing-mode nav {
       display: none !important;
     }
+    body.a3-printing-mode #app-wrapper {
+      display: block !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
     body.a3-printing-mode main {
+      display: block !important;
       padding: 0 !important;
       margin: 0 !important;
+      height: auto !important;
+      max-height: none !important;
       overflow: visible !important;
-      width: 1000px !important;
-      max-width: 1000px !important;
+      width: 1040px !important;
       background: #ffffff !important;
     }
     body.a3-printing-mode #dashContent {
-      width: 1000px !important;
-      max-width: 1000px !important;
+      width: 1040px !important;
+      max-width: 1040px !important;
       margin: 0 auto !important;
       padding: 6px 8px !important;
       background: #ffffff !important;
+      display: block !important;
     }
-    /* Rampingkan jarak vertikal antar seksi */
     body.a3-printing-mode #dashContent > * {
-      margin-top: 5px !important;
+      margin-top: 4px !important;
       margin-bottom: 0 !important;
     }
-    body.a3-printing-mode .p-5 {
-      padding: 6px 8px !important;
-    }
-    body.a3-printing-mode .p-4 {
-      padding: 5px 6px !important;
-    }
+    body.a3-printing-mode .p-5 { padding: 5px 8px !important; }
+    body.a3-printing-mode .p-4 { padding: 4px 6px !important; }
     body.a3-printing-mode .gap-6,
     body.a3-printing-mode .gap-4,
-    body.a3-printing-mode .gap-3 {
-      gap: 5px !important;
-    }
+    body.a3-printing-mode .gap-3 { gap: 4px !important; }
     body.a3-printing-mode h2,
-    body.a3-printing-mode h3 {
-      font-size: 10.5px !important;
-    }
-    body.a3-printing-mode .text-3xl {
-      font-size: 17px !important;
-      line-height: 1.1 !important;
-    }
-    body.a3-printing-mode .text-2xl {
-      font-size: 14px !important;
-      line-height: 1.1 !important;
-    }
-    /* Buka tabel agar 24 cabang tampil utuh tanpa scrollbar */
-    body.a3-printing-mode .overflow-x-auto,
-    body.a3-printing-mode [class*="max-h-"] {
+    body.a3-printing-mode h3 { font-size: 10px !important; }
+    body.a3-printing-mode .text-3xl { font-size: 16px !important; line-height: 1 !important; }
+    body.a3-printing-mode .text-2xl { font-size: 13px !important; line-height: 1 !important; }
+
+    /* ========================================================
+       KUNCI KHUSUS: SA LEADERBOARD (TIDAK AKAN GESER / KEPOTONG)
+       ======================================================== */
+    body.a3-printing-mode #leaderboardBody {
       overflow: visible !important;
-      max-height: none !important;
     }
-    body.a3-printing-mode table {
+    body.a3-printing-mode table:has(#leaderboardBody) {
       width: 100% !important;
-      table-layout: auto !important;
+      table-layout: fixed !important;
+      border-collapse: collapse !important;
     }
-    body.a3-printing-mode table th,
-    body.a3-printing-mode table td {
-      padding: 1.5px 3px !important;
+    body.a3-printing-mode table:has(#leaderboardBody) th,
+    body.a3-printing-mode table:has(#leaderboardBody) td {
+      padding: 2.5px 3px !important;
       font-size: 7.8px !important;
-      line-height: 1.1 !important;
+      line-height: 1.15 !important;
+      vertical-align: middle !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
     }
-    /* Sembunyikan elemen kontrol yang tidak diperlukan pada cetakan */
-    body.a3-printing-mode #dashContent button,
-    body.a3-printing-mode #dashContent input,
-    body.a3-printing-mode #dashContent #searchBranchInput,
-    body.a3-printing-mode #dashContent #btnFullscreenBranch {
+    /* Lebar pasti per kolom SA Leaderboard */
+    body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(1),
+    body.a3-printing-mode table:has(#leaderboardBody) td:nth-child(1) { width: 28px !important; text-align: center !important; }
+    body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(2),
+    body.a3-printing-mode table:has(#leaderboardBody) td:nth-child(2) { width: 85px !important; text-align: left !important; }
+    body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(3),
+    body.a3-printing-mode table:has(#leaderboardBody) td:nth-child(3) { width: 140px !important; text-align: left !important; }
+    body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(4),
+    body.a3-printing-mode table:has(#leaderboardBody) td:nth-child(4) { width: 55px !important; text-align: center !important; }
+    body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(5),
+    body.a3-printing-mode table:has(#leaderboardBody) td:nth-child(5) { width: 55px !important; text-align: center !important; }
+    body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(6),
+    body.a3-printing-mode table:has(#leaderboardBody) td:nth-child(6) { width: 85px !important; text-align: right !important; }
+    body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(7),
+    body.a3-printing-mode table:has(#leaderboardBody) td:nth-child(7) { width: 75px !important; text-align: right !important; }
+    body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(8),
+    body.a3-printing-mode table:has(#leaderboardBody) td:nth-child(8) { width: 45px !important; text-align: center !important; }
+
+    /* ========================================================
+       KUNCI KHUSUS: TABEL 24 CABANG
+       ======================================================== */
+    body.a3-printing-mode #hoBreakdownSection {
+      display: block !important;
+      height: auto !important;
+      max-height: none !important;
+      overflow: visible !important;
+      border: 1px solid #e5e7eb !important;
+    }
+    body.a3-printing-mode #hoBreakdownSection > div {
+      max-height: none !important;
+      overflow: visible !important;
+      display: block !important;
+    }
+    body.a3-printing-mode table:has(#hoBreakdownBody) {
+      width: 100% !important;
+      table-layout: fixed !important;
+      border-collapse: collapse !important;
+    }
+    body.a3-printing-mode table:has(#hoBreakdownBody) th,
+    body.a3-printing-mode table:has(#hoBreakdownBody) td {
+      padding: 1.5px 2px !important;
+      font-size: 7.2px !important;
+      line-height: 1.1 !important;
+      vertical-align: middle !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+    body.a3-printing-mode #branchBreakdownHead th:nth-child(1),
+    body.a3-printing-mode #hoBreakdownBody td:nth-child(1) { width: 22px !important; text-align: center !important; }
+    body.a3-printing-mode #branchBreakdownHead th:nth-child(2),
+    body.a3-printing-mode #hoBreakdownBody td:nth-child(2) { width: 95px !important; text-align: left !important; }
+
+    body.a3-printing-mode button,
+    body.a3-printing-mode input,
+    body.a3-printing-mode #searchBranchInput,
+    body.a3-printing-mode #btnFullscreenBranch {
       display: none !important;
     }
   `;
   document.head.appendChild(printStyle);
+  document.documentElement.classList.add('a3-printing-mode');
   document.body.classList.add('a3-printing-mode');
 
-  // 5. Cleanup Helper
+  // 4. Cleanup Helper
   const restoreOriginal = () => {
+    document.documentElement.classList.remove('a3-printing-mode');
     document.body.classList.remove('a3-printing-mode');
     const s = document.getElementById('a3-direct-print-style');
     if (s) s.remove();
@@ -2958,6 +3015,7 @@
     if (h) h.remove();
     if (tempImg) tempImg.remove();
     if (canvas) canvas.style.display = '';
+    if (vSeg) vSeg.style.cssText = '';
     window.scrollTo(0, prevScrollY);
   };
 
@@ -2977,14 +3035,13 @@
     jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' }
   };
 
-  // 6. Eksekusi PDF langsung dari elemen asli
   setTimeout(() => {
     html2pdf().set(opt).from(dashContent).save().then(() => {
       restoreOriginal();
       Swal.fire({
         icon: 'success',
-        title: 'A3 Report Selesai!',
-        text: 'Laporan 1 halaman A3 Portrait berhasil diunduh dengan isi lengkap.',
+        title: 'A3 Report Sempurna!',
+        text: 'Leaderboard SA, Grafik Donut, dan 24 Cabang tersusun rapi dalam 1 lembar.',
         timer: 2000,
         showConfirmButton: false
       });
@@ -2993,7 +3050,7 @@
       restoreOriginal();
       Swal.fire('Error', 'Gagal memproses dokumen A3 PDF.', 'error');
     });
-  }, 350);
+  }, 450);
 }
   </script>
 </body>
