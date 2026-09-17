@@ -836,19 +836,19 @@
                 </div>
               </div>
 
-              <div class="p-4 flex-1 flex flex-col justify-center min-h-[300px]">
-                <div id="view-vehicle-segment" class="w-full h-full relative flex items-center justify-center min-h-[260px]">
+            <div class="p-3 flex-1 flex flex-col min-h-[300px]">
+                <div id="view-vehicle-segment" class="w-full relative min-h-[260px] h-[260px]">
                   <canvas id="vehicleSegmentChart"></canvas>
                 </div>
 
-                <div id="view-vehicle-model" class="w-full h-full hidden overflow-y-auto max-h-[280px]">
+                <div id="view-vehicle-model" class="w-full hidden overflow-y-auto max-h-[280px]">
                   <table class="w-full text-xs text-left">
-                    <thead class="bg-gray-50 text-[9px] uppercase text-gray-500 font-bold sticky top-0">
+                    <thead class="bg-gray-50 text-[9px] uppercase text-gray-500 font-bold sticky top-0 z-10 shadow-sm">
                       <tr>
-                        <th class="py-2 px-2">Model Unit</th>
-                        <th class="py-2 px-2 text-center">Redeem</th>
-                        <th class="py-2 px-2 text-right">Revenue</th>
-                        <th class="py-2 px-2 text-center">Share</th>
+                        <th class="py-2 px-2 bg-gray-50">Model Unit</th>
+                        <th class="py-2 px-2 text-center bg-gray-50">Redeem</th>
+                        <th class="py-2 px-2 text-right bg-gray-50">Revenue</th>
+                        <th class="py-2 px-2 text-center bg-gray-50">Share</th>
                       </tr>
                     </thead>
                     <tbody id="modelBreakdownBody" class="divide-y divide-gray-100 font-medium"></tbody>
