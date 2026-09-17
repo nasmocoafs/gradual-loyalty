@@ -2808,120 +2808,146 @@
   }
 
   Swal.fire({
-    title: 'Menyusun 1-Page A3 Portrait Report...',
-    text: 'Mengompilasi seluruh modul analitik ke dalam 1 lembar A3 utuh...',
+    title: 'Menyusun A3 Portrait (1 Lembar)...',
+    text: 'Mengompilasi seluruh modul & merampingkan tabel ke 1 halaman A3...',
     allowOutsideClick: false,
     didOpen: () => Swal.showLoading()
   });
 
-  // 1. Amankan Chart Canvas agar bebas error 'drawImage width/height 0'
+  // 1. Amankan Chart Canvas agar tidak memicu error dimensi 0
   const originalCanvases = element.querySelectorAll('canvas');
   const canvasBackups = [];
+
   originalCanvases.forEach(cv => {
     const parent = cv.parentNode;
     const img = document.createElement('img');
+    
     if (cv.width > 0 && cv.height > 0) {
       try {
         img.src = cv.toDataURL('image/png');
         img.style.width = '100%';
         img.style.height = 'auto';
-        img.style.maxHeight = '220px';
+        img.style.maxHeight = '180px';
         img.style.objectFit = 'contain';
         img.style.display = 'block';
         img.style.margin = '0 auto';
-      } catch(e) { img.style.display = 'none'; }
+      } catch(e) {
+        img.style.display = 'none';
+      }
     } else {
       img.style.display = 'none';
     }
+
     parent.replaceChild(img, cv);
     canvasBackups.push({ canvas: cv, placeholder: img, parent: parent });
   });
 
-  // 2. Pasang styling khusus A3 Portrait (Kompak, Rapi, & Padat)
+  // 2. Terapkan CSS Pemadat Layout A3 Portrait (Kunci 1 Halaman Utuh)
   const printStyle = document.createElement('style');
-  printStyle.id = 'a3-portrait-report-style';
+  printStyle.id = 'a3-report-temp-style';
   printStyle.innerHTML = `
-    .a3-single-page-mode {
-      width: 1240px !important;
-      max-width: 1240px !important;
+    .a3-single-page-export {
+      width: 1100px !important;
+      max-width: 1100px !important;
       background: #ffffff !important;
-      padding: 16px !important;
+      padding: 10px 14px !important;
       box-sizing: border-box !important;
     }
-    /* Buka semua scrollbar tabel agar 24 cabang & 15 kolom tampil penuh */
-    .a3-single-page-mode .overflow-x-auto,
-    .a3-single-page-mode [class*="max-h-"] {
+    /* Rampingkan margin vertikal antar-seksi */
+    .a3-single-page-export .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+      margin-top: 6px !important;
+    }
+    /* Buka seluruh scrollbar agar 24 cabang tampil */
+    .a3-single-page-export .overflow-x-auto,
+    .a3-single-page-export [class*="max-h-"] {
       overflow: visible !important;
       max-height: none !important;
     }
-    .a3-single-page-mode table {
+    .a3-single-page-export table {
       width: 100% !important;
       table-layout: auto !important;
     }
-    .a3-single-page-mode th, 
-    .a3-single-page-mode td {
-      padding: 3.5px 5px !important;
-      font-size: 9px !important;
+    /* Padatkan tinggi baris tabel & kartu metrik */
+    .a3-single-page-export table th,
+    .a3-single-page-export table td {
+      padding: 2px 4px !important;
+      font-size: 8.5px !important;
       line-height: 1.15 !important;
     }
-    /* Sembunyikan elemen interaktif web yang tidak perlu ada di hardcopy cetak */
-    .a3-single-page-mode button,
-    .a3-single-page-mode input,
-    .a3-single-page-mode #searchBranchInput,
-    .a3-single-page-mode #btnFullscreenBranch,
-    .a3-single-page-mode [title*="Klik"],
-    .a3-single-page-mode span:contains("💡") {
+    .a3-single-page-export .p-5 {
+      padding: 8px 10px !important;
+    }
+    .a3-single-page-export .p-4 {
+      padding: 6px 8px !important;
+    }
+    .a3-single-page-export .mb-6,
+    .a3-single-page-export .mb-4,
+    .a3-single-page-export .mb-3 {
+      margin-bottom: 4px !important;
+    }
+    .a3-single-page-export .gap-6,
+    .a3-single-page-export .gap-4,
+    .a3-single-page-export .gap-3 {
+      gap: 6px !important;
+    }
+    .a3-single-page-export h2,
+    .a3-single-page-export h3 {
+      font-size: 11px !important;
+    }
+    /* Sembunyikan elemen web interaktif */
+    .a3-single-page-export button,
+    .a3-single-page-export input,
+    .a3-single-page-export #searchBranchInput,
+    .a3-single-page-export #btnFullscreenBranch {
       display: none !important;
     }
-    /* Header Resmi A3 Report */
-    .a3-portrait-header {
+    .a3-header-banner {
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      padding-bottom: 8px;
-      margin-bottom: 12px;
-      border-bottom: 3px solid #dc2626;
+      padding-bottom: 6px;
+      margin-bottom: 8px;
+      border-bottom: 2.5px solid #dc2626;
     }
   `;
   document.head.appendChild(printStyle);
 
-  // 3. Tambahkan Banner Header Resmi PDCA
+  // 3. Pasang Header Resmi A3 PDCA
   const sDate = document.getElementById('dashStartDate').value || '-';
   const eDate = document.getElementById('dashEndDate').value || '-';
   const cabang = sessionUser ? sessionUser.cabang : 'HEAD OFFICE';
 
   const headerDiv = document.createElement('div');
-  headerDiv.className = 'a3-portrait-header';
+  headerDiv.className = 'a3-header-banner';
   headerDiv.id = 'tempA3Header';
   headerDiv.innerHTML = `
     <div>
-      <h1 style="font-size: 20px; font-weight: 900; color: #111827; text-transform: uppercase; margin: 0; letter-spacing: -0.5px;">
+      <h1 style="font-size: 18px; font-weight: 900; color: #111827; text-transform: uppercase; margin: 0; letter-spacing: -0.5px;">
         A3 EXECUTIVE EVALUATION REPORT — GRADUAL LOYALTY SYSTEM
       </h1>
-      <p style="font-size: 10px; color: #6b7280; margin-top: 2px; font-weight: 600;">
-        Toyota Aftersales Retention Framework: Cohort Conversion, Workload S2, ARPU & Dealership Integrity
+      <p style="font-size: 9.5px; color: #6b7280; margin-top: 2px; font-weight: 600;">
+        Executive Performance Governance: Cohort Conversion, Workload S2, ARPU Realization & Integrity
       </p>
     </div>
     <div style="text-align: right;">
-      <p style="font-size: 14px; font-weight: 900; color: #dc2626; text-transform: uppercase; margin: 0;">
+      <p style="font-size: 13px; font-weight: 900; color: #dc2626; text-transform: uppercase; margin: 0;">
         ${cabang}
       </p>
-      <p style="font-size: 9.5px; color: #4b5563; margin-top: 2px;">
+      <p style="font-size: 9px; color: #4b5563; margin-top: 2px;">
         Periode: <b>${sDate}</b> s/d <b>${eDate}</b>
       </p>
     </div>
   `;
   element.insertBefore(headerDiv, element.firstChild);
-  element.classList.add('a3-single-page-mode');
+  element.classList.add('a3-single-page-export');
 
   const filename = `A3_Report_Loyalty_${cabang.replace(/\s+/g, '_')}_${sDate}_sd_${eDate}.pdf`;
 
-  // 4. Cleanup Helper
   const cleanup = () => {
-    element.classList.remove('a3-single-page-mode');
+    element.classList.remove('a3-single-page-export');
     const h = document.getElementById('tempA3Header');
     if (h) h.remove();
-    const s = document.getElementById('a3-portrait-report-style');
+    const s = document.getElementById('a3-report-temp-style');
     if (s) s.remove();
     canvasBackups.forEach(b => {
       if (b.placeholder.parentNode === b.parent) {
@@ -2930,53 +2956,42 @@
     });
   };
 
-  // 5. Render ke Canvas & Kunci ke Tepat 1 Halaman A3 Portrait via jsPDF
-  html2canvas(element, { 
-    scale: 2, 
-    useCORS: true, 
-    logging: false, 
-    scrollY: 0,
-    windowWidth: 1280
-  }).then(canvas => {
-    const imgData = canvas.toDataURL('image/jpeg', 0.98);
-    const pdfConstructor = window.jsPDF || (window.jspdf && window.jspdf.jsPDF);
-    
-    // Dimensi Kertas A3 Portrait: 297mm x 420mm
-    const pdf = new pdfConstructor('p', 'mm', 'a3');
-    const pageWidth = 297;
-    const pageHeight = 420;
-    const margin = 6;
-    const usableWidth = pageWidth - (margin * 2);   // 285 mm
-    const usableHeight = pageHeight - (margin * 2); // 408 mm
+  // 4. Ekspor via html2pdf dengan Format A3 Portrait
+  const opt = {
+    margin: [4, 4, 4, 4],
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { 
+      scale: 2,
+      useCORS: true, 
+      logging: false, 
+      scrollY: 0,
+      windowWidth: 1120
+    },
+    jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' },
+    pagebreak: { mode: 'legacy' } // Mencegah potongan otomatis ke halaman 2
+  };
 
-    // Hitung skala agar tepat mengisi 1 lembar tanpa pernah overflow ke halaman kedua
-    let renderWidth = usableWidth;
-    let renderHeight = (canvas.height * renderWidth) / canvas.width;
-
-    if (renderHeight > usableHeight) {
-      renderHeight = usableHeight;
-      renderWidth = (canvas.width * renderHeight) / canvas.height;
-    }
-
-    const posX = margin + (usableWidth - renderWidth) / 2;
-    const posY = margin;
-
-    pdf.addImage(imgData, 'JPEG', posX, posY, renderWidth, renderHeight);
-    pdf.save(filename);
-
-    cleanup();
-    Swal.fire({
-      icon: 'success',
-      title: 'A3 Report Siap!',
-      text: 'Dokumen A3 Portrait 1 halaman berhasil diunduh.',
-      timer: 2000,
-      showConfirmButton: false
+  try {
+    html2pdf().set(opt).from(element).save().then(() => {
+      cleanup();
+      Swal.fire({
+        icon: 'success',
+        title: 'A3 Report Siap!',
+        text: 'Laporan 1 halaman A3 Portrait berhasil diunduh.',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    }).catch((err) => {
+      console.error(err);
+      cleanup();
+      Swal.fire('Error', 'Gagal memproses dokumen PDF: ' + err.message, 'error');
     });
-  }).catch((err) => {
+  } catch (err) {
     console.error(err);
     cleanup();
-    Swal.fire('Error', 'Gagal memproses dokumen A3 PDF.', 'error');
-  });
+    Swal.fire('Error', 'Terjadi kesalahan sistem: ' + err.message, 'error');
+  }
 }
   </script>
 </body>
