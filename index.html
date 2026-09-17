@@ -2808,105 +2808,141 @@
   }
 
   Swal.fire({
-    title: 'Menyusun A3 Executive Report...',
-    text: 'Mengunci layout 1 lembar A3 Portrait presisi...',
+    title: 'Menyusun A3 Portrait (1 Lembar)...',
+    text: 'Mengompilasi seluruh modul analitik ke 1 lembar A3 presisi...',
     allowOutsideClick: false,
     didOpen: () => Swal.showLoading()
   });
 
-  // 1. Buat klon elemen off-screen agar render murni dari koordinat (0,0)
+  const prevScrollY = window.scrollY;
+  window.scrollTo(0, 0);
+
+  // 1. Klon elemen dashboard
   const clone = source.cloneNode(true);
-  clone.id = 'a3-print-clone';
-  
-  // 2. Salin gambar dari canvas grafik asli ke dalam klon
+  clone.id = 'a3-render-clone';
+
+  // 2. Salin grafik donat canvas asli ke tag <img> di dalam klon
   const originalCanvases = source.querySelectorAll('canvas');
   const cloneCanvases = clone.querySelectorAll('canvas');
   originalCanvases.forEach((cv, idx) => {
-    if (cloneCanvases[idx] && cv.width > 0 && cv.height > 0) {
+    if (cloneCanvases[idx]) {
       const img = document.createElement('img');
-      img.src = cv.toDataURL('image/png');
+      if (cv.width > 0 && cv.height > 0) {
+        try {
+          img.src = cv.toDataURL('image/png');
+        } catch(e) {}
+      }
       img.style.width = '100%';
-      img.style.maxHeight = '180px';
+      img.style.maxHeight = '140px';
       img.style.objectFit = 'contain';
+      img.style.display = 'block';
+      img.style.margin = '0 auto';
       cloneCanvases[idx].parentNode.replaceChild(img, cloneCanvases[idx]);
     }
   });
 
-  // 3. Tambahkan Banner Header A3 PDCA
+  // Pastikan segmen donat kendaraan yang aktif tampil di klon
+  const vSeg = clone.querySelector('#view-vehicle-segment');
+  if (vSeg) vSeg.classList.remove('hidden');
+  const vMod = clone.querySelector('#view-vehicle-model');
+  if (vMod) vMod.classList.add('hidden');
+
+  // 3. Tambahkan Kop Header Resmi A3 PDCA
   const sDate = document.getElementById('dashStartDate').value || '-';
   const eDate = document.getElementById('dashEndDate').value || '-';
   const cabang = sessionUser ? sessionUser.cabang : 'HEAD OFFICE';
 
   const headerDiv = document.createElement('div');
-  headerDiv.style.cssText = 'display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:8px;margin-bottom:10px;border-bottom:3px solid #dc2626;';
+  headerDiv.style.cssText = 'display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:6px;margin-bottom:8px;border-bottom:2.5px solid #dc2626;';
   headerDiv.innerHTML = `
     <div>
-      <h1 style="font-size:18px;font-weight:900;color:#111827;text-transform:uppercase;margin:0;">A3 EXECUTIVE EVALUATION REPORT — GRADUAL LOYALTY SYSTEM</h1>
-      <p style="font-size:10px;color:#6b7280;margin-top:2px;font-weight:600;">Toyota Aftersales Retention: Cohort Conversion, Workload S2, ARPU & Integrity</p>
+      <h1 style="font-size:18px;font-weight:900;color:#111827;text-transform:uppercase;margin:0;letter-spacing:-0.5px;">
+        A3 EXECUTIVE EVALUATION REPORT — GRADUAL LOYALTY SYSTEM
+      </h1>
+      <p style="font-size:9.5px;color:#6b7280;margin-top:2px;font-weight:600;">
+        Toyota Aftersales Retention Framework: Cohort Conversion, Workload S2, ARPU & Integrity Oversight
+      </p>
     </div>
     <div style="text-align:right;">
-      <p style="font-size:14px;font-weight:900;color:#dc2626;margin:0;">${cabang}</p>
-      <p style="font-size:9.5px;color:#4b5563;margin-top:2px;">Periode: <b>${sDate}</b> s/d <b>${eDate}</b></p>
+      <p style="font-size:14px;font-weight:900;color:#dc2626;text-transform:uppercase;margin:0;">
+        ${cabang}
+      </p>
+      <p style="font-size:9px;color:#4b5563;margin-top:2px;">
+        Periode: <b>${sDate}</b> s/d <b>${eDate}</b>
+      </p>
     </div>
   `;
   clone.insertBefore(headerDiv, clone.firstChild);
 
-  // 4. Atur styling padat agar muat 1 lembar A3 Portrait tanpa terpotong
+  // 4. Tempatkan klon di koordinat (0,0) di bawah overlay SweetAlert agar terbaca utuh
   clone.style.cssText = `
-    position: fixed;
+    position: absolute;
     top: 0;
-    left: -9999px;
-    width: 1120px !important;
+    left: 0;
+    width: 1100px !important;
     background: #ffffff !important;
-    padding: 16px !important;
+    padding: 12px 14px !important;
     box-sizing: border-box !important;
-    z-index: -1000;
+    z-index: 9999;
   `;
 
-  // Bersihkan tombol interaktif di dalam klon
+  // 5. Pemadatan tata letak agar muat 1 lembar A3 Portrait
   clone.querySelectorAll('button, input, #searchBranchInput, #btnFullscreenBranch').forEach(el => el.remove());
   clone.querySelectorAll('.overflow-x-auto, [class*="max-h-"]').forEach(el => {
     el.style.overflow = 'visible';
     el.style.maxHeight = 'none';
   });
+  clone.querySelectorAll('.space-y-6 > *').forEach(el => el.style.marginTop = '5px');
+  clone.querySelectorAll('.p-5').forEach(el => el.style.padding = '8px 10px');
+  clone.querySelectorAll('.p-4').forEach(el => el.style.padding = '6px 8px');
+  clone.querySelectorAll('h2, h3').forEach(el => el.style.fontSize = '11px');
+  clone.querySelectorAll('.text-3xl').forEach(el => el.style.fontSize = '18px');
+  clone.querySelectorAll('.text-2xl').forEach(el => el.style.fontSize = '15px');
   clone.querySelectorAll('th, td').forEach(cell => {
-    cell.style.padding = '2.5px 4px';
-    cell.style.fontSize = '8.5px';
-    cell.style.lineHeight = '1.15';
+    cell.style.padding = '2px 3.5px';
+    cell.style.fontSize = '8px';
+    cell.style.lineHeight = '1.12';
   });
-  clone.querySelectorAll('.space-y-6 > *').forEach(el => el.style.marginTop = '6px');
 
   document.body.appendChild(clone);
 
   const filename = `A3_Report_Loyalty_${cabang.replace(/\s+/g, '_')}_${sDate}_sd_${eDate}.pdf`;
 
+  const cleanup = () => {
+    clone.remove();
+    window.scrollTo(0, prevScrollY);
+  };
+
   const opt = {
-    margin: [6, 6, 6, 6],
+    margin: [4, 4, 4, 4],
     filename: filename,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { 
       scale: 2, 
       useCORS: true, 
       logging: false, 
-      scrollY: 0,
       scrollX: 0,
-      windowWidth: 1160
+      scrollY: 0,
+      x: 0,
+      y: 0,
+      width: 1100,
+      windowWidth: 1120
     },
     jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' }
   };
 
   html2pdf().set(opt).from(clone).save().then(() => {
-    clone.remove();
+    cleanup();
     Swal.fire({
       icon: 'success',
       title: 'A3 Report Selesai!',
-      text: 'Laporan 1 halaman A3 Portrait berhasil diunduh secara presisi.',
+      text: 'Laporan 1 halaman A3 Portrait berhasil diunduh dengan isi lengkap.',
       timer: 2000,
       showConfirmButton: false
     });
   }).catch(err => {
     console.error(err);
-    clone.remove();
+    cleanup();
     Swal.fire('Error', 'Gagal memproses dokumen A3 PDF.', 'error');
   });
 }
