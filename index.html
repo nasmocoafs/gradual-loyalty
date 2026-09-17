@@ -2802,47 +2802,133 @@
     }
     
     function downloadDashboardPDF() {
-      const element = document.getElementById('dashContent');
-      if (!element || element.classList.contains('hidden')) {
-        return Swal.fire('Perhatian', 'Buka dan tampilkan data dashboard terlebih dahulu.', 'warning');
-      }
+  const element = document.getElementById('dashContent');
+  if (!element || element.classList.contains('hidden')) {
+    return Swal.fire('Perhatian', 'Buka dan tampilkan data dashboard terlebih dahulu.', 'warning');
+  }
 
-      Swal.fire({
-        title: 'Menyiapkan Hardcopy A4...',
-        text: 'Menyusun layout dokumen & merender grafik...',
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
-      });
+  Swal.fire({
+    title: 'Menyusun A3 Executive Report...',
+    text: 'Menyesuaikan layout kertas A3 Landscape & merender seluruh metrik...',
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
 
-      const sDate = document.getElementById('dashStartDate').value || 'Start';
-      const eDate = document.getElementById('dashEndDate').value || 'End';
-      const filename = `Executive_Analytics_Report_${sessionUser ? sessionUser.cabang : 'HO'}_${sDate}_sd_${eDate}.pdf`;
-
-      const opt = {
-        margin: [10, 10, 10, 10],
-        filename: filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { 
-          mode: ['avoid-all', 'css', 'legacy'],
-          avoid: ['.bg-white', '.rounded-2xl', '.rounded-xl', 'tr', 'canvas']
-        }
-      };
-
-      html2pdf().set(opt).from(element).save().then(() => {
-        Swal.fire({
-          icon: 'success',
-          title: 'Berhasil Diunduh!',
-          text: 'File PDF A4 siap digunakan untuk review & PDCA.',
-          timer: 2000,
-          showConfirmButton: false
-        });
-      }).catch((err) => {
-        console.error(err);
-        Swal.fire('Error', 'Gagal memproses dokumen PDF.', 'error');
-      });
+  // 1. Injeksi styling khusus A3 agar tabel melebar utuh dan elemen web disembunyikan
+  const printStyle = document.createElement('style');
+  printStyle.id = 'a3-report-temp-style';
+  printStyle.innerHTML = `
+    .a3-export-mode {
+      width: 1560px !important;
+      max-width: 1560px !important;
+      background: #ffffff !important;
+      padding: 24px !important;
+      color: #111827 !important;
     }
+    /* Buka semua scrollbar tabel agar seluruh 15 kolom dan 24 baris tampil utuh */
+    .a3-export-mode .overflow-x-auto,
+    .a3-export-mode [class*="max-h-"] {
+      overflow: visible !important;
+      max-height: none !important;
+    }
+    .a3-export-mode table {
+      width: 100% !important;
+      table-layout: auto !important;
+    }
+    /* Sembunyikan elemen interaktif web yang tidak perlu ada di kertas print */
+    .a3-export-mode button,
+    .a3-export-mode input,
+    .a3-export-mode #searchBranchInput,
+    .a3-export-mode #btnFullscreenBranch {
+      display: none !important;
+    }
+    /* Header Report Resmi PDCA */
+    .a3-header-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+      border-bottom: 3px solid #dc2626;
+    }
+  `;
+  document.head.appendChild(printStyle);
+
+  // 2. Pasang Banner Header PDCA di atas dasbor
+  const sDate = document.getElementById('dashStartDate').value || '-';
+  const eDate = document.getElementById('dashEndDate').value || '-';
+  const cabang = sessionUser ? sessionUser.cabang : 'HEAD OFFICE';
+
+  const headerDiv = document.createElement('div');
+  headerDiv.className = 'a3-header-banner';
+  headerDiv.id = 'tempA3Header';
+  headerDiv.innerHTML = `
+    <div>
+      <h1 style="font-size: 24px; font-weight: 900; color: #111827; text-transform: uppercase; margin: 0; letter-spacing: -0.5px;">
+        A3 EXECUTIVE EVALUATION REPORT — GRADUAL LOYALTY SYSTEM
+      </h1>
+      <p style="font-size: 12px; color: #6b7280; margin-top: 4px; font-weight: 600;">
+        Program Performance Governance, Retention Funnel, Workload S2 & Invoicing Realization
+      </p>
+    </div>
+    <div style="text-align: right;">
+      <p style="font-size: 15px; font-weight: 900; color: #dc2626; text-transform: uppercase; margin: 0;">
+        ${cabang}
+      </p>
+      <p style="font-size: 11px; color: #4b5563; margin-top: 3px;">
+        Periode Analisis: <b>${sDate}</b> s/d <b>${eDate}</b>
+      </p>
+    </div>
+  `;
+  element.insertBefore(headerDiv, element.firstChild);
+  element.classList.add('a3-export-mode');
+
+  const filename = `A3_Executive_Report_Loyalty_${cabang.replace(/\s+/g, '_')}_${sDate}_sd_${eDate}.pdf`;
+
+  // 3. Konfigurasi A3 Landscape
+  const opt = {
+    margin: [8, 8, 8, 8],
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { 
+      scale: 2,
+      useCORS: true, 
+      logging: false, 
+      scrollY: 0,
+      windowWidth: 1600 // Mengunci resolusi desktop lebar
+    },
+    jsPDF: { unit: 'mm', format: 'a3', orientation: 'landscape' },
+    pagebreak: { 
+      mode: ['avoid-all', 'css', 'legacy'],
+      avoid: ['.bg-gradient-to-r', '.bg-white', 'tr', 'canvas', '.a3-header-banner']
+    }
+  };
+
+  html2pdf().set(opt).from(element).save().then(() => {
+    // Kembalikan tampilan web seperti semula
+    element.classList.remove('a3-export-mode');
+    const h = document.getElementById('tempA3Header');
+    if (h) h.remove();
+    const s = document.getElementById('a3-report-temp-style');
+    if (s) s.remove();
+
+    Swal.fire({
+      icon: 'success',
+      title: 'A3 Report Berhasil Diterbitkan!',
+      text: 'Dokumen hardcopy A3 siap digunakan untuk PDCA & review manajemen.',
+      timer: 2000,
+      showConfirmButton: false
+    });
+  }).catch((err) => {
+    console.error(err);
+    element.classList.remove('a3-export-mode');
+    const h = document.getElementById('tempA3Header');
+    if (h) h.remove();
+    const s = document.getElementById('a3-report-temp-style');
+    if (s) s.remove();
+    Swal.fire('Error', 'Gagal memproses dokumen A3 PDF.', 'error');
+  });
+}
   </script>
 </body>
 </html>
