@@ -2428,175 +2428,206 @@
       XLSX.utils.book_append_sheet(wb, ws, "Redemptions");
       XLSX.writeFile(wb, "Loyalty_Redemptions.xlsx");
     }
+    
+// 🔴 LOAD ANALYTICS DASHBOARD (DENGAN CACHE & DETEKSI GAGAL)
+    function loadDashboard(forceRefresh = false) {
+      var sDate = document.getElementById('dashStartDate').value;
+      var eDate = document.getElementById('dashEndDate').value;
+      var userCabang = sessionUser ? sessionUser.cabang : 'HO';
+      var cacheKey = 'gls_dash_cache_' + userCabang + '_' + sDate + '_' + eDate;
 
-    // 🔴 LOAD ANALYTICS DASHBOARD
-    function loadDashboard() {
+      // 1. Cek apakah data sudah pernah tersimpan di browser
+      if (!forceRefresh) {
+        var cachedData = sessionStorage.getItem(cacheKey);
+        if (cachedData) {
+          try {
+            var res = JSON.parse(cachedData);
+            renderDashboardData(res);
+            return;
+          } catch(e) {}
+        }
+      }
+
       document.getElementById('dashContent').classList.add('hidden'); 
       document.getElementById('dashLoading').classList.remove('hidden'); 
       document.getElementById('earlyWarning').classList.add('hidden');
-      
-      var sDate = document.getElementById('dashStartDate').value, eDate = document.getElementById('dashEndDate').value;
 
-      fetchAPI('getDashboardData', { startDate: sDate, endDate: eDate, cabang: sessionUser.cabang }).then(function(res) {
+      fetchAPI('getDashboardData', { startDate: sDate, endDate: eDate, cabang: userCabang }).then(function(res) {
         document.getElementById('dashLoading').classList.add('hidden'); 
-        document.getElementById('dashContent').classList.remove('hidden');
-        
-        if (res.success) {
-          globalAllTicketDetails = res.allTicketDetails || [];
-          globalRedeemedDetails = res.redeemedDetails || [];
-          dashIsJanJun = (res.isJanJun === true);
 
-          var badgeS2 = document.getElementById('leadsInS2Badge');
-          if (badgeS2) {
-            if (dashIsJanJun) {
-              badgeS2.classList.remove('hidden');
-              setText('kpiLeadsInS2', formatNum(res.totalInS2 || 0) + " (" + (res.inS2Ratio || "0.0") + "%)");
-            } else {
-              badgeS2.classList.add('hidden');
+        if (res && res.success) {
+          sessionStorage.setItem(cacheKey, JSON.stringify(res));
+          renderDashboardData(res);
+        } else {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Server Sedang Sibuk',
+            text: 'Data analitik membutuhkan waktu komputasi lebih lama. Silakan coba muat ulang.',
+            confirmButtonText: 'Coba Muat Ulang',
+            showCancelButton: true,
+            cancelButtonText: 'Batal'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              loadDashboard(true);
             }
-          }
-
-          var totalLeads = res.leads || 0;
-          var totalIssued = res.ticketsIssued || res.targetConverted || 0;
-          var totalRedeemed = res.redeemedUnits || res.targetRedeemed || 0;
-
-          setText('kpiLeads', formatNum(totalLeads)); 
-          setText('kpiLeadsS8', formatNum(res.leadsS8 || 0));
-          setText('kpiLeadsS9', formatNum(res.leadsS9 || 0));
-
-          setText('kpiTargetConverted', formatNum(totalIssued));
-          setText('kpiIssuedS8', formatNum(res.ticketsIssuedS8 || 0));
-          setText('kpiIssuedS9', formatNum(res.ticketsIssuedS9 || 0));
-
-          setText('kpiTargetRedeemed', formatNum(totalRedeemed));
-          setText('kpiRedeemedS8', formatNum(res.redeemedUnitsS8 || 0));
-          setText('kpiRedeemedS9', formatNum(res.redeemedUnitsS9 || 0));
-
-          setText('kpiTargetConvRate', (res.targetConvRate || 0) + '%');
-          setText('kpiConvS8', (res.convRateS8 || 0) + '%');
-          setText('kpiConvS9', (res.convRateS9 || 0) + '%');
-          setText('kpiTargetLockInRate', (res.targetLockInRate || 0) + '%');
-
-          renderS2MonthlyBoard(res.s2MonthlyLeads || {});
-
-          setText('fnLeads', formatNum(totalLeads));
-          setText('fnLeadsS8', formatNum(res.leadsS8 || 0));
-          setText('fnLeadsS9', formatNum(res.leadsS9 || 0));
-
-          setText('fnLockInRate', `Lock-in Rate: ${res.targetLockInRate || 0}%`);
-          setText('fnIssuedPct', `${res.targetLockInRate || 0}%`);
-          setText('fnIssued', formatNum(totalIssued));
-          setText('fnIssuedS8', formatNum(res.ticketsIssuedS8 || 0));
-          setText('fnIssuedS9', formatNum(res.ticketsIssuedS9 || 0));
-
-          var relRate = totalIssued > 0 ? ((totalRedeemed / totalIssued) * 100).toFixed(1) : "0.0";
-          setText('fnRealizationRate', `Realization: ${relRate}%`);
-          setText('fnRedeemedPct', `${res.targetConvRate || 0}% of Leads`);
-          setText('fnRedeemed', formatNum(totalRedeemed));
-          setText('fnRedeemedS8', formatNum(res.redeemedUnitsS8 || 0));
-          setText('fnRedeemedS9', formatNum(res.redeemedUnitsS9 || 0));
-
-          var actualRev = res.totalActualRevenue || res.targetRevenue || 0;
-          var revS8 = res.revenueS8 || 0;
-          var revS9 = res.revenueS9 || 0;
-          var redS8 = res.redeemedUnitsS8 || 0;
-          var redS9 = res.redeemedUnitsS9 || 0;
-
-          setText('kpiActual', formatRp(actualRev));
-          setText('kpiRevS8', formatRp(revS8));
-          setText('kpiRevS9', formatRp(revS9));
-          setText('kpiSaved', formatRp(res.savedEstimasi || 0));
-
-          var arpuTotal = res.arpuTotal !== undefined ? res.arpuTotal : (totalRedeemed > 0 ? Math.round(actualRev / totalRedeemed) : 0);
-          var arpuS8 = res.arpuS8 !== undefined ? res.arpuS8 : (redS8 > 0 ? Math.round(revS8 / redS8) : 0);
-          var arpuS9 = res.arpuS9 !== undefined ? res.arpuS9 : (redS9 > 0 ? Math.round(revS9 / redS9) : 0);
-
-          var idealCooTotal = res.idealCooTotal || 0;
-          var idealCooS8 = res.idealCooS8 || 0;
-          var idealCooS9 = res.idealCooS9 || 0;
-
-          var cooRatioTotal = res.cooRatioTotal !== undefined ? res.cooRatioTotal : (idealCooTotal > 0 ? ((arpuTotal / idealCooTotal) * 100).toFixed(1) : "0.0");
-          var cooRatioS8 = res.cooRatioS8 !== undefined ? res.cooRatioS8 : (idealCooS8 > 0 ? ((arpuS8 / idealCooS8) * 100).toFixed(1) : "0.0");
-          var cooRatioS9 = res.cooRatioS9 !== undefined ? res.cooRatioS9 : (idealCooS9 > 0 ? ((arpuS9 / idealCooS9) * 100).toFixed(1) : "0.0");
-
-          setText('kpiArpuTotal', formatRp(arpuTotal));
-          setText('kpiIdealCooTotal', formatRp(idealCooTotal));
-          setText('kpiCooRatioTotalBadge', `${cooRatioTotal}% vs COO`);
-
-          setText('kpiArpuS8', formatRp(arpuS8));
-          setText('kpiIdealCooS8', formatRp(idealCooS8));
-          setText('kpiCooRatioS8', `${cooRatioS8}%`);
-
-          setText('kpiArpuS9', formatRp(arpuS9));
-          setText('kpiIdealCooS9', formatRp(idealCooS9));
-          setText('kpiCooRatioS9', `${cooRatioS9}%`);
-
-          var outTotal = res.potentialRevenueOutstanding !== undefined ? res.potentialRevenueOutstanding : (res.lost || 0);
-          var outS8 = res.potentialRevenueOutstandingS8 !== undefined ? res.potentialRevenueOutstandingS8 : Math.max(0, (res.leadsS8 || 0) - redS8) * idealCooS8;
-          var outS9 = res.potentialRevenueOutstandingS9 !== undefined ? res.potentialRevenueOutstandingS9 : Math.max(0, (res.leadsS9 || 0) - redS9) * idealCooS9;
-
-          setText('kpiLost', formatRp(outTotal));
-          setText('kpiOutS8', formatRp(outS8));
-          setText('kpiOutS9', formatRp(outS9));
-          
-          var today = new Date(); 
-          if (today.getDate() >= 15 && parseFloat(res.targetConvRate) < 20 && totalLeads > 0) { 
-            document.getElementById('earlyWarning').classList.remove('hidden'); 
-          }
-          
-          rawLeaderboardData = res.leaderboard || [];
-          renderLeaderboard();
-
-          var hoSection = document.getElementById('hoBreakdownSection');
-          if (sessionUser && (sessionUser.cabang.toUpperCase() === 'HEAD OFFICE' || sessionUser.cabang.toUpperCase() === 'HEADOFFICE')) {
-            hoSection.classList.remove('hidden'); 
-            hoSection.classList.add('flex');
-            rawBranchBreakdownData = res.branchBreakdown || [];
-            renderBranchBreakdown();
-          } else if (hoSection) {
-            hoSection.classList.add('hidden'); 
-            hoSection.classList.remove('flex');
-          }
-
-          var chartCanvas = document.getElementById('vehicleSegmentChart');
-          if (chartCanvas) {
-            if (vehicleSegmentChartInstance) vehicleSegmentChartInstance.destroy();
-            var vSeg = res.vehicleSegments || {};
-            var vSegLabels = ['New Entry', 'Economy', 'Standard', 'Medium Luxury', 'Luxury', 'Commercial'];
-            var vSegData = vSegLabels.map(k => vSeg[k] || 0);
-            var totalVSeg = vSegData.reduce((a,b) => a+b, 0);
-
-            if (totalVSeg > 0) {
-              vehicleSegmentChartInstance = new Chart(chartCanvas.getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                  labels: vSegLabels,
-                  datasets: [{
-                    data: vSegData,
-                    backgroundColor: ['#06b6d4', '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#64748b']
-                  }]
-                },
-                options: {
-                  responsive: true, 
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: { position: 'right', labels: { boxWidth: 11, font: { size: 9 } } },
-                    datalabels: { color: '#ffffff', font: { weight: 'bold', size: 11 }, formatter: v => v > 0 ? (Math.round((v/totalVSeg)*100) + '%') : '' }
-                  }
-                }
-              });
-            } else {
-              vehicleSegmentChartInstance = new Chart(chartCanvas.getContext('2d'), {
-                type: 'doughnut', 
-                data: { labels: ['No Segment Data'], datasets: [{ data: [1], backgroundColor: ['#e2e8f0'] }] },
-                options: { plugins: { legend: { display: false }, datalabels: { display: false } }, cutout: '65%' }
-              });
-            }
-          }
-
-          renderModelMiniTable(res.segments || {}, res.redeemedDetails || []);
+          });
         }
+      }).catch(function(err) {
+        document.getElementById('dashLoading').classList.add('hidden');
+        Swal.fire('Koneksi Terputus', 'Gagal memproses data analitik dari server.', 'error');
       });
+    }
+
+    // Pisahkan logika render agar instan dipanggil dari cache
+    function renderDashboardData(res) {
+      document.getElementById('dashContent').classList.remove('hidden');
+      globalAllTicketDetails = res.allTicketDetails || [];
+      globalRedeemedDetails = res.redeemedDetails || [];
+      dashIsJanJun = (res.isJanJun === true);
+
+      var badgeS2 = document.getElementById('leadsInS2Badge');
+      if (badgeS2) {
+        if (dashIsJanJun) {
+          badgeS2.classList.remove('hidden');
+          setText('kpiLeadsInS2', formatNum(res.totalInS2 || 0) + " (" + (res.inS2Ratio || "0.0") + "%)");
+        } else {
+          badgeS2.classList.add('hidden');
+        }
+      }
+
+      var totalLeads = res.leads || 0;
+      var totalIssued = res.ticketsIssued || res.targetConverted || 0;
+      var totalRedeemed = res.redeemedUnits || res.targetRedeemed || 0;
+
+      setText('kpiLeads', formatNum(totalLeads)); 
+      setText('kpiLeadsS8', formatNum(res.leadsS8 || 0));
+      setText('kpiLeadsS9', formatNum(res.leadsS9 || 0));
+
+      setText('kpiTargetConverted', formatNum(totalIssued));
+      setText('kpiIssuedS8', formatNum(res.ticketsIssuedS8 || 0));
+      setText('kpiIssuedS9', formatNum(res.ticketsIssuedS9 || 0));
+
+      setText('kpiTargetRedeemed', formatNum(totalRedeemed));
+      setText('kpiRedeemedS8', formatNum(res.redeemedUnitsS8 || 0));
+      setText('kpiRedeemedS9', formatNum(res.redeemedUnitsS9 || 0));
+
+      setText('kpiTargetConvRate', (res.targetConvRate || 0) + '%');
+      setText('kpiConvS8', (res.convRateS8 || 0) + '%');
+      setText('kpiConvS9', (res.convRateS9 || 0) + '%');
+      setText('kpiTargetLockInRate', (res.targetLockInRate || 0) + '%');
+
+      renderS2MonthlyBoard(res.s2MonthlyLeads || {});
+
+      setText('fnLeads', formatNum(totalLeads));
+      setText('fnLeadsS8', formatNum(res.leadsS8 || 0));
+      setText('fnLeadsS9', formatNum(res.leadsS9 || 0));
+
+      setText('fnLockInRate', `Lock-in Rate: ${res.targetLockInRate || 0}%`);
+      setText('fnIssuedPct', `${res.targetLockInRate || 0}%`);
+      setText('fnIssued', formatNum(totalIssued));
+      setText('fnIssuedS8', formatNum(res.ticketsIssuedS8 || 0));
+      setText('fnIssuedS9', formatNum(res.ticketsIssuedS9 || 0));
+
+      var relRate = totalIssued > 0 ? ((totalRedeemed / totalIssued) * 100).toFixed(1) : "0.0";
+      setText('fnRealizationRate', `Realization: ${relRate}%`);
+      setText('fnRedeemedPct', `${res.targetConvRate || 0}% of Leads`);
+      setText('fnRedeemed', formatNum(totalRedeemed));
+      setText('fnRedeemedS8', formatNum(res.redeemedUnitsS8 || 0));
+      setText('fnRedeemedS9', formatNum(res.redeemedUnitsS9 || 0));
+
+      var actualRev = res.totalActualRevenue || res.targetRevenue || 0;
+      var revS8 = res.revenueS8 || 0;
+      var revS9 = res.revenueS9 || 0;
+      var redS8 = res.redeemedUnitsS8 || 0;
+      var redS9 = res.redeemedUnitsS9 || 0;
+
+      setText('kpiActual', formatRp(actualRev));
+      setText('kpiRevS8', formatRp(revS8));
+      setText('kpiRevS9', formatRp(revS9));
+      setText('kpiSaved', formatRp(res.savedEstimasi || 0));
+
+      var arpuTotal = res.arpuTotal !== undefined ? res.arpuTotal : (totalRedeemed > 0 ? Math.round(actualRev / totalRedeemed) : 0);
+      var arpuS8 = res.arpuS8 !== undefined ? res.arpuS8 : (redS8 > 0 ? Math.round(revS8 / redS8) : 0);
+      var arpuS9 = res.arpuS9 !== undefined ? res.arpuS9 : (redS9 > 0 ? Math.round(revS9 / redS9) : 0);
+
+      var idealCooTotal = res.idealCooTotal || 0;
+      var idealCooS8 = res.idealCooS8 || 0;
+      var idealCooS9 = res.idealCooS9 || 0;
+
+      var cooRatioTotal = res.cooRatioTotal !== undefined ? res.cooRatioTotal : (idealCooTotal > 0 ? ((arpuTotal / idealCooTotal) * 100).toFixed(1) : "0.0");
+      var cooRatioS8 = res.cooRatioS8 !== undefined ? res.cooRatioS8 : (idealCooS8 > 0 ? ((arpuS8 / idealCooS8) * 100).toFixed(1) : "0.0");
+      var cooRatioS9 = res.cooRatioS9 !== undefined ? res.cooRatioS9 : (idealCooS9 > 0 ? ((arpuS9 / idealCooS9) * 100).toFixed(1) : "0.0");
+
+      setText('kpiArpuTotal', formatRp(arpuTotal));
+      setText('kpiIdealCooTotal', formatRp(idealCooTotal));
+      setText('kpiCooRatioTotalBadge', `${cooRatioTotal}% vs COO`);
+
+      setText('kpiArpuS8', formatRp(arpuS8));
+      setText('kpiIdealCooS8', formatRp(idealCooS8));
+      setText('kpiCooRatioS8', `${cooRatioS8}%`);
+
+      setText('kpiArpuS9', formatRp(arpuS9));
+      setText('kpiIdealCooS9', formatRp(idealCooS9));
+      setText('kpiCooRatioS9', `${cooRatioS9}%`);
+
+      var outTotal = res.potentialRevenueOutstanding !== undefined ? res.potentialRevenueOutstanding : (res.lost || 0);
+      var outS8 = res.potentialRevenueOutstandingS8 !== undefined ? res.potentialRevenueOutstandingS8 : Math.max(0, (res.leadsS8 || 0) - redS8) * idealCooS8;
+      var outS9 = res.potentialRevenueOutstandingS9 !== undefined ? res.potentialRevenueOutstandingS9 : Math.max(0, (res.leadsS9 || 0) - redS9) * idealCooS9;
+
+      setText('kpiLost', formatRp(outTotal));
+      setText('kpiOutS8', formatRp(outS8));
+      setText('kpiOutS9', formatRp(outS9));
+      
+      var today = new Date(); 
+      if (today.getDate() >= 15 && parseFloat(res.targetConvRate) < 20 && totalLeads > 0) { 
+        document.getElementById('earlyWarning').classList.remove('hidden'); 
+      }
+      
+      rawLeaderboardData = res.leaderboard || [];
+      renderLeaderboard();
+
+      var hoSection = document.getElementById('hoBreakdownSection');
+      if (sessionUser && (sessionUser.cabang.toUpperCase() === 'HEAD OFFICE' || sessionUser.cabang.toUpperCase() === 'HEADOFFICE')) {
+        hoSection.classList.remove('hidden'); 
+        hoSection.classList.add('flex');
+        rawBranchBreakdownData = res.branchBreakdown || [];
+        renderBranchBreakdown();
+      } else if (hoSection) {
+        hoSection.classList.add('hidden'); 
+        hoSection.classList.remove('flex');
+      }
+
+      var chartCanvas = document.getElementById('vehicleSegmentChart');
+      if (chartCanvas) {
+        if (vehicleSegmentChartInstance) vehicleSegmentChartInstance.destroy();
+        var vSeg = res.vehicleSegments || {};
+        var vSegLabels = ['New Entry', 'Economy', 'Standard', 'Medium Luxury', 'Luxury', 'Commercial'];
+        var vSegData = vSegLabels.map(k => vSeg[k] || 0);
+        var totalVSeg = vSegData.reduce((a,b) => a+b, 0);
+
+        if (totalVSeg > 0) {
+          vehicleSegmentChartInstance = new Chart(chartCanvas.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+              labels: vSegLabels,
+              datasets: [{
+                data: vSegData,
+                backgroundColor: ['#06b6d4', '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#64748b']
+              }]
+            },
+            options: {
+              responsive: true, 
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { position: 'right', labels: { boxWidth: 11, font: { size: 9 } } },
+                datalabels: { color: '#ffffff', font: { weight: 'bold', size: 11 }, formatter: v => v > 0 ? (Math.round((v/totalVSeg)*100) + '%') : '' }
+              }
+            }
+          });
+        }
+      }
+
+      renderModelMiniTable(res.segments || {}, res.redeemedDetails || []);
     }
     // ========================================================
     // SCRIPT KHUSUS: NIS PROGRAM GOVERNANCE & INTEGRITY (3-LEVEL)
