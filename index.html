@@ -207,6 +207,57 @@
       padding: 1px 4px !important;
       font-size: 8.5px !important;
     }
+    body.audit-branch-fs-mode aside,
+    body.audit-branch-fs-mode header,
+    body.audit-branch-fs-mode nav {
+      display: none !important;
+    }
+    body.audit-branch-fs-mode main {
+      padding: 0 !important;
+      margin: 0 !important;
+      overflow: hidden !important;
+      position: static !important;
+      z-index: 99999 !important;
+    }
+    body.audit-branch-fs-mode #auditBranchSection {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      z-index: 999999 !important;
+      border-radius: 0 !important;
+      margin: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      background-color: #ffffff !important;
+    }
+    body.audit-branch-fs-mode #auditBranchSection > div:last-child {
+      max-height: none !important;
+      flex: 1 1 0% !important;
+      overflow: auto !important;
+    }
+    body.audit-branch-fs-mode #auditBranchSection .p-3\.5 {
+      padding: 6px 14px !important;
+    }
+    body.audit-branch-fs-mode #auditBranchSection table th {
+      padding: 3px 4px !important;
+      font-size: 8.5px !important;
+      line-height: 1.1 !important;
+    }
+    body.audit-branch-fs-mode #auditBranchSection table td {
+      padding: 2.5px 4px !important;
+      font-size: 9.5px !important;
+      line-height: 1.15 !important;
+    }
+    body.audit-branch-fs-mode #auditBranchSection table tfoot td {
+      padding: 3px 4px !important;
+      font-size: 9.5px !important;
+    }
   </style>
 </head>
 <body class="flex flex-col md:flex-row h-screen overflow-hidden text-gray-800 relative">
@@ -986,7 +1037,7 @@
           </div>
 
           <!-- 🔴 TINGKAT 2: TABEL BREAKDOWN MASING-MASING CABANG ATAS CROSSCHECK NIS PROGRAM -->
-          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div id="auditBranchSection" class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col transition-all duration-300">
             <div class="bg-gray-900 p-3.5 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5">
               <div class="flex items-center gap-2">
                 <span class="text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2">
@@ -994,9 +1045,14 @@
                 </span>
                 <span id="auditBranchCountBadge" class="bg-gray-800 text-yellow-400 text-[10px] px-2 py-0.5 rounded-full font-bold border border-gray-700">0 Branches</span>
               </div>
-              <div class="relative w-full sm:w-60">
-                <input type="text" id="searchAuditBranchInput" oninput="filterAuditBranchTable(this.value)" placeholder="Cari cabang..." class="w-full pl-8 pr-3 py-1 bg-gray-800 border border-gray-700 rounded-lg text-xs text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 auto-upper">
-                <svg class="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              <div class="flex items-center gap-2 w-full sm:w-auto">
+                <div class="relative w-full sm:w-60">
+                  <input type="text" id="searchAuditBranchInput" oninput="filterAuditBranchTable(this.value)" placeholder="Cari cabang..." class="w-full pl-8 pr-3 py-1 bg-gray-800 border border-gray-700 rounded-lg text-xs text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 auto-upper">
+                  <svg class="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <button type="button" onclick="toggleAuditBranchFullscreen()" id="btnFullscreenAuditBranch" class="bg-gray-800 hover:bg-gray-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-gray-700 flex items-center gap-1.5 shadow transition shrink-0">
+                  <span id="fsAuditIcon">⛶</span> <span id="fsAuditText">Fullscreen</span>
+                </button>
               </div>
             </div>
             <div class="p-0 overflow-x-auto max-h-[45vh]">
@@ -1272,6 +1328,39 @@
         if (icon) icon.innerText = '⛶';
         if (text) text.innerText = 'Fullscreen';
         isBranchFullscreen = false;
+      }
+    }
+    var isAuditBranchFullscreen = false;
+    function toggleAuditBranchFullscreen() {
+      var section = document.getElementById('auditBranchSection');
+      var icon = document.getElementById('fsAuditIcon');
+      var text = document.getElementById('fsAuditText');
+      var aside = document.querySelector('aside');
+      var header = document.querySelector('header');
+      var main = document.querySelector('main');
+
+      if (!isAuditBranchFullscreen) {
+        if (aside) aside.style.setProperty('display', 'none', 'important');
+        if (header) header.style.setProperty('display', 'none', 'important');
+        if (main) {
+          main.style.setProperty('padding', '0', 'important');
+          main.style.setProperty('z-index', '99999', 'important');
+        }
+        document.body.classList.add('audit-branch-fs-mode');
+        if (icon) icon.innerText = '✕';
+        if (text) text.innerText = 'Exit Fullscreen';
+        isAuditBranchFullscreen = true;
+      } else {
+        if (aside) aside.style.removeProperty('display');
+        if (header) header.style.removeProperty('display');
+        if (main) {
+          main.style.removeProperty('padding');
+          main.style.removeProperty('z-index');
+        }
+        document.body.classList.remove('audit-branch-fs-mode');
+        if (icon) icon.innerText = '⛶';
+        if (text) text.innerText = 'Fullscreen';
+        isAuditBranchFullscreen = false;
       }
     }
 
