@@ -217,7 +217,6 @@
     padding: 2px 5px !important;
     font-size: 9px !important;
   }
-    }
     body.audit-branch-fs-mode aside,
     body.audit-branch-fs-mode header,
     body.audit-branch-fs-mode nav {
@@ -1558,36 +1557,71 @@
     
     async function handleFormSubmit(event) { 
       event.preventDefault(); 
-      var btn = document.getElementById('submitBtn'); btn.innerHTML = 'Memvalidasi...'; btn.disabled = true; 
-      var nokaRaw = document.getElementById('noka').value.trim().toUpperCase(), targetSvc = document.getElementById('servisKe').value, bDate = document.getElementById('bookingDate').value; 
+      var btn = document.getElementById('submitBtn'); 
+      btn.innerHTML = 'Memvalidasi...'; 
+      btn.disabled = true; 
+
+      var nokaRaw = document.getElementById('noka').value.trim().toUpperCase();
+      var targetSvc = document.getElementById('servisKe').value;
+      var bDate = document.getElementById('bookingDate').value; 
       document.getElementById('cardHistory').innerHTML = defaultHistoryHTML;
 
-      var historyRes;
-      if (cachedHistoryData[nokaRaw] && !isPrefetching) {
-        historyRes = { success: true, data: cachedHistoryData[nokaRaw].history, allowBypassS9: cachedHistoryData[nokaRaw].allowBypassS9 };
-      } else {
-        historyRes = await fetchAPI('getHistoryData', { noka: nokaRaw });
-        if (historyRes.success) cachedHistoryData[nokaRaw] = { history: historyRes.data, allowBypassS9: historyRes.allowBypassS9 };
+      // Tunggu jika prefetch latar belakang masih berjalan
+      if (isPrefetching) {
+        let waitCount = 0;
+        while (isPrefetching && waitCount < 20) {
+          await new Promise(r => setTimeout(r, 150));
+          waitCount++;
+        }
       }
 
-      if (historyRes.success) {
-        var history = historyRes.data || historyRes.history, isBypassS9 = historyRes.allowBypassS9 === true; 
+      var historyRes;
+      if (cachedHistoryData[nokaRaw]) {
+        historyRes = { success: true, data: cachedHistoryData[nokaRaw].history, allowBypassS9: cachedHistoryData[nokaRaw].allowBypassS9 };
+      } else {
+        btn.innerHTML = 'Cek Database...';
+        historyRes = await fetchAPI('getHistoryData', { noka: nokaRaw });
+        if (historyRes && historyRes.success) {
+          cachedHistoryData[nokaRaw] = { history: historyRes.data, allowBypassS9: historyRes.allowBypassS9 };
+        }
+      }
+
+      if (historyRes && historyRes.success) {
+        var history = historyRes.data || historyRes.history || [];
+        var isBypassS9 = historyRes.allowBypassS9 === true; 
         var checkExistsExact = (fullSvcName) => history.some(h => h.servisKe.toUpperCase().replace(/\s/g, '') === fullSvcName.toUpperCase().replace(/\s/g, ''));
         var checkRedeemedLevel = (levelNum) => history.some(h => h.servisKe.toUpperCase().replace(/\s/g, '').indexOf('SERVIS' + levelNum) > -1 && h.status === 'REDEEMED');
-        var errorMsg = null, targetSvcClean = targetSvc.toUpperCase().replace(/\s/g, '');
+        var errorMsg = null;
+        var targetSvcClean = targetSvc.toUpperCase().replace(/\s/g, '');
         
         if (checkExistsExact(targetSvc)) errorMsg = "Kunci Sistem: Voucher untuk tahapan ini sudah pernah diterbitkan (Double Claim)."; 
         else if (targetSvcClean.indexOf('SERVIS9') > -1 && !checkRedeemedLevel('8') && !isBypassS9) errorMsg = "Aturan Gamifikasi: Tiket Servis 8 pelanggan ini belum di-Klaim/Redeem."; 
         else if (targetSvcClean.indexOf('SERVIS10') > -1 && !checkRedeemedLevel('9')) errorMsg = "Aturan Gamifikasi: Tiket Servis 9 pelanggan ini belum di-Klaim/Redeem."; 
         else if (targetSvcClean.indexOf('SERVIS11') > -1 && !checkRedeemedLevel('10')) errorMsg = "Aturan Gamifikasi: Tiket Servis 10 pelanggan ini belum di-Klaim/Redeem."; 
 
-        if (errorMsg) { Swal.fire('Ditolak (Aturan Rantai)', errorMsg, 'error'); btn.innerHTML = 'Generate Tiket QR'; btn.disabled = false; return; }
+        if (errorMsg) { 
+          Swal.fire('Ditolak (Aturan Rantai)', errorMsg, 'warning'); 
+          btn.innerHTML = 'Generate Tiket QR'; 
+          btn.disabled = false; 
+          return; 
+        }
 
         btn.innerHTML = 'Menerbitkan Tiket...';
-        var data = { cabang: sessionUser.cabang, namaSA: document.getElementById('namaSA').value, kodeSA: document.getElementById('kodeSA').value, nama: document.getElementById('nama').value, nohp: document.getElementById('nohp').value, model: document.getElementById('model').value, nopol: document.getElementById('nopol').value.toUpperCase(), noka: nokaRaw, servisKe: targetSvc, booking: bDate }; 
+        var data = { 
+          cabang: sessionUser.cabang, 
+          namaSA: document.getElementById('namaSA').value, 
+          kodeSA: document.getElementById('kodeSA').value, 
+          nama: document.getElementById('nama').value, 
+          nohp: document.getElementById('nohp').value, 
+          model: document.getElementById('model').value, 
+          nopol: document.getElementById('nopol').value.toUpperCase(), 
+          noka: nokaRaw, 
+          servisKe: targetSvc, 
+          booking: bDate 
+        }; 
         
         fetchAPI('submitData', { customerData: data }).then(function(res) { 
-          if (res.success) { 
+          if (res && res.success) { 
             cachedHistoryData[res.noka] = { history: res.updatedHistory || [], allowBypassS9: historyRes.allowBypassS9 }; 
             var tData = res.ticket || res;
             document.getElementById('cardModel').innerText = tData.model; 
@@ -1604,13 +1638,16 @@
             document.getElementById('resultSection').classList.add('flex'); 
             window.scrollTo({top: 0, behavior: 'smooth'}); 
           } else { 
-            Swal.fire('Ditolak', res.message, 'warning'); 
+            Swal.fire('Ditolak', res ? res.message : 'Terjadi kendala saat menerbitkan tiket.', 'warning'); 
           } 
-          btn.innerHTML = 'Generate Tiket QR'; btn.disabled = false; 
+          btn.innerHTML = 'Generate Tiket QR'; 
+          btn.disabled = false; 
         });
       } else { 
-        Swal.fire('Error', 'Sistem gagal memverifikasi histori. Cek koneksi.', 'error'); 
-        btn.innerHTML = 'Generate Tiket QR'; btn.disabled = false; 
+        var pesanError = (historyRes && historyRes.message) ? historyRes.message : 'Sistem gagal membaca histori dari database. Pastikan koneksi atau izin script aktif.';
+        Swal.fire('Koneksi / Data Error', pesanError, 'error'); 
+        btn.innerHTML = 'Generate Tiket QR'; 
+        btn.disabled = false; 
       }
     }
     
