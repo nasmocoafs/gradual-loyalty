@@ -994,15 +994,15 @@
                 <span class="text-[10px] text-amber-700 font-semibold">Walk-in transactions outside active cohort</span>
               </div>
               <div class="grid grid-cols-3 gap-3 text-center">
-                <div class="bg-white p-2 rounded-lg border border-amber-200">
+                <div onclick="openTicketModal('nontarget')" class="bg-white hover:bg-amber-100/60 cursor-pointer p-2 rounded-lg border border-amber-200 transition transform hover:scale-[1.02]" title="Klik untuk rincian tiket organik">
                   <p class="text-[9px] font-bold text-gray-500 uppercase">Organic Tickets</p>
                   <p class="text-base font-black text-amber-700" id="kpiGovOrganicTickets">0</p>
                 </div>
-                <div class="bg-white p-2 rounded-lg border border-amber-200">
+                <div onclick="openRedeemModal('nontarget')" class="bg-white hover:bg-amber-100/60 cursor-pointer p-2 rounded-lg border border-amber-200 transition transform hover:scale-[1.02]" title="Klik untuk rincian unit klaim organik">
                   <p class="text-[9px] font-bold text-gray-500 uppercase">Organic Redeemed</p>
                   <p class="text-base font-black text-amber-800" id="kpiGovOrganicRedeemed">0</p>
                 </div>
-                <div class="bg-white p-2 rounded-lg border border-amber-200">
+                <div onclick="openRedeemModal('nontarget')" class="bg-white hover:bg-amber-100/60 cursor-pointer p-2 rounded-lg border border-amber-200 transition transform hover:scale-[1.02]" title="Klik untuk rincian transaksi organik">
                   <p class="text-[9px] font-bold text-gray-500 uppercase">Organic Revenue (Gross)</p>
                   <p class="text-base font-black text-amber-900" id="kpiGovOrganicRevenue">Rp 0</p>
                 </div>
@@ -1130,7 +1130,7 @@
         <div class="flex items-center gap-2 w-full sm:w-auto">
           <button id="tab-tk-all" onclick="switchTicketTab('all')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm">All Records (<span id="tk-count-all">0</span>)</button>
           <button id="tab-tk-target" onclick="switchTicketTab('target')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300">🎯 Targeted Cohort (<span id="tk-count-target">0</span>)</button>
-          <button id="tab-tk-nontarget" onclick="switchTicketTab('nontarget')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300">⚠️ Organic Inflow (<span id="tk-count-nontarget">0</span>)</button>
+          <button id="tab-tk-nontarget" onclick="switchTicketTab('nontarget')" style="display: none !important;">⚠️ Organic Inflow (<span id="tk-count-nontarget">0</span>)</button>
         </div>
         <div class="w-full sm:w-72"><input type="text" id="searchTicketInput" oninput="filterTicketTable(this.value)" placeholder="Search customer, plate, VIN, or SA..." class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none focus:border-red-500 auto-upper"></div>
       </div>
@@ -1167,7 +1167,7 @@
         <div class="flex items-center gap-2 w-full sm:w-auto">
           <button id="tab-rd-all" onclick="switchRedeemTab('all')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-900 text-white shadow-sm">All Transactions (<span id="rd-count-all">0</span>)</button>
           <button id="tab-rd-target" onclick="switchRedeemTab('target')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300">🎯 Targeted Cohort (<span id="rd-count-target">0</span>)</button>
-          <button id="tab-rd-nontarget" onclick="switchRedeemTab('nontarget')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-gray-700 border border-gray-300">⚠️ Organic Inflow (<span id="rd-count-nontarget">0</span>)</button>
+          <button id="tab-rd-nontarget" onclick="switchRedeemTab('nontarget')" style="display: none !important;">⚠️ Organic Inflow (<span id="rd-count-nontarget">0</span>)</button>
         </div>
         <div class="w-full sm:w-72"><input type="text" id="searchRedeemInput" oninput="filterRedeemTable(this.value)" placeholder="Search customer, plate, VIN, or SA..." class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none focus:border-red-500 auto-upper"></div>
       </div>
