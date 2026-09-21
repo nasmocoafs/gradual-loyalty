@@ -664,83 +664,92 @@
           </div>
         </div>
         
-        <div id="earlyWarning" class="mb-6 bg-red-100 border-l-4 border-red-600 p-4 rounded shadow-sm hidden animate-pulse">
-           <div class="flex">
-             <div class="flex-shrink-0"><svg class="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg></div>
-             <div class="ml-3"><p class="text-xs text-red-700 font-bold uppercase tracking-widest">Early Warning Alert!</p><p class="text-xs text-red-600 mt-0.5">Cohort conversion rate is below 20%. Tactical review recommended.</p></div>
+<!-- 🔴 EARLY WARNING ALERT DINAMIS (PACING CONTROL) -->
+        <div id="earlyWarning" class="mb-6 bg-amber-50 border-l-4 border-amber-500 p-4 rounded-xl shadow-sm hidden">
+           <div class="flex items-center justify-between">
+             <div class="flex items-center gap-3">
+               <div class="flex-shrink-0 text-amber-600 text-xl font-black">⚠️</div>
+               <div>
+                 <p class="text-xs text-amber-800 font-black uppercase tracking-wider" id="earlyWarningTitle">Pacing Alert</p>
+                 <p class="text-xs text-amber-700 mt-0.5" id="earlyWarningDesc">Rasio realisasi kedatangan tiket saat ini masih di bawah benchmark 30%.</p>
+               </div>
+             </div>
+             <span id="earlyWarningBadge" class="text-[10px] font-black uppercase px-2.5 py-1 rounded bg-amber-200 text-amber-900 border border-amber-300 shrink-0">Review SA Pacing</span>
            </div>
         </div>
-        
-        <div id="dashLoading" class="text-center py-12 text-gray-500 font-bold hidden">Processing Executive Data Analytics...</div>
-        
-        <div id="dashContent" class="hidden space-y-6">
 
-          <!-- 🔴 STRATEGIC PANE: 4 KARTU UTAMA INTERAKTIF -->
-          <div class="bg-gradient-to-r from-blue-900 to-indigo-950 p-5 rounded-2xl shadow-md text-white">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 pb-3 border-b border-blue-800/60">
-              <div class="flex items-center gap-2">
-                <span class="bg-blue-500 text-white text-[10px] font-black px-2.5 py-1 rounded uppercase tracking-wider">STRATEGIC PANE</span>
-                <h3 class="text-sm md:text-base font-black tracking-wide">Targeted Loyalty Cohort Performance (Servis 8 & 9 Granular)</h3>
+        <!-- 🔴 STRATEGIC PANE: 4 KARTU KONTROL TARGET VS REALISASI -->
+        <div class="bg-gradient-to-r from-blue-900 to-indigo-950 p-5 rounded-2xl shadow-md text-white">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 pb-3 border-b border-blue-800/60">
+            <div class="flex items-center gap-2">
+              <span class="bg-blue-500 text-white text-[10px] font-black px-2.5 py-1 rounded uppercase tracking-wider">IRREGULARITY & PACING</span>
+              <h3 class="text-sm md:text-base font-black tracking-wide">Targeted Loyalty Performance Control (Input vs Output)</h3>
+            </div>
+            <span class="text-xs text-blue-200 font-medium">🎯 Asumsi Realisasi: <b>30,0%</b> dari Tiket Diterbitkan</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            <!-- KARTU 1: COHORT TARGET LEADS -->
+            <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center flex flex-col justify-between">
+              <div>
+                <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Total Database Leads</p>
+                <p class="text-3xl font-black text-white mt-1" id="kpiLeads">0</p>
+                <p class="text-[10px] text-blue-200 mt-1">Populasi Base Data S2</p>
               </div>
-              <span class="text-xs text-blue-200 font-medium">💡 Klik kartu untuk melihat rincian pelanggan & tiket</span>
+              <div id="leadsInS2Badge" class="hidden mt-2 inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-[9px] font-bold text-emerald-300">
+                <span>In S2 Return:</span> <b id="kpiLeadsInS2" class="text-white font-black">0 (0%)</b>
+              </div>
+            </div>
+            
+            <!-- KARTU 2: TICKETS ISSUED (INPUT KONTROL) -->
+            <div onclick="openTicketModal('target')" class="bg-white/10 hover:bg-white/15 cursor-pointer backdrop-blur p-4 rounded-xl border border-white/10 text-center relative group flex flex-col justify-between transition transform hover:scale-[1.01]">
+              <div>
+                <div class="flex justify-between items-center text-[10px] font-bold text-blue-200 uppercase tracking-wider mb-1">
+                  <span>Tickets Issued</span>
+                  <span id="kpiIssuedProgBadge" class="bg-blue-500/40 text-blue-100 px-1.5 py-0.5 rounded text-[9px] font-black border border-blue-400/30">0% Tgt</span>
+                </div>
+                <p class="text-3xl font-black text-blue-300 mt-0.5" id="kpiTargetConverted">0</p>
+                <div class="mt-2 pt-2 border-t border-white/10 text-[11px] font-bold text-blue-100 flex justify-between px-1">
+                  <span>Target: <b id="kpiTargetIssuedGoal" class="text-white">0</b></span>
+                  <span>Sisa: <b id="kpiTargetIssuedRem" class="text-yellow-300">0</b></span>
+                </div>
+              </div>
+              <button class="mt-2.5 text-[10px] font-bold bg-blue-500/30 group-hover:bg-blue-500 text-white px-2.5 py-1 rounded-lg border border-blue-400/40 transition shadow-sm">🔍 Detail Tiket Terbit</button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
-              <!-- KARTU 1: COHORT TARGET LEADS -->
-              <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center flex flex-col justify-between">
-                <div>
-                  <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Cohort Target Leads</p>
-                  <p class="text-3xl font-black text-white mt-1" id="kpiLeads">0</p>
-                  <div class="mt-2 pt-2 border-t border-white/10 flex justify-around text-[11px] font-bold text-blue-100">
-                    <span>S8: <b id="kpiLeadsS8" class="text-white">0</b></span>
-                    <span class="border-l border-white/20 pl-2">S9: <b id="kpiLeadsS9" class="text-white">0</b></span>
-                  </div>
+            <!-- KARTU 3: REDEEMED UNITS (OUTPUT KONTROL) -->
+            <div onclick="openRedeemModal('target')" class="bg-white/10 hover:bg-white/15 cursor-pointer backdrop-blur p-4 rounded-xl border border-white/10 text-center relative group flex flex-col justify-between transition transform hover:scale-[1.01]">
+              <div>
+                <div class="flex justify-between items-center text-[10px] font-bold text-blue-200 uppercase tracking-wider mb-1">
+                  <span>Redeemed Units</span>
+                  <span id="kpiRedeemProgBadge" class="bg-emerald-500/40 text-emerald-100 px-1.5 py-0.5 rounded text-[9px] font-black border border-emerald-400/30">0% Tgt</span>
                 </div>
-                <div id="leadsInS2Badge" class="hidden mt-2 inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-[9px] font-bold text-emerald-300">
-                  <span>In S2 Return:</span> <b id="kpiLeadsInS2" class="text-white font-black">0 (0%)</b>
+                <p class="text-3xl font-black text-emerald-400 mt-0.5" id="kpiTargetRedeemed">0</p>
+                <div class="mt-2 pt-2 border-t border-white/10 text-[11px] font-bold text-blue-100 flex justify-between px-1">
+                  <span>Target: <b id="kpiTargetRedeemGoal" class="text-white">0</b></span>
+                  <span>Sisa: <b id="kpiTargetRedeemRem" class="text-yellow-300">0</b></span>
                 </div>
               </div>
-              
-              <!-- KARTU 2: TICKETS ISSUED -->
-              <div onclick="openTicketModal('target')" class="bg-white/10 hover:bg-white/15 cursor-pointer backdrop-blur p-4 rounded-xl border border-white/10 text-center relative group flex flex-col justify-between transition transform hover:scale-[1.01]">
-                <div>
-                  <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Tickets Issued</p>
-                  <p class="text-3xl font-black text-blue-300 mt-1" id="kpiTargetConverted">0</p>
-                  <div class="mt-2 pt-2 border-t border-white/10 flex justify-around text-[11px] font-bold text-blue-100">
-                    <span>S8: <b id="kpiIssuedS8" class="text-white">0</b></span>
-                    <span class="border-l border-white/20 pl-2">S9: <b id="kpiIssuedS9" class="text-white">0</b></span>
-                  </div>
-                </div>
-                <button class="mt-3 text-[10px] font-bold bg-blue-500/30 group-hover:bg-blue-500 text-white px-2.5 py-1 rounded-lg border border-blue-400/40 transition shadow-sm">🔍 Ticket Details</button>
-              </div>
+              <button class="mt-2.5 text-[10px] font-bold bg-emerald-50/30 group-hover:bg-emerald-500 text-white px-2.5 py-1 rounded-lg border border-emerald-400/40 transition shadow-sm">🔍 Detail Pelanggan Masuk</button>
+            </div>
 
-              <!-- KARTU 3: REDEEMED UNITS -->
-              <div onclick="openRedeemModal('target')" class="bg-white/10 hover:bg-white/15 cursor-pointer backdrop-blur p-4 rounded-xl border border-white/10 text-center relative group flex flex-col justify-between transition transform hover:scale-[1.01]">
-                <div>
-                  <p class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Redeemed Units</p>
-                  <p class="text-3xl font-black text-emerald-400 mt-1" id="kpiTargetRedeemed">0</p>
-                  <div class="mt-2 pt-2 border-t border-white/10 flex justify-around text-[11px] font-bold text-blue-100">
-                    <span>S8: <b id="kpiRedeemedS8" class="text-white">0</b></span>
-                    <span class="border-l border-white/20 pl-2">S9: <b id="kpiRedeemedS9" class="text-white">0</b></span>
-                  </div>
+            <!-- KARTU 4: REALIZATION QUALITY (BENCHMARK 30%) -->
+            <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center flex flex-col justify-between">
+              <div>
+                <div class="flex justify-between items-center text-[10px] font-bold text-yellow-300 uppercase tracking-wider mb-1">
+                  <span>Realization Rate</span>
+                  <span id="kpiQualityBadge" class="bg-yellow-400/20 text-yellow-300 px-1.5 py-0.5 rounded text-[9px] font-black border border-yellow-400/30">Pacing</span>
                 </div>
-                <button class="mt-3 text-[10px] font-bold bg-emerald-50/30 group-hover:bg-emerald-500 text-white px-2.5 py-1 rounded-lg border border-emerald-400/40 transition shadow-sm">🔍 Customer Details</button>
+                <p class="text-3xl font-black text-yellow-400 mt-0.5" id="kpiRealizationRate">0%</p>
+                <p class="text-[10px] text-blue-200 mt-1">Benchmark Konversi: <b class="text-white">30,0%</b></p>
               </div>
-
-              <!-- KARTU 4: COHORT CONVERSION RATE -->
-              <div class="bg-white/10 backdrop-blur p-4 rounded-xl border border-white/10 text-center flex flex-col justify-between">
-                <div>
-                  <p class="text-[10px] font-bold text-yellow-300 uppercase tracking-wider">Cohort Conversion Rate</p>
-                  <p class="text-3xl font-black text-yellow-400 mt-1" id="kpiTargetConvRate">0%</p>
-                  <div class="mt-2 pt-2 border-t border-white/10 flex justify-around text-[11px] font-bold text-blue-100">
-                    <span>S8: <b id="kpiConvS8" class="text-white">0%</b></span>
-                    <span class="border-l border-white/20 pl-2">S9: <b id="kpiConvS9" class="text-white">0%</b></span>
-                  </div>
-                </div>
-                <p class="text-[9px] text-blue-200 mt-1">Lock-in Rate: <b id="kpiTargetLockInRate" class="text-white">0%</b></p>
+              <div class="mt-2 pt-2 border-t border-white/10 flex justify-between items-center text-[10px] text-blue-100 px-1">
+                <span>Lock-in Rate: <b id="kpiTargetLockInRate" class="text-white">0%</b></span>
+                <span>Conv Leads: <b id="kpiTargetConvRate" class="text-white">0%</b></span>
               </div>
             </div>
           </div>
+        </div>
 
           <!-- 🔴 SEKSI WORKLOAD S2: SCHEDULING BOARD (SUBTITEL BERSIH & BREAKDOWN WITH VS WITHOUT PROGRAM) -->
           <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
@@ -2517,22 +2526,64 @@
       var totalIssued = res.ticketsIssued || res.targetConverted || 0;
       var totalRedeemed = res.redeemedUnits || res.targetRedeemed || 0;
 
-      setText('kpiLeads', formatNum(totalLeads)); 
-      setText('kpiLeadsS8', formatNum(res.leadsS8 || 0));
-      setText('kpiLeadsS9', formatNum(res.leadsS9 || 0));
-
+      setText('kpiLeads', formatNum(totalLeads));
       setText('kpiTargetConverted', formatNum(totalIssued));
-      setText('kpiIssuedS8', formatNum(res.ticketsIssuedS8 || 0));
-      setText('kpiIssuedS9', formatNum(res.ticketsIssuedS9 || 0));
-
       setText('kpiTargetRedeemed', formatNum(totalRedeemed));
-      setText('kpiRedeemedS8', formatNum(res.redeemedUnitsS8 || 0));
-      setText('kpiRedeemedS9', formatNum(res.redeemedUnitsS9 || 0));
 
-      setText('kpiTargetConvRate', (res.targetConvRate || 0) + '%');
-      setText('kpiConvS8', (res.convRateS8 || 0) + '%');
-      setText('kpiConvS9', (res.convRateS9 || 0) + '%');
+      // 🔴 TARGET PACING CONTROL DINAMIS DARI GOOGLE APPS SCRIPT
+      var targetIssuedGoal = res.targetIssuedGoal || 4773;
+      var targetRedeemGoal = res.targetRedeemGoal || 1432;
+
+      var progIssuedPct = targetIssuedGoal > 0 ? ((totalIssued / targetIssuedGoal) * 100).toFixed(1) : "0.0";
+      var remIssued = Math.max(0, targetIssuedGoal - totalIssued);
+
+      var progRedeemPct = targetRedeemGoal > 0 ? ((totalRedeemed / targetRedeemGoal) * 100).toFixed(1) : "0.0";
+      var remRedeem = Math.max(0, targetRedeemGoal - totalRedeemed);
+
+      var realizationRate = totalIssued > 0 ? ((totalRedeemed / totalIssued) * 100).toFixed(1) : "0.0";
+
+      setText('kpiTargetIssuedGoal', formatNum(targetIssuedGoal));
+      setText('kpiTargetIssuedRem', formatNum(remIssued));
+      setText('kpiIssuedProgBadge', progIssuedPct + '% Tgt');
+
+      setText('kpiTargetRedeemGoal', formatNum(targetRedeemGoal));
+      setText('kpiTargetRedeemRem', formatNum(remRedeem));
+      setText('kpiRedeemProgBadge', progRedeemPct + '% Tgt');
+
+      setText('kpiRealizationRate', realizationRate + '%');
       setText('kpiTargetLockInRate', (res.targetLockInRate || 0) + '%');
+      setText('kpiTargetConvRate', (res.targetConvRate || 0) + '%');
+
+      // Evaluasi Badge Kualitas Realisasi vs Benchmark 30%
+      var qualityBadge = document.getElementById('kpiQualityBadge');
+      if (qualityBadge) {
+        if (parseFloat(realizationRate) >= 30.0) {
+          qualityBadge.className = 'bg-emerald-500/40 text-emerald-200 px-1.5 py-0.5 rounded text-[9px] font-black border border-emerald-400/40';
+          qualityBadge.innerText = 'Optimal (≥30%)';
+        } else if (parseFloat(realizationRate) >= 20.0) {
+          qualityBadge.className = 'bg-blue-500/40 text-blue-200 px-1.5 py-0.5 rounded text-[9px] font-black border border-blue-400/40';
+          qualityBadge.innerText = 'Moderate (20-30%)';
+        } else {
+          qualityBadge.className = 'bg-rose-500/40 text-rose-200 px-1.5 py-0.5 rounded text-[9px] font-black border border-rose-400/40';
+          qualityBadge.innerText = 'Lagging (<20%)';
+        }
+      }
+
+      // Evaluasi Banner Warning Atas (Irregularity & Pacing)
+      var earlyWarningEl = document.getElementById('earlyWarning');
+      if (earlyWarningEl) {
+        if (parseFloat(realizationRate) < 25.0 && totalIssued >= 50) {
+          earlyWarningEl.classList.remove('hidden');
+          setText('earlyWarningTitle', 'PACING ALERT: REALISASI KEDATANGAN TIKET RENDAH (' + realizationRate + '%)');
+          setText('earlyWarningDesc', 'Rasio konversi tiket menjadi kedatangan servis masih di bawah benchmark 30%. Evaluasi follow-up CRM SA sebelum masa voucher habis.');
+        } else if (parseFloat(progIssuedPct) < 30.0 && totalLeads > 0) {
+          earlyWarningEl.classList.remove('hidden');
+          setText('earlyWarningTitle', 'ACTIVITY ALERT: PROGRES PENERBITAN TIKET BARU ' + progIssuedPct + '%');
+          setText('earlyWarningDesc', 'Penerbitan tiket di awal periode (front-loading) masih rendah. Dorong SA untuk segera mengunci minimal 33% dari database leads.');
+        } else {
+          earlyWarningEl.classList.add('hidden');
+        }
+      }
 
       renderS2MonthlyBoard(res.s2MonthlyLeads || {});
 
