@@ -998,7 +998,7 @@
           <div id="hoBreakdownSection" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-col transition-all duration-300">
             <div class="bg-gray-900 p-4 border-b border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div class="flex items-center gap-2">
-                <h3 class="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2">📊 Dealership Performance Breakdown (Servis 8 & 9 Granular)</h3>
+                <h3 class="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2">📊 Dealership Performance & Irregularity Control</h3>
                 <span id="branchCountBadge" class="bg-gray-800 text-yellow-400 text-xs px-2.5 py-0.5 rounded-full font-bold border border-gray-700">24 Branches</span>
               </div>
               <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -2247,26 +2247,20 @@
       updateRedeemModalUI();
     }
 
-    // 🔴 DEALERSHIP BREAKDOWN: 24 CABANG LENGKAP, KONTRIBUSI LOYALTY, TARGET S2 & WARNING CONTROL
+    // 🔴 DEALERSHIP BREAKDOWN: SIMPLIFIED DENGAN IRREGULARITY CONTROL & PACING TARGET
     function renderBranchBreakdown() {
       var headHtml = '<tr>' +
         '<th class="px-3 py-3 border-b text-center w-8 bg-gray-50">#</th>' +
         '<th onclick="sortBranchTable(\'cabang\')" class="px-3 py-3 border-b sortable-th bg-gray-50">Dealership <span id="br-sort-cabang">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'potensi\')" class="px-2.5 py-3 border-b text-center sortable-th bg-gray-50 text-purple-700">Total Leads <span id="br-sort-potensi">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'potensiS8\')" class="px-2.5 py-3 border-b text-center sortable-th bg-purple-50/40 text-purple-800">Leads S8 <span id="br-sort-potensiS8">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'potensiS9\')" class="px-2.5 py-3 border-b text-center sortable-th bg-purple-50/40 text-purple-800">Leads S9 <span id="br-sort-potensiS9">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'regTarget\')" class="px-2.5 py-3 border-b text-center sortable-th bg-blue-50/50 text-blue-700">Issued <span id="br-sort-regTarget">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'redeemTarget\')" class="px-2.5 py-3 border-b text-center sortable-th bg-emerald-50/50 text-emerald-700">Redeemed <span id="br-sort-redeemTarget">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'redeemS8\')" class="px-2.5 py-3 border-b text-center sortable-th bg-emerald-50/30 text-emerald-800">Redeem S8 <span id="br-sort-redeemS8">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'redeemS9\')" class="px-2.5 py-3 border-b text-center sortable-th bg-emerald-50/30 text-emerald-800">Redeem S9 <span id="br-sort-redeemS9">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'convRateTarget\')" class="px-2.5 py-3 border-b text-center sortable-th bg-indigo-50/50 text-indigo-700">Conv % <span id="br-sort-convRateTarget">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'revenue\')" class="px-3 py-3 border-b text-right sortable-th bg-gray-100 font-black">Gross Revenue <span id="br-sort-revenue">↕</span></th>';
+        '<th onclick="sortBranchTable(\'potensi\')" class="px-2.5 py-3 border-b text-center sortable-th bg-purple-50/40 text-purple-800">Database Leads <span id="br-sort-potensi">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'regTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-blue-50/60 text-blue-900">Tickets Issued vs Tgt <span id="br-sort-regTarget">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'redeemTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-emerald-50/60 text-emerald-900">Redeemed vs Tgt <span id="br-sort-redeemTarget">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'realizationRate\')" class="px-2.5 py-3 border-b text-center sortable-th bg-amber-50/50 text-amber-900">Realization (30%) <span id="br-sort-realizationRate">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'revenue\')" class="px-3 py-3 border-b text-right sortable-th bg-gray-100 font-black">Gross Revenue <span id="br-sort-revenue">↕</span></th>' +
+        '<th class="px-3 py-3 border-b text-center bg-gray-50 text-gray-700">Funnel Status</th>';
       
       if (dashIsJanJun) {
-        headHtml += '<th onclick="sortBranchTable(\'inS2Count\')" class="px-2.5 py-3 border-b text-center sortable-th bg-emerald-50 text-emerald-800">Total Act In <span id="br-sort-inS2Count">↕</span></th>' +
-                    '<th onclick="sortBranchTable(\'inS2LoyaltyRedeemed\')" class="px-2.5 py-3 border-b text-center sortable-th bg-blue-50 text-blue-800">In W/ Program <span id="br-sort-inS2LoyaltyRedeemed">↕</span></th>' +
-                    '<th class="px-2.5 py-3 border-b text-center bg-slate-50 text-slate-700">In W/o Program</th>' +
-                    '<th onclick="sortBranchTable(\'targetInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-50 text-teal-800">Target S2 <span id="br-sort-targetInS2">↕</span></th>' +
+        headHtml += '<th onclick="sortBranchTable(\'inS2Count\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-50 text-teal-800">Total Act In <span id="br-sort-inS2Count">↕</span></th>' +
                     '<th onclick="sortBranchTable(\'progressInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-100 text-teal-900 font-black">Progress S2 <span id="br-sort-progressInS2">↕</span></th>';
       }
       headHtml += '</tr>';
@@ -2275,98 +2269,139 @@
       var filtered = rawBranchBreakdownData.filter(b => !branchSearchQuery || (b.cabang || '').toUpperCase().includes(branchSearchQuery));
       filtered.sort((a, b) => {
         var valA = a[branchSortCol], valB = b[branchSortCol];
-        if (branchSortCol === 'convRateTarget' || branchSortCol === 'inS2Rate' || branchSortCol === 'progressInS2' || branchSortCol === 'inS2LoyaltyShare') {
+        if (branchSortCol === 'realizationRate' || branchSortCol === 'progressIssued' || branchSortCol === 'progressRedeem' || branchSortCol === 'progressInS2') {
           return branchSortOrder === 'asc' ? (parseRate(valA) - parseRate(valB)) : (parseRate(valB) - parseRate(valA));
         }
         if (typeof valA === 'string') return branchSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
         return branchSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
       });
 
-      ['cabang', 'potensi', 'potensiS8', 'potensiS9', 'regTarget', 'redeemTarget', 'redeemS8', 'redeemS9', 'convRateTarget', 'revenue', 'inS2Count', 'inS2LoyaltyRedeemed', 'targetInS2', 'progressInS2'].forEach(c => {
+      ['cabang', 'potensi', 'regTarget', 'redeemTarget', 'realizationRate', 'revenue', 'inS2Count', 'progressInS2'].forEach(c => {
         var el = document.getElementById('br-sort-' + c);
         if (el) el.innerHTML = branchSortCol === c ? (branchSortOrder === 'asc' ? '<span class="text-red-600 font-bold">▲</span>' : '<span class="text-red-600 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
       });
 
       setText('branchCountBadge', filtered.length + " Branches");
       
-      var bdHtml = '', totalPot = 0, totalPot8 = 0, totalPot9 = 0, totalInS2 = 0, totalLoyaltyInS2 = 0, totalWithoutInS2 = 0, totalTargetS2 = 0, totalRegT = 0, totalRedT = 0, totalRed8 = 0, totalRed9 = 0, totalRev = 0;
+      var bdHtml = '';
+      var totalPot = 0, totalRegT = 0, totalTgtIssued = 0, totalRedT = 0, totalTgtRedeem = 0, totalRev = 0;
+      var totalInS2 = 0, totalTargetS2 = 0;
 
       if (filtered.length > 0) {
         filtered.forEach(function(b, idx) {
-          totalPot += Number(b.potensi) || 0; 
-          totalPot8 += Number(b.potensiS8) || 0;
-          totalPot9 += Number(b.potensiS9) || 0;
+          var pot = Number(b.potensi) || 0;
+          var reg = Number(b.regTarget) || 0;
+          var tgtIss = Number(b.targetIssued) || 0;
+          var red = Number(b.redeemTarget) || 0;
+          var tgtRed = Number(b.targetRedeem) || 0;
+          var rev = Number(b.revenue) || 0;
+
+          totalPot += pot;
+          totalRegT += reg;
+          totalTgtIssued += tgtIss;
+          totalRedT += red;
+          totalTgtRedeem += tgtRed;
+          totalRev += rev;
           totalInS2 += Number(b.inS2Count) || 0;
-          totalLoyaltyInS2 += Number(b.inS2LoyaltyRedeemed) || 0;
-          
-          var withoutProg = Math.max(0, (Number(b.inS2Count) || 0) - (Number(b.inS2LoyaltyRedeemed) || 0));
-          totalWithoutInS2 += withoutProg;
-
           totalTargetS2 += Number(b.targetInS2) || 0;
-          totalRegT += Number(b.regTarget) || 0; 
-          totalRedT += Number(b.redeemTarget) || 0; 
-          totalRed8 += Number(b.redeemS8) || 0; 
-          totalRed9 += Number(b.redeemS9) || 0; 
-          totalRev += Number(b.revenue) || 0;
 
-          var progVal = parseRate(b.progressInS2);
-          var progBadgeClass = 'bg-gray-100 text-gray-800 border-gray-300';
-          if (b.targetInS2 > 0) {
-            if (progVal >= 100) progBadgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300 font-black';
-            else if (progVal >= 50) progBadgeClass = 'bg-amber-100 text-amber-800 border-amber-300 font-bold';
-            else progBadgeClass = 'bg-rose-100 text-rose-800 border-rose-300 font-black animate-pulse';
+          // Hitung Pacing Issued
+          var progIssPct = tgtIss > 0 ? ((reg / tgtIss) * 100).toFixed(1) : (b.progressIssued || '0,0');
+          var issBadgeClass = parseRate(progIssPct) >= 80 ? 'bg-blue-100 text-blue-800 border-blue-300 font-black' : (parseRate(progIssPct) >= 40 ? 'bg-slate-100 text-slate-800 border-slate-300' : 'bg-amber-100 text-amber-800 border-amber-300 font-bold');
+
+          // Hitung Pacing Redeem
+          var progRedPct = tgtRed > 0 ? ((red / tgtRed) * 100).toFixed(1) : (b.progressRedeem || '0,0');
+          var redBadgeClass = parseRate(progRedPct) >= 80 ? 'bg-emerald-100 text-emerald-800 border-emerald-300 font-black' : (parseRate(progRedPct) >= 30 ? 'bg-slate-100 text-slate-800 border-slate-300' : 'bg-rose-100 text-rose-800 border-rose-300 font-bold');
+
+          // Hitung Realization Rate
+          var relRate = reg > 0 ? ((red / reg) * 100).toFixed(1) : '0,0';
+          var relBadgeClass = parseRate(relRate) >= 30.0 ? 'text-emerald-700 font-black' : (parseRate(relRate) >= 20.0 ? 'text-amber-700 font-bold' : 'text-rose-600 font-black');
+
+          // Desain Badge Status Irregularity
+          var statusBadge = '';
+          var sts = b.funnelStatus || 'ON_TRACK';
+          var lbl = b.statusLabel || 'On Track';
+
+          if (sts === 'ACHIEVED') {
+            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-600 text-white font-black shadow-sm">🎯 Target Tercapai</span>';
+          } else if (sts === 'HEALTHY' || sts === 'ON_TRACK') {
+            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold">🟢 On Track</span>';
+          } else if (sts === 'LEAD_BOTTLENECK') {
+            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-yellow-100 text-yellow-900 border border-yellow-300 font-bold">🟡 Bottleneck SA</span>';
+          } else if (sts === 'RECALL_FRICTION') {
+            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-orange-100 text-orange-900 border border-orange-300 font-bold">🟠 Follow-up Mandek</span>';
+          } else if (sts === 'CRITICAL_RISK') {
+            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-rose-100 text-rose-800 border border-rose-300 font-black animate-pulse">🔴 Perhatian Khusus</span>';
+          } else if (sts === 'ANOMALY') {
+            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-purple-100 text-purple-800 border border-purple-300 font-bold">⚠️ Anomali</span>';
+          } else {
+            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-500 border border-gray-300">Belum Ada Aktivitas</span>';
           }
 
           var inS2Cells = dashIsJanJun ? 
-            `<td class="px-2.5 py-3 text-center font-bold text-emerald-800 bg-emerald-50/40 border-b border-gray-100">${formatNum(b.inS2Count || 0)} <span class="text-[10px] text-gray-500 font-normal">(${b.inS2Rate || '0,0'}%)</span></td>
-             <td class="px-2.5 py-3 text-center font-bold text-blue-800 bg-blue-50/40 border-b border-gray-100">${formatNum(b.inS2LoyaltyRedeemed || 0)} <span class="text-[10px] text-blue-600 font-normal">(${b.inS2LoyaltyShare || '0,0'}%)</span></td>
-             <td class="px-2.5 py-3 text-center font-medium text-slate-700 bg-slate-50/50 border-b border-gray-100">${formatNum(withoutProg)}</td>
-             <td class="px-2.5 py-3 text-center font-bold text-teal-800 bg-teal-50/40 border-b border-gray-100">${formatNum(b.targetInS2 || 0)}</td>
-             <td class="px-2.5 py-3 text-center border-b border-gray-100"><span class="px-2 py-0.5 rounded text-xs border ${progBadgeClass}">${b.progressInS2 || '0,0'}%</span></td>` : '';
+            `<td class="px-2.5 py-3 text-center font-bold text-teal-800 bg-teal-50/40 border-b border-gray-100">${formatNum(b.inS2Count || 0)}</td>
+             <td class="px-2.5 py-3 text-center border-b border-gray-100"><span class="px-2 py-0.5 rounded text-xs border bg-teal-50 border-teal-200 text-teal-900 font-bold">${b.progressInS2 || '0,0'}%</span></td>` : '';
           
           bdHtml += `<tr class="hover:bg-gray-50 transition text-xs">
             <td class="px-3 py-3 text-center border-b border-gray-100 font-medium text-gray-500">${idx + 1}</td>
             <td class="px-3 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">${b.cabang}</td>
-            <td class="px-2.5 py-3 text-center font-black text-purple-700 bg-purple-50/20 border-b border-gray-100">${formatNum(b.potensi || 0)}</td>
-            <td class="px-2.5 py-3 text-center font-bold text-purple-900 bg-purple-50/10 border-b border-gray-100">${formatNum(b.potensiS8 || 0)}</td>
-            <td class="px-2.5 py-3 text-center font-bold text-purple-900 bg-purple-50/10 border-b border-gray-100">${formatNum(b.potensiS9 || 0)}</td>
-            <td class="px-2.5 py-3 text-center font-bold text-blue-700 bg-blue-50/30 border-b border-gray-100">${formatNum(b.regTarget || 0)}</td>
-            <td class="px-2.5 py-3 text-center font-black text-emerald-700 bg-blue-50/30 border-b border-gray-100">${formatNum(b.redeemTarget || 0)}</td>
-            <td class="px-2.5 py-3 text-center font-bold text-emerald-800 bg-emerald-50/20 border-b border-gray-100">${formatNum(b.redeemS8 || 0)}</td>
-            <td class="px-2.5 py-3 text-center font-bold text-emerald-800 bg-emerald-50/20 border-b border-gray-100">${formatNum(b.redeemS9 || 0)}</td>
-            <td class="px-2.5 py-3 text-center font-black text-indigo-700 bg-blue-50/30 border-b border-gray-100">${b.convRateTarget || '0,0'}%</td>
-            <td class="px-3 py-3 text-right font-black text-gray-900 bg-gray-50/60 border-b border-gray-100">${formatRp(b.revenue || 0)}</td>
+            <td class="px-2.5 py-3 text-center font-bold text-purple-900 bg-purple-50/20 border-b border-gray-100">${formatNum(pot)}</td>
+            
+            <!-- Issued vs Target -->
+            <td class="px-3 py-3 text-center bg-blue-50/30 border-b border-gray-100">
+              <span class="font-black text-blue-800">${formatNum(reg)}</span>
+              <span class="text-gray-400 font-bold text-[10px]"> / ${formatNum(tgtIss)}</span>
+              <span class="ml-1.5 px-1.5 py-0.5 rounded text-[9px] border ${issBadgeClass}">${progIssPct}%</span>
+            </td>
+
+            <!-- Redeemed vs Target -->
+            <td class="px-3 py-3 text-center bg-emerald-50/30 border-b border-gray-100">
+              <span class="font-black text-emerald-800">${formatNum(red)}</span>
+              <span class="text-gray-400 font-bold text-[10px]"> / ${formatNum(tgtRed)}</span>
+              <span class="ml-1.5 px-1.5 py-0.5 rounded text-[9px] border ${redBadgeClass}">${progRedPct}%</span>
+            </td>
+
+            <!-- Realization Rate -->
+            <td class="px-2.5 py-3 text-center bg-amber-50/20 border-b border-gray-100 ${relBadgeClass}">
+              ${relRate}%
+            </td>
+
+            <!-- Gross Revenue -->
+            <td class="px-3 py-3 text-right font-black text-gray-900 bg-gray-50/60 border-b border-gray-100 font-mono">
+              ${formatRp(rev)}
+            </td>
+
+            <!-- Status Irregularity -->
+            <td class="px-3 py-3 text-center border-b border-gray-100">
+              ${statusBadge}
+            </td>
+
             ${inS2Cells}
           </tr>`;
         });
       } else {
-        bdHtml = `<tr><td colspan="${dashIsJanJun ? 15 : 11}" class="px-4 py-8 text-center text-gray-400 italic font-medium">No dealership performance data available.</td></tr>`;
+        bdHtml = `<tr><td colspan="${dashIsJanJun ? 10 : 8}" class="px-4 py-8 text-center text-gray-400 italic font-medium">No dealership performance data available.</td></tr>`;
       }
       setHTML('hoBreakdownBody', bdHtml);
 
-      var avgTargetConv = totalPot > 0 ? ((totalRedT / totalPot) * 100).toFixed(1).replace('.', ',') : '0,0';
-      var avgInS2Ratio = totalPot > 0 ? ((totalInS2 / totalPot) * 100).toFixed(1).replace('.', ',') : '0,0';
-      var avgLoyaltyShare = totalInS2 > 0 ? ((totalLoyaltyInS2 / totalInS2) * 100).toFixed(1).replace('.', ',') : '0,0';
+      // Footer Summary
+      var avgIssuedProg = totalTgtIssued > 0 ? ((totalRegT / totalTgtIssued) * 100).toFixed(1).replace('.', ',') : '0,0';
+      var avgRedeemProg = totalTgtRedeem > 0 ? ((totalRedT / totalTgtRedeem) * 100).toFixed(1).replace('.', ',') : '0,0';
+      var avgRealization = totalRegT > 0 ? ((totalRedT / totalRegT) * 100).toFixed(1).replace('.', ',') : '0,0';
       var totalProgressS2 = totalTargetS2 > 0 ? ((totalInS2 / totalTargetS2) * 100).toFixed(1).replace('.', ',') : '0,0';
 
       var footInS2 = dashIsJanJun ? 
-        `<td class="px-2.5 py-3 text-center font-black text-emerald-900 bg-emerald-100/70">${formatNum(totalInS2)} <span class="text-[10px] font-normal">(${avgInS2Ratio}%)</span></td>
-         <td class="px-2.5 py-3 text-center font-black text-blue-900 bg-blue-100/70">${formatNum(totalLoyaltyInS2)} <span class="text-[10px] font-normal">(${avgLoyaltyShare}%)</span></td>
-         <td class="px-2.5 py-3 text-center font-black text-slate-900 bg-slate-100/70">${formatNum(totalWithoutInS2)}</td>
-         <td class="px-2.5 py-3 text-center font-black text-teal-900 bg-teal-100/70">${formatNum(totalTargetS2)}</td>
+        `<td class="px-2.5 py-3 text-center font-black text-teal-900 bg-teal-100/70">${formatNum(totalInS2)}</td>
          <td class="px-2.5 py-3 text-center font-black text-teal-950 bg-teal-200/80">${totalProgressS2}%</td>` : '';
       
       setHTML('hoBreakdownFoot', `<tr class="bg-gray-100 text-xs">
-        <td colspan="2" class="px-3 py-3 text-center uppercase tracking-wider font-black">TOTAL ALL BRANCHES</td>
-        <td class="px-2.5 py-3 text-center font-black text-purple-800 bg-purple-100/50">${formatNum(totalPot)}</td>
-        <td class="px-2.5 py-3 text-center font-black text-purple-900 bg-purple-100/30">${formatNum(totalPot8)}</td>
-        <td class="px-2.5 py-3 text-center font-black text-purple-900 bg-purple-100/30">${formatNum(totalPot9)}</td>
-        <td class="px-2.5 py-3 text-center font-black text-blue-800 bg-blue-100/50">${formatNum(totalRegT)}</td>
-        <td class="px-2.5 py-3 text-center font-black text-emerald-800 bg-blue-100/50">${formatNum(totalRedT)}</td>
-        <td class="px-2.5 py-3 text-center font-black text-emerald-900 bg-emerald-100/40">${formatNum(totalRed8)}</td>
-        <td class="px-2.5 py-3 text-center font-black text-emerald-900 bg-emerald-100/40">${formatNum(totalRed9)}</td>
-        <td class="px-2.5 py-3 text-center font-black text-indigo-800 bg-blue-100/50">${avgTargetConv}%</td>
-        <td class="px-3 py-3 text-right font-black text-gray-900 text-sm bg-gray-200/60">${formatRp(totalRev)}</td>
+        <td colspan="2" class="px-3 py-3 text-center uppercase tracking-wider font-black">TOTAL REGIONAL</td>
+        <td class="px-2.5 py-3 text-center font-black text-purple-900 bg-purple-100/50">${formatNum(totalPot)}</td>
+        <td class="px-3 py-3 text-center font-black text-blue-900 bg-blue-100/50">${formatNum(totalRegT)} / ${formatNum(totalTgtIssued)} (${avgIssuedProg}%)</td>
+        <td class="px-3 py-3 text-center font-black text-emerald-900 bg-emerald-100/50">${formatNum(totalRedT)} / ${formatNum(totalTgtRedeem)} (${avgRedeemProg}%)</td>
+        <td class="px-2.5 py-3 text-center font-black text-amber-900 bg-amber-100/50">${avgRealization}%</td>
+        <td class="px-3 py-3 text-right font-black text-gray-900 text-sm bg-gray-200/60 font-mono">${formatRp(totalRev)}</td>
+        <td class="px-3 py-3 text-center font-black text-indigo-900">PACING S2</td>
         ${footInS2}
       </tr>`);
     }
