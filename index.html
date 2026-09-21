@@ -712,7 +712,10 @@
                   <span>Tickets Issued</span>
                   <span id="kpiIssuedProgBadge" class="bg-blue-500/40 text-blue-100 px-1.5 py-0.5 rounded text-[9px] font-black border border-blue-400/30">0% Tgt</span>
                 </div>
-                <p class="text-3xl font-black text-blue-300 mt-0.5" id="kpiTargetConverted">0</p>
+                <div class="flex items-baseline justify-center gap-1.5 mt-1">
+                  <span class="text-3xl font-black text-blue-300" id="kpiTargetConverted">0</span>
+                  <span class="text-sm font-bold text-blue-200/70">/ <b id="kpiTargetIssuedGoal" class="text-white">0</b></span>
+                </div>
                 <div class="mt-2 pt-2 border-t border-white/10 text-[11px] font-bold text-blue-100 flex justify-between px-1">
                   <span>Target: <b id="kpiTargetIssuedGoal" class="text-white">0</b></span>
                   <span>Sisa: <b id="kpiTargetIssuedRem" class="text-yellow-300">0</b></span>
@@ -728,7 +731,10 @@
                   <span>Redeemed Units</span>
                   <span id="kpiRedeemProgBadge" class="bg-emerald-500/40 text-emerald-100 px-1.5 py-0.5 rounded text-[9px] font-black border border-emerald-400/30">0% Tgt</span>
                 </div>
-                <p class="text-3xl font-black text-emerald-400 mt-0.5" id="kpiTargetRedeemed">0</p>
+                <div class="flex items-baseline justify-center gap-1.5 mt-1">
+                  <span class="text-3xl font-black text-emerald-400" id="kpiTargetRedeemed">0</span>
+                  <span class="text-sm font-bold text-emerald-200/70">/ <b id="kpiTargetRedeemGoal" class="text-white">0</b></span>
+                </div>
                 <div class="mt-2 pt-2 border-t border-white/10 text-[11px] font-bold text-blue-100 flex justify-between px-1">
                   <span>Target: <b id="kpiTargetRedeemGoal" class="text-white">0</b></span>
                   <span>Sisa: <b id="kpiTargetRedeemRem" class="text-yellow-300">0</b></span>
@@ -2558,34 +2564,42 @@
       setText('kpiTargetLockInRate', (res.targetLockInRate || 0) + '%');
       setText('kpiTargetConvRate', (res.targetConvRate || 0) + '%');
 
-      // Evaluasi Badge Kualitas Realisasi vs Benchmark 30%
+// Evaluasi Badge Kualitas Realisasi vs Benchmark 30% + Efek Kedip
       var qualityBadge = document.getElementById('kpiQualityBadge');
       if (qualityBadge) {
         if (parseFloat(realizationRate) >= 30.0) {
-          qualityBadge.className = 'bg-emerald-500/40 text-emerald-200 px-1.5 py-0.5 rounded text-[9px] font-black border border-emerald-400/40';
+          qualityBadge.className = 'bg-emerald-500/40 text-emerald-200 px-2 py-0.5 rounded text-[9px] font-black border border-emerald-400/40';
           qualityBadge.innerText = 'Optimal (≥30%)';
         } else if (parseFloat(realizationRate) >= 20.0) {
-          qualityBadge.className = 'bg-blue-500/40 text-blue-200 px-1.5 py-0.5 rounded text-[9px] font-black border border-blue-400/40';
+          qualityBadge.className = 'bg-amber-500/40 text-yellow-200 px-2 py-0.5 rounded text-[9px] font-black border border-yellow-400/40 animate-pulse';
           qualityBadge.innerText = 'Moderate (20-30%)';
         } else {
-          qualityBadge.className = 'bg-rose-500/40 text-rose-200 px-1.5 py-0.5 rounded text-[9px] font-black border border-rose-400/40';
+          qualityBadge.className = 'bg-rose-600 text-white px-2 py-0.5 rounded text-[9px] font-black border border-rose-400 animate-pulse';
           qualityBadge.innerText = 'Lagging (<20%)';
         }
       }
 
-      // Evaluasi Banner Warning Atas (Irregularity & Pacing)
+      // Evaluasi Banner Warning Atas (Berkedip Merah/Kuning jika di Bawah Target)
       var earlyWarningEl = document.getElementById('earlyWarning');
+      var earlyWarningBadge = document.getElementById('earlyWarningBadge');
       if (earlyWarningEl) {
-        if (parseFloat(realizationRate) < 25.0 && totalIssued >= 50) {
+        if (parseFloat(realizationRate) < 30.0 && totalIssued > 0) {
           earlyWarningEl.classList.remove('hidden');
-          setText('earlyWarningTitle', 'PACING ALERT: REALISASI KEDATANGAN TIKET RENDAH (' + realizationRate + '%)');
-          setText('earlyWarningDesc', 'Rasio konversi tiket menjadi kedatangan servis masih di bawah benchmark 30%. Evaluasi follow-up CRM SA sebelum masa voucher habis.');
-        } else if (parseFloat(progIssuedPct) < 30.0 && totalLeads > 0) {
-          earlyWarningEl.classList.remove('hidden');
-          setText('earlyWarningTitle', 'ACTIVITY ALERT: PROGRES PENERBITAN TIKET BARU ' + progIssuedPct + '%');
-          setText('earlyWarningDesc', 'Penerbitan tiket di awal periode (front-loading) masih rendah. Dorong SA untuk segera mengunci minimal 33% dari database leads.');
+          earlyWarningEl.classList.add('animate-pulse');
+          
+          if (parseFloat(realizationRate) < 20.0) {
+            earlyWarningEl.className = 'mb-6 bg-red-100 border-l-4 border-red-600 p-4 rounded-xl shadow-sm animate-pulse';
+            if (earlyWarningBadge) earlyWarningBadge.className = 'text-[10px] font-black uppercase px-2.5 py-1 rounded bg-red-200 text-red-900 border border-red-400 shrink-0';
+          } else {
+            earlyWarningEl.className = 'mb-6 bg-amber-50 border-l-4 border-amber-500 p-4 rounded-xl shadow-sm animate-pulse';
+            if (earlyWarningBadge) earlyWarningBadge.className = 'text-[10px] font-black uppercase px-2.5 py-1 rounded bg-amber-200 text-amber-900 border border-amber-300 shrink-0';
+          }
+
+          setText('earlyWarningTitle', 'PACING ALERT: REALISASI KEDATANGAN TIKET BARU ' + realizationRate + '% (TARGET 30,0%)');
+          setText('earlyWarningDesc', 'Baru tercapai ' + formatNum(totalRedeemed) + ' dari target ' + formatNum(targetRedeemGoal) + ' unit redeem (Sisa ' + formatNum(remRedeem) + ' unit lagi). Tingkatkan recall reminder SA.');
         } else {
           earlyWarningEl.classList.add('hidden');
+          earlyWarningEl.classList.remove('animate-pulse');
         }
       }
 
