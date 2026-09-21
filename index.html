@@ -2323,19 +2323,19 @@
           var lbl = b.statusLabel || 'On Track';
 
           if (sts === 'ACHIEVED') {
-            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-600 text-white font-black shadow-sm">🎯 Target Tercapai</span>';
+            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-600 text-white font-black shadow-sm">🎯 Target Achieved</span>';
           } else if (sts === 'HEALTHY' || sts === 'ON_TRACK') {
             statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold">🟢 On Track</span>';
           } else if (sts === 'LEAD_BOTTLENECK') {
-            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-yellow-100 text-yellow-900 border border-yellow-300 font-bold">🟡 Bottleneck SA</span>';
+            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-yellow-100 text-yellow-900 border border-yellow-300 font-bold">🟡 Issuance Bottleneck</span>';
           } else if (sts === 'RECALL_FRICTION') {
-            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-orange-100 text-orange-900 border border-orange-300 font-bold">🟠 Follow-up Mandek</span>';
+            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-orange-100 text-orange-900 border border-orange-300 font-bold">🟠 Recall Friction</span>';
           } else if (sts === 'CRITICAL_RISK') {
-            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-rose-100 text-rose-800 border border-rose-300 font-black animate-pulse">🔴 Perhatian Khusus</span>';
+            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-rose-100 text-rose-800 border border-rose-300 font-black animate-pulse">🔴 Critical Risk</span>';
           } else if (sts === 'ANOMALY') {
-            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-purple-100 text-purple-800 border border-purple-300 font-bold">⚠️ Anomali</span>';
+            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-purple-100 text-purple-800 border border-purple-300 font-bold">⚠️ Irregular Inflow</span>';
           } else {
-            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-500 border border-gray-300">Belum Ada Aktivitas</span>';
+            statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-500 border border-gray-300">⚪ Dormant / Inactives</span>';
           }
 
           var inS2Cells = dashIsJanJun ? 
