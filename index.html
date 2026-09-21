@@ -780,71 +780,80 @@
           <!-- 🔴 SEKSI 3: TOP-DOWN STEPPED RETENTION FUNNEL & ARPU / COO REALIZATION CARD -->
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            <!-- SISI KIRI (5 KOLOM): TOP-DOWN STEPPED FUNNEL KE BAWAH -->
+           <!-- SISI KIRI (5 KOLOM): TOP-DOWN STEPPED FUNNEL KE BAWAH -->
             <div class="lg:col-span-5 bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between">
               <div class="border-b pb-2 mb-3 flex justify-between items-center">
                 <h3 class="text-xs font-black text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
                   <span>🔻 Retention Funnel (Servis 8 vs 9)</span>
                 </h3>
-                <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">Top-Down Flow</span>
+                <span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">Reverse Funnel (Tgt 30%)</span>
               </div>
 
               <div class="space-y-2 flex flex-col items-center w-full">
                 <!-- STEP 1: TARGET LEADS -->
-                <div class="w-full bg-slate-100 border border-slate-300 rounded-xl p-3 text-center shadow-sm">
+                <div class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-center shadow-sm">
                   <div class="flex justify-between items-center mb-1">
                     <span class="text-[10px] font-black text-slate-700 uppercase">1. Target Leads Cohort</span>
-                    <span class="text-[10px] font-bold text-slate-500">100% (Baseline)</span>
+                    <span class="text-[10px] font-bold text-slate-500 bg-slate-200/60 px-1.5 py-0.5 rounded">100% Baseline</span>
                   </div>
                   <p class="text-2xl font-black text-slate-900" id="fnLeads">0</p>
-                  <div class="mt-1 flex justify-around text-[10px] font-bold text-slate-600 bg-white/70 py-1 rounded">
+                  <div class="mt-1 flex justify-around text-[10px] font-bold text-slate-600 bg-white py-1 rounded border border-slate-100">
                     <span>S8: <b id="fnLeadsS8" class="text-slate-900">0</b></span>
                     <span>S9: <b id="fnLeadsS9" class="text-slate-900">0</b></span>
                   </div>
                 </div>
 
                 <!-- Connector Lock-In -->
-                <div class="flex items-center gap-1 text-[10px] font-black text-blue-600 py-0.5">
+                <div class="flex items-center gap-1.5 text-[10px] font-black text-blue-700 py-0.5">
                   <span>↓</span>
-                  <span id="fnLockInRate">Lock-in Rate: 0%</span>
+                  <span id="fnLockInRate">Lock-in Penetration: 0%</span>
                   <span>↓</span>
                 </div>
 
-                <!-- STEP 2: TICKETS ISSUED -->
-                <div onclick="openTicketModal('target')" class="w-[84%] bg-blue-50 hover:bg-blue-100/70 cursor-pointer border border-blue-300 rounded-xl p-2.5 text-center shadow-sm transition">
+                <!-- STEP 2: TICKETS ISSUED (INPUT KONTROL) -->
+                <div onclick="openTicketModal('target')" class="w-[88%] bg-blue-50/80 hover:bg-blue-100/70 cursor-pointer border border-blue-200 rounded-xl p-2.5 text-center shadow-sm transition">
                   <div class="flex justify-between items-center mb-0.5">
-                    <span class="text-[10px] font-black text-blue-800 uppercase">2. Tickets Issued (Lock-in)</span>
-                    <span class="text-[10px] font-bold text-blue-600" id="fnIssuedPct">0%</span>
+                    <span class="text-[10px] font-black text-blue-900 uppercase">2. Tickets Issued (Lock-in)</span>
+                    <span class="text-[9px] font-black text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded border border-blue-300" id="fnIssuedProg">0% Tgt</span>
                   </div>
-                  <p class="text-xl font-black text-blue-700" id="fnIssued">0</p>
-                  <div class="mt-1 flex justify-around text-[9px] font-bold text-blue-800 bg-white/70 py-0.5 rounded">
+                  <div class="flex items-baseline justify-center gap-1.5 my-0.5">
+                    <span class="text-xl font-black text-blue-800" id="fnIssued">0</span>
+                    <span class="text-xs font-bold text-blue-500">/ <span id="fnTargetIssued">0</span></span>
+                  </div>
+                  <div class="mt-1 flex justify-around text-[9px] font-bold text-blue-900 bg-white/80 py-0.5 rounded border border-blue-100">
                     <span>S8: <b id="fnIssuedS8">0</b></span>
                     <span>S9: <b id="fnIssuedS9">0</b></span>
                   </div>
                 </div>
 
                 <!-- Connector Realization -->
-                <div class="flex items-center gap-1 text-[10px] font-black text-emerald-600 py-0.5">
+                <div class="flex items-center gap-1.5 text-[10px] font-black py-0.5" id="fnRealizationConn">
                   <span>↓</span>
                   <span id="fnRealizationRate">Realization: 0%</span>
                   <span>↓</span>
                 </div>
 
-                <!-- STEP 3: REDEEMED UNITS -->
-                <div onclick="openRedeemModal('target')" class="w-[68%] bg-emerald-50 hover:bg-emerald-100/70 cursor-pointer border border-emerald-300 rounded-xl p-2.5 text-center shadow-sm transition">
+                <!-- STEP 3: REDEEMED UNITS (OUTPUT KONTROL) -->
+                <div onclick="openRedeemModal('target')" class="w-[76%] bg-emerald-50/80 hover:bg-emerald-100/70 cursor-pointer border border-emerald-200 rounded-xl p-2.5 text-center shadow-sm transition">
                   <div class="flex justify-between items-center mb-0.5">
-                    <span class="text-[10px] font-black text-emerald-800 uppercase">3. Redeemed Units</span>
-                    <span class="text-[10px] font-bold text-emerald-600" id="fnRedeemedPct">0%</span>
+                    <span class="text-[10px] font-black text-emerald-900 uppercase">3. Redeemed Units</span>
+                    <span class="text-[9px] font-black text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-300" id="fnRedeemedProg">0% Tgt</span>
                   </div>
-                  <p class="text-xl font-black text-emerald-700" id="fnRedeemed">0</p>
-                  <div class="mt-1 flex justify-around text-[9px] font-bold text-emerald-800 bg-white/70 py-0.5 rounded">
+                  <div class="flex items-baseline justify-center gap-1.5 my-0.5">
+                    <span class="text-xl font-black text-emerald-800" id="fnRedeemed">0</span>
+                    <span class="text-xs font-bold text-emerald-500">/ <span id="fnTargetRedeem">0</span></span>
+                  </div>
+                  <div class="mt-1 flex justify-around text-[9px] font-bold text-emerald-900 bg-white/80 py-0.5 rounded border border-emerald-100">
                     <span>S8: <b id="fnRedeemedS8">0</b></span>
                     <span>S9: <b id="fnRedeemedS9">0</b></span>
                   </div>
                 </div>
               </div>
 
-              <p class="text-[10px] text-gray-400 font-medium text-center mt-2">Menampilkan konversi berjenjang dari populasi target leads menuju realisasi servis di bengkel.</p>
+              <div class="mt-2.5 pt-2 border-t border-gray-100 flex justify-between items-center text-[10px] text-gray-500">
+                <span>Konversi Leads: <b id="fnConvLeads" class="text-gray-800 font-bold">0%</b></span>
+                <span class="text-indigo-600 font-bold">Benchmark Realisasi: 30,0%</span>
+              </div>
             </div>
 
             <!-- SISI KANAN (7 KOLOM): REVENUE & ARPU / COO REALIZATION -->
@@ -2605,22 +2614,40 @@
 
       renderS2MonthlyBoard(res.s2MonthlyLeads || {});
 
+      // 🔴 LOGIKA RETENTION FUNNEL AKURAT & TERHUBUNG TARGET PACING
+      var actualLockInRate = totalLeads > 0 ? ((totalIssued / totalLeads) * 100).toFixed(1) : "0.0";
+      var actualRealizationRate = totalIssued > 0 ? ((totalRedeemed / totalIssued) * 100).toFixed(1) : "0.0";
+
       setText('fnLeads', formatNum(totalLeads));
       setText('fnLeadsS8', formatNum(res.leadsS8 || 0));
       setText('fnLeadsS9', formatNum(res.leadsS9 || 0));
 
-      setText('fnLockInRate', `Lock-in Rate: ${res.targetLockInRate || 0}%`);
-      setText('fnIssuedPct', `${res.targetLockInRate || 0}%`);
+      setText('fnLockInRate', `Lock-in Penetration: ${actualLockInRate}% of Leads`);
+
       setText('fnIssued', formatNum(totalIssued));
+      setText('fnTargetIssued', formatNum(targetIssuedGoal));
+      setText('fnIssuedProg', progIssuedPct + '% Tgt');
       setText('fnIssuedS8', formatNum(res.ticketsIssuedS8 || 0));
       setText('fnIssuedS9', formatNum(res.ticketsIssuedS9 || 0));
 
-      var relRate = totalIssued > 0 ? ((totalRedeemed / totalIssued) * 100).toFixed(1) : "0.0";
-      setText('fnRealizationRate', `Realization: ${relRate}%`);
-      setText('fnRedeemedPct', `${res.targetConvRate || 0}% of Leads`);
+      // Indikator Warna & Peringatan Konektor Realization vs 30%
+      var relConnEl = document.getElementById('fnRealizationConn');
+      if (relConnEl) {
+        if (parseFloat(actualRealizationRate) >= 30.0) {
+          relConnEl.className = 'flex items-center gap-1.5 text-[10px] font-black text-emerald-700 py-0.5';
+          setText('fnRealizationRate', `Realization: ${actualRealizationRate}% (Target ≥30% ✔)`);
+        } else {
+          relConnEl.className = 'flex items-center gap-1.5 text-[10px] font-black text-rose-600 py-0.5 animate-pulse';
+          setText('fnRealizationRate', `Realization: ${actualRealizationRate}% (Di Bawah Target 30% ⚠️)`);
+        }
+      }
+
       setText('fnRedeemed', formatNum(totalRedeemed));
+      setText('fnTargetRedeem', formatNum(targetRedeemGoal));
+      setText('fnRedeemedProg', progRedeemPct + '% Tgt');
       setText('fnRedeemedS8', formatNum(res.redeemedUnitsS8 || 0));
       setText('fnRedeemedS9', formatNum(res.redeemedUnitsS9 || 0));
+      setText('fnConvLeads', (res.targetConvRate || 0) + '% of Leads');
 
       var actualRev = res.totalActualRevenue || res.targetRevenue || 0;
       var revS8 = res.revenueS8 || 0;
