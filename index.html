@@ -1063,7 +1063,7 @@
               <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">1. REGIONAL EXECUTIVE RESUME</span>
               <span class="text-[10px] text-purple-700 font-bold">💡 Klik kartu untuk langsung memfilter data audit</span>
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-6 gap-3 md:gap-4">
               <div onclick="filterAuditTable('ALL')" class="bg-white hover:bg-slate-50 cursor-pointer p-4 rounded-xl border border-gray-200 shadow-sm text-center transition transform hover:scale-[1.02]">
                 <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total Invoiced WO</p>
                 <p class="text-2xl font-black text-gray-900 mt-1" id="kpiAuditTotal">0</p>
@@ -1084,10 +1084,16 @@
                 <p class="text-2xl font-black text-blue-700 mt-1" id="kpiAuditKlaimLiar">0</p>
                 <p class="text-[9px] text-blue-600 font-bold mt-0.5">Pending Web Redemption</p>
               </div>
-              <div class="bg-purple-50/80 p-4 rounded-xl border border-purple-200 shadow-sm text-center col-span-2 md:col-span-1 flex flex-col justify-center">
+              <div class="bg-purple-50/80 p-4 rounded-xl border border-purple-200 shadow-sm text-center flex flex-col justify-center">
                 <p class="text-[10px] font-bold text-purple-800 uppercase tracking-wider">Total Billed Gross</p>
                 <p class="text-lg md:text-base font-black text-purple-900 mt-1" id="kpiAuditLeakage">Rp 0</p>
                 <p class="text-[9px] text-purple-600 font-bold mt-0.5">Actual Realized Invoicing</p>
+              </div>
+              <!-- 🔴 KARTU 6: TOTAL REIMBURSEMENT SUBSIDI HO -->
+              <div class="bg-emerald-50/90 p-4 rounded-xl border-2 border-emerald-400 shadow-sm text-center flex flex-col justify-center">
+                <p class="text-[10px] font-black text-emerald-900 uppercase tracking-wider">Tagihan Subsidi HO</p>
+                <p class="text-lg md:text-base font-black text-emerald-700 mt-1" id="kpiAuditSubsidiNominal">Rp 0</p>
+                <p class="text-[9px] text-emerald-700 font-bold mt-0.5"><span id="kpiAuditSubsidiUnits" class="font-black text-emerald-900">0</span> Unit On-Time (≤6 Bln)</p>
               </div>
             </div>
           </div>
@@ -1124,6 +1130,7 @@
                     <th onclick="sortAuditBranchTable('redeemFiktif')" class="px-2.5 py-2.5 border-b text-center sortable-th text-gray-600">Unbilled <span id="audbr-sort-redeemFiktif">↕</span></th>
                     <th onclick="sortAuditBranchTable('complianceRate')" class="px-2.5 py-2.5 border-b text-center sortable-th text-purple-700 font-black">Compliance % <span id="audbr-sort-complianceRate">↕</span></th>
                     <th onclick="sortAuditBranchTable('totalInvoice')" class="px-3 py-2.5 border-b text-right sortable-th text-gray-900 font-black">Gross Billed <span id="audbr-sort-totalInvoice">↕</span></th>
+                    <th onclick="sortAuditBranchTable('subsidiNominal')" class="px-3 py-2.5 border-b text-right sortable-th text-emerald-800 font-black bg-emerald-50/60">Subsidi HO (Rp) <span id="audbr-sort-subsidiNominal">↕</span></th>
                     <th class="px-3 py-2.5 border-b text-center">Action</th>
                   </tr>
                 </thead>
@@ -1168,6 +1175,7 @@
                       <th class="px-4 py-3 bg-gray-900">Job Scope (NIS)</th>
                       <th class="px-4 py-3 text-right bg-gray-900">Labor Discount</th>
                       <th onclick="sortAuditTable('totalInvoice')" class="px-4 py-3 text-right sortable-th bg-gray-900 font-black">Gross Invoice <span id="aud-sort-totalInvoice">↕</span></th>
+                      <th class="px-4 py-3 text-center bg-gray-900 text-yellow-300 font-black">Item Bonus (Subsidi HO)</th>
                       <th onclick="sortAuditTable('statusAudit')" class="px-3 py-3 text-center sortable-th bg-gray-900">Compliance Status <span id="aud-sort-statusAudit">↕</span></th>
                       <th class="px-4 py-3 bg-gray-900">Audit Trail / Remarks</th>
                     </tr>
@@ -2809,9 +2817,9 @@
           setText('kpiAuditKlaimLiar', formatNum(s.klaimLiar || 0));
           setText('kpiAuditLeakage', formatRp(s.totalRevenueNis || 0));
 
-          setText('kpiGovOrganicTickets', formatNum(s.organicTickets || 0));
-          setText('kpiGovOrganicRedeemed', formatNum(s.organicRedeemed || 0));
-          setText('kpiGovOrganicRevenue', formatRp(s.organicRevenue || 0));
+          // 🔴 METRIK SUBSIDI HO
+          setText('kpiAuditSubsidiNominal', formatRp(s.totalSubsidiNominal || 0));
+          setText('kpiAuditSubsidiUnits', formatNum(s.totalSubsidiUnits || 0));
 
           computeAndRenderAuditBranchBreakdown();
           renderAuditTable();
@@ -2833,11 +2841,16 @@
             salahJob: 0,
             klaimLiar: 0,
             redeemFiktif: 0,
-            totalInvoice: 0
+            totalInvoice: 0,
+            subsidiNominal: 0, // Akumulasi subsidi sah per cabang
+            subsidiUnits: 0
           };
         }
         branchAgg[cbg].totalWo++;
         branchAgg[cbg].totalInvoice += Number(r.totalInvoice) || 0;
+        branchAgg[cbg].subsidiNominal += Number(r.subsidiNominal) || 0;
+        if (r.subsidiNominal > 0) branchAgg[cbg].subsidiUnits++;
+
         if (r.statusAudit === 'COMPLIANT') branchAgg[cbg].compliant++;
         else if (r.statusAudit === 'SALAH_PEKERJAAN') branchAgg[cbg].salahJob++;
         else if (r.statusAudit === 'KLAIM_LIAR') branchAgg[cbg].klaimLiar++;
@@ -2863,7 +2876,7 @@
         return auditBranchSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
       });
 
-      var sortCols = ['cabang', 'totalWo', 'compliant', 'salahJob', 'klaimLiar', 'redeemFiktif', 'complianceRate', 'totalInvoice'];
+      var sortCols = ['cabang', 'totalWo', 'compliant', 'salahJob', 'klaimLiar', 'redeemFiktif', 'complianceRate', 'totalInvoice', 'subsidiNominal'];
       for (var i = 0; i < sortCols.length; i++) {
         var c = sortCols[i];
         var el = document.getElementById('audbr-sort-' + c);
@@ -2874,7 +2887,7 @@
 
       setText('auditBranchCountBadge', filtered.length + " Branches");
 
-      var tbodyHtml = '', totWo = 0, totComp = 0, totSalah = 0, totLiar = 0, totFiktif = 0, totInv = 0;
+      var tbodyHtml = '', totWo = 0, totComp = 0, totSalah = 0, totLiar = 0, totFiktif = 0, totInv = 0, totSubsidi = 0;
 
       if (filtered.length > 0) {
         filtered.forEach(function(b, idx) {
@@ -2884,6 +2897,7 @@
           totLiar += b.klaimLiar;
           totFiktif += b.redeemFiktif;
           totInv += b.totalInvoice;
+          totSubsidi += b.subsidiNominal;
 
           var rateVal = parseFloat(b.complianceRate);
           var rateBadge = rateVal >= 85 ? 'bg-emerald-100 text-emerald-800 border-emerald-300 font-black' : (rateVal >= 60 ? 'bg-amber-100 text-amber-800 border-amber-300 font-bold' : 'bg-rose-100 text-rose-800 border-rose-300 font-black animate-pulse');
@@ -2900,13 +2914,14 @@
             '<td class="px-2.5 py-2 text-center font-bold text-gray-600">' + formatNum(b.redeemFiktif) + '</td>' +
             '<td class="px-2.5 py-2 text-center"><span class="px-2 py-0.5 rounded text-xs border ' + rateBadge + '">' + b.complianceRate + '%</span></td>' +
             '<td class="px-3 py-2 text-right font-black text-gray-900 font-mono">' + formatRp(b.totalInvoice) + '</td>' +
+            '<td class="px-3 py-2 text-right font-black text-emerald-700 bg-emerald-50/40 font-mono">' + formatRp(b.subsidiNominal) + '</td>' +
             '<td class="px-3 py-2 text-center">' +
               '<button onclick="filterAuditByBranch(\'' + b.cabang + '\')" class="bg-purple-700 hover:bg-purple-800 text-white text-[10px] font-bold px-2.5 py-1 rounded shadow-sm transition">🔍 Filter Detail</button>' +
             '</td>' +
           '</tr>';
         });
       } else {
-        tbodyHtml = '<tr><td colspan="10" class="px-4 py-8 text-center text-gray-400 italic font-medium">Tidak ada data cabang yang cocok.</td></tr>';
+        tbodyHtml = '<tr><td colspan="11" class="px-4 py-8 text-center text-gray-400 italic font-medium">Tidak ada data cabang yang cocok.</td></tr>';
       }
 
       setHTML('auditBranchTableBody', tbodyHtml);
@@ -2921,6 +2936,7 @@
         '<td class="px-2.5 py-2.5 text-center font-black text-gray-700">' + formatNum(totFiktif) + '</td>' +
         '<td class="px-2.5 py-2.5 text-center font-black text-purple-900">' + avgRate + '%</td>' +
         '<td class="px-3 py-2.5 text-right font-black text-gray-900">' + formatRp(totInv) + '</td>' +
+        '<td class="px-3 py-2.5 text-right font-black text-emerald-800 bg-emerald-100/60">' + formatRp(totSubsidi) + '</td>' +
         '<td></td>' +
       '</tr>';
       
@@ -2992,7 +3008,7 @@
         auditSortOrder = (auditSortOrder === 'asc') ? 'desc' : 'asc';
       } else {
         auditSortCol = col;
-        auditSortOrder = (col === 'totalInvoice') ? 'desc' : 'asc';
+        auditSortOrder = (col === 'totalInvoice' || col === 'subsidiNominal') ? 'desc' : 'asc';
       }
       renderAuditTable();
     }
@@ -3013,7 +3029,7 @@
 
       filtered.sort(function(a, b) {
         var valA = a[auditSortCol], valB = b[auditSortCol];
-        if (auditSortCol === 'totalInvoice') return auditSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
+        if (auditSortCol === 'totalInvoice' || auditSortCol === 'subsidiNominal') return auditSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
         if (typeof valA === 'string') return auditSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
         return 0;
       });
@@ -3053,6 +3069,16 @@
           var safeKeterangan = r.keterangan || '-';
           var totalInv = formatRp(r.totalInvoice);
 
+          var subsidiBadge = Number(r.subsidiNominal) > 0
+            ? `<div class="flex flex-col items-center">
+                 <span class="font-bold text-gray-900 text-xs">${r.itemBonus}</span>
+                 <span class="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300 mt-0.5">+ ${formatRp(r.subsidiNominal)}</span>
+               </div>`
+            : `<div class="flex flex-col items-center">
+                 <span class="text-xs text-gray-500">${r.itemBonus || '-'}</span>
+                 <span class="text-[10px] text-gray-400 font-bold">Rp 0</span>
+               </div>`;
+
           tbodyHtml += '<tr class="hover:bg-slate-50 transition border-b border-gray-100">' +
             '<td class="px-3 py-2.5 text-center text-gray-400 font-medium">' + (idx + 1) + '</td>' +
             '<td class="px-4 py-2.5">' +
@@ -3065,17 +3091,18 @@
             '</td>' +
             '<td class="px-4 py-2.5">' +
               '<p onclick="copyToClipboard(\'' + safeNoka + '\',\'VIN\')" class="font-mono font-bold text-gray-900 cursor-pointer hover:text-purple-600 hover:underline inline-flex items-center gap-1" title="Klik untuk menyalin VIN">' + safeNoka + ' <svg class="w-2.5 h-2.5 text-gray-300 hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></p>' +
-              '<p class="text-[10px] text-gray-500 font-semibold">' + safeModel + '</p>' +
+              '<p class="text-[10px] text-gray-500 font-semibold">' + safeModel + ' (' + (r.fuelType || 'BENSIN') + ')</p>' +
             '</td>' +
             '<td class="px-4 py-2.5 font-medium text-gray-800 max-w-xs truncate" title="' + safePekerjaan + '">' + safePekerjaan + '</td>' +
             '<td class="px-4 py-2.5 text-right font-mono font-bold text-purple-700">' + (r.discJasa || '-') + '</td>' +
             '<td class="px-4 py-2.5 text-right font-black text-gray-900 font-mono">' + totalInv + '</td>' +
+            '<td class="px-4 py-2.5 text-center">' + subsidiBadge + '</td>' +
             '<td class="px-3 py-2.5 text-center">' + badge + '</td>' +
             '<td class="px-4 py-2.5 text-[11px] font-medium text-gray-600 leading-snug max-w-sm whitespace-normal">' + safeKeterangan + '</td>' +
           '</tr>';
         });
       } else {
-        tbodyHtml = '<tr><td colspan="9" class="px-4 py-10 text-center text-gray-400 italic font-medium">Tidak ada data yang sesuai dengan kriteria filter.</td></tr>';
+        tbodyHtml = '<tr><td colspan="11" class="px-4 py-10 text-center text-gray-400 italic font-medium">Tidak ada data yang sesuai dengan kriteria filter.</td></tr>';
       }
 
       setHTML('auditTableBody', tbodyHtml);
@@ -3087,7 +3114,7 @@
         return Swal.fire('Tidak Ada Data', 'Tidak ada data rekonsiliasi yang dapat diekspor.', 'warning');
       }
       var exportData = [
-        ["#", "Status Kepatuhan", "Nomor WO", "Tanggal Faktur", "Cabang", "Service Advisor", "Nomor Rangka", "Model Kendaraan", "Pekerjaan (NIS)", "Diskon Jasa", "Diskon Part", "Total Faktur (Gross)", "Keterangan Audit"]
+        ["#", "Status Kepatuhan", "Nomor WO", "Tanggal Faktur", "Cabang", "Service Advisor", "Nomor Rangka", "Model Kendaraan", "Tipe Bahan Bakar", "Pekerjaan (NIS)", "Diskon Jasa", "Diskon Part", "Total Faktur (Gross)", "Item Bonus On-Time", "Subsidi HO (Rp)", "Keterangan Audit"]
       ];
       rawAuditData.forEach(function(r, idx) {
         var statusLabel = r.statusAudit === 'COMPLIANT' 
@@ -3104,17 +3131,20 @@
           r.namaSA, 
           r.noka, 
           r.model, 
+          r.fuelType || 'BENSIN',
           r.pekerjaan, 
           r.discJasa, 
           r.discPart, 
           Number(r.totalInvoice) || 0, 
+          r.itemBonus || '-',
+          Number(r.subsidiNominal) || 0,
           r.keterangan
         ]);
       });
       var ws = XLSX.utils.aoa_to_sheet(exportData);
       var wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "NIS_Program_Governance");
-      XLSX.writeFile(wb, "NIS_Program_Governance_Report.xlsx");
+      XLSX.utils.book_append_sheet(wb, ws, "Settlement_Subsidi_HO");
+      XLSX.writeFile(wb, "Settlement_Subsidi_HO_Report.xlsx");
     }
     
     function downloadDashboardPDF() {
