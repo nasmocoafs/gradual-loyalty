@@ -717,7 +717,7 @@
                   <span class="text-sm font-bold text-blue-200/70">/ <b id="kpiTargetIssuedGoal" class="text-white">0</b></span>
                 </div>
                 <div class="mt-2 pt-2 border-t border-white/10 text-[11px] font-bold text-blue-100 flex justify-between px-1">
-                  <span>Target: <b id="kpiTargetIssuedGoal" class="text-white">0</b></span>
+                  <span>Target: <b id="kpiTargetIssuedGoalText" class="text-white">0</b></span>
                   <span>Sisa: <b id="kpiTargetIssuedRem" class="text-yellow-300">0</b></span>
                 </div>
               </div>
@@ -736,7 +736,7 @@
                   <span class="text-sm font-bold text-emerald-200/70">/ <b id="kpiTargetRedeemGoal" class="text-white">0</b></span>
                 </div>
                 <div class="mt-2 pt-2 border-t border-white/10 text-[11px] font-bold text-blue-100 flex justify-between px-1">
-                  <span>Target: <b id="kpiTargetRedeemGoal" class="text-white">0</b></span>
+                  <span>Target: <b id="kpiTargetRedeemGoalText" class="text-white">0</b></span>
                   <span>Sisa: <b id="kpiTargetRedeemRem" class="text-yellow-300">0</b></span>
                 </div>
               </div>
@@ -1283,7 +1283,7 @@
         <table class="w-full text-xs text-left whitespace-nowrap">
           <thead class="bg-gray-100 text-[10px] uppercase text-gray-600 font-bold sticky top-0 z-10 shadow-sm">
             <tr>
-              <th class="px-3 py-2.5 text-center w-8">#</th><th class="px-4 py-2.5">Customer & Model</th><th class="px-4 py-2.5">VIN Number</th><th class="px-4 py-2.5">Dealership & SA</th><th class="px-3 py-2.5 text-center">Service Level</th><th class="px-3 py-2.5 text-center">WO No.</th><th class="px-3 py-2.5 text-center">Redeem Date</th><th class="px-4 py-2.5 text-right font-black">Actual Invoicing</th><th class="px-4 py-2.5 text-right font-black">Actual Invoicing</th><th class="px-3 py-2.5 text-right font-black text-emerald-800 bg-emerald-50">Subsidi HO</th><th class="px-3 py-2.5 text-center">Classification</th><th class="px-3 py-2.5 text-center">Classification</th>
+              <th class="px-3 py-2.5 text-center w-8">#</th><th class="px-4 py-2.5">Customer & Model</th><th class="px-4 py-2.5">VIN Number</th><th class="px-4 py-2.5">Dealership & SA</th><th class="px-3 py-2.5 text-center">Service Level</th><th class="px-3 py-2.5 text-center">WO No.</th><th class="px-3 py-2.5 text-center">Redeem Date</th><th class="px-4 py-2.5 text-right font-black">Actual Invoicing</th><th class="px-3 py-2.5 text-right font-black text-emerald-800 bg-emerald-50">Subsidi HO</th><th class="px-3 py-2.5 text-center">Classification</th>
             </tr>
           </thead>
           <tbody id="redeemTableBody" class="divide-y divide-gray-200 bg-white"></tbody>
@@ -2269,7 +2269,14 @@
       document.getElementById('modalRedeemDetail').classList.remove('hidden');
       updateRedeemModalUI();
     }
-
+    
+    function openRedeemModalFilteredByBranch(cabangName) {
+      currentRedeemTab = 'all';
+      document.getElementById('searchRedeemInput').value = cabangName;
+      redeemSearchQuery = cabangName.toUpperCase().trim();
+      document.getElementById('modalRedeemDetail').classList.remove('hidden');
+      updateRedeemModalUI();
+    }
     // 🔴 DEALERSHIP BREAKDOWN: SIMPLIFIED DENGAN IRREGULARITY CONTROL & PACING TARGET
     function renderBranchBreakdown() {
       var headHtml = '<tr>' +
@@ -2365,7 +2372,7 @@
             `<td class="px-2.5 py-3 text-center font-bold text-teal-800 bg-teal-50/40 border-b border-gray-100">${formatNum(b.inS2Count || 0)}</td>
              <td class="px-2.5 py-3 text-center border-b border-gray-100"><span class="px-2 py-0.5 rounded text-xs border bg-teal-50 border-teal-200 text-teal-900 font-bold">${b.progressInS2 || '0,0'}%</span></td>` : '';
           
-          bdHtml += `<tr class="hover:bg-gray-50 transition text-xs">
+          bdHtml += `<tr onclick="openRedeemModalFilteredByBranch('${b.cabang}')" class="hover:bg-blue-50 cursor-pointer transition text-xs" title="Klik untuk melihat unit ${b.cabang}">
             <td class="px-3 py-3 text-center border-b border-gray-100 font-medium text-gray-500">${idx + 1}</td>
             <td class="px-3 py-3 font-bold uppercase text-gray-800 border-b border-gray-100">${b.cabang}</td>
             <td class="px-2.5 py-3 text-center font-bold text-purple-900 bg-purple-50/20 border-b border-gray-100">${formatNum(pot)}</td>
@@ -2624,10 +2631,12 @@
       var realizationRate = totalIssued > 0 ? ((totalRedeemed / totalIssued) * 100).toFixed(1) : "0.0";
 
       setText('kpiTargetIssuedGoal', formatNum(targetIssuedGoal));
+      setText('kpiTargetIssuedGoalText', formatNum(targetIssuedGoal));
       setText('kpiTargetIssuedRem', formatNum(remIssued));
       setText('kpiIssuedProgBadge', progIssuedPct + '% Tgt');
 
       setText('kpiTargetRedeemGoal', formatNum(targetRedeemGoal));
+      setText('kpiTargetRedeemGoalText', formatNum(targetRedeemGoal));
       setText('kpiTargetRedeemRem', formatNum(remRedeem));
       setText('kpiRedeemProgBadge', progRedeemPct + '% Tgt');
 
