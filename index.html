@@ -350,7 +350,7 @@
 
   <!-- 3. WORKSPACE KARYAWAN -->
   <div id="app-wrapper" class="flex flex-col md:flex-row w-full h-full hidden fade-in">
-    <aside class="hidden md:flex w-64 bg-gray-900 text-gray-300 flex-col shrink-0 relative shadow-xl z-20">
+    <aside id="mainSidebar" class="hidden md:flex w-64 bg-gray-900 text-gray-300 flex-col shrink-0 relative shadow-xl z-20 transition-all duration-300">
       <div class="h-auto py-5 flex flex-col px-6 border-b border-gray-800 bg-gray-950">
         <h1 class="text-white font-bold text-lg tracking-wide uppercase">Gradual <span class="text-red-600">Loyalty</span></h1>
         <div class="mt-3 bg-gray-800 rounded px-3 py-2 text-xs border border-gray-700">
@@ -374,11 +374,22 @@
     </aside>
 
     <header class="md:hidden bg-gray-950 px-4 py-3 flex justify-between items-center shadow-md z-20 shrink-0">
+      <button type="button" onclick="toggleSidebar()" class="text-gray-300 hover:text-white p-1 focus:outline-none">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
       <h1 class="text-white font-black text-lg uppercase tracking-wide">Gradual <span class="text-red-600">Loyalty</span></h1>
       <button onclick="handleLogout()" class="text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded font-bold transition">Keluar</button>
     </header>
 
     <main class="flex-1 overflow-y-auto bg-gray-50 p-4 md:p-8 relative z-10 pb-20 md:pb-8">
+      
+      <!-- 🟢 TOMBOL TOGGLE SIDEBAR DESKTOP -->
+      <div class="hidden md:flex items-center mb-4">
+        <button type="button" onclick="toggleSidebar()" class="inline-flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-lg text-xs font-bold shadow-sm transition">
+          <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
+          <span id="sidebarToggleText">Sembunyikan Menu</span>
+        </button>
+      </div>
       
       <!-- TAB: PANDUAN -->
       <div id="view-panduan" class="w-full max-w-4xl mx-auto fade-in hidden">
@@ -1373,7 +1384,34 @@
       loadDashboard();
       Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Filter Short Term (S1) diterapkan', showConfirmButton: false, timer: 1500 });
     }
+// 🔴 BUKA-TUTUP (TOGGLE) SIDEBAR
+    function toggleSidebar() {
+      var sb = document.getElementById('mainSidebar');
+      var txt = document.getElementById('sidebarToggleText');
+      if (!sb) return;
 
+      // Mode Desktop (lebar layar >= 768px)
+      if (window.innerWidth >= 768) {
+        if (sb.classList.contains('md:flex')) {
+          sb.classList.remove('md:flex');
+          sb.classList.add('hidden');
+          if (txt) txt.innerText = 'Tampilkan Menu';
+        } else {
+          sb.classList.remove('hidden');
+          sb.classList.add('md:flex');
+          if (txt) txt.innerText = 'Sembunyikan Menu';
+        }
+      } else {
+        // Mode Mobile Drawer
+        if (sb.classList.contains('hidden')) {
+          sb.classList.remove('hidden');
+          sb.classList.add('fixed', 'inset-y-0', 'left-0', 'z-50', 'flex');
+        } else {
+          sb.classList.add('hidden');
+          sb.classList.remove('fixed', 'inset-y-0', 'left-0', 'z-50', 'flex');
+        }
+      }
+    }
     // 🔴 FULLSCREEN MODE TANPA TERPOTONG SIDEBAR
     function toggleBranchFullscreen() {
       var section = document.getElementById('hoBreakdownSection');
