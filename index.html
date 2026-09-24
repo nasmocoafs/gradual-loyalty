@@ -921,11 +921,11 @@
                   <p class="text-base font-black text-emerald-800" id="dashTotalSubsidi">Rp 0</p>
                   <p class="text-[9px] text-emerald-600 font-bold" id="dashCacUnit">Rp 0 / Unit Retensi</p>
                 </div>
-                <div class="sm:text-center border-t sm:border-t-0 sm:border-x border-emerald-200 pt-2 sm:pt-0">
-                  <p class="text-[10px] font-black text-teal-900 uppercase tracking-wider">Estimasi Gross Profit (GP)</p>
-                  <p class="text-base font-black text-teal-800" id="dashTotalGp">Rp 0</p>
-                  <p class="text-[9px] text-teal-700 font-bold">Blended GPM: <b id="dashBlendedGpm" class="text-teal-900">0%</b></p>
-                </div>
+               <div class="sm:text-center border-t sm:border-t-0 sm:border-x border-emerald-200 pt-2 sm:pt-0">
+                    <p class="text-[10px] font-black text-teal-900 uppercase tracking-wider">Estimasi Gross Profit (GP)</p>
+                    <p class="text-base font-black text-teal-800" id="dashTotalGp">Rp 0</p>
+                    <p class="text-[9px] text-teal-700 font-bold">Realisasi GPM: <b id="dashBlendedGpm" class="text-teal-900">0%</b></p>
+                  </div>
                 <div class="sm:text-right border-t sm:border-t-0 border-emerald-200 pt-2 sm:pt-0">
                   <p class="text-[10px] font-black text-indigo-900 uppercase tracking-wider">Gross Profit Multiplier</p>
                   <span class="text-xl font-black text-indigo-700 font-mono" id="dashGpMultiplier">0.0x</span>
@@ -2775,7 +2775,7 @@
       setText('kpiRevS9', formatRp(revS9));
       setText('kpiSaved', formatRp(res.savedEstimasi || 0));
 
-      // 🔴 METRIK OPERASIONAL: SUBSIDI, ESTIMASI GP, GPM & KELIPATAN LABA
+      // 🔴 METRIK GP RIIL NIS, REALISASI GPM & MULTIPLIER
       setText('dashTotalSubsidi', formatRp(res.totalProgramSubsidi || 0));
       setText('dashCacUnit', formatRp(res.cacPerUnit || 0) + ' / Unit Retensi');
       setText('dashTotalGp', formatRp(res.totalEstimatedGp || 0));
