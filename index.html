@@ -36,7 +36,14 @@
     var branchSortCol = 'cabang';
     var branchSortOrder = 'asc';
     var branchSearchQuery = '';
+    var branchFunnelFilter = ''; // 🔴 STATE FILTER FUNNEL STATUS
     var dashIsJanJun = false;
+
+    // 🔴 FUNGSI FILTER BY FUNNEL STATUS
+    function filterBranchByFunnel(val) {
+      branchFunnelFilter = (val || '').trim();
+      renderBranchBreakdown();
+    }
 
     // DRILL DOWN STATE
     var globalRedeemedDetails = [];
@@ -1063,7 +1070,19 @@
                 <span id="branchCountBadge" class="bg-gray-800 text-yellow-400 text-xs px-2.5 py-0.5 rounded-full font-bold border border-gray-700">24 Branches</span>
               </div>
               <div class="flex items-center gap-2 w-full sm:w-auto">
-                <div class="relative w-full sm:w-64">
+                <!-- 🔴 DROPDOWN FILTER BY FUNNEL STATUS -->
+                <select id="filterFunnelSelect" onchange="filterBranchByFunnel(this.value)" class="bg-gray-800 border border-gray-700 rounded-lg text-xs text-white px-2.5 py-1.5 focus:outline-none focus:border-red-500 font-bold shrink-0">
+                  <option value="">All Funnel Status</option>
+                  <option value="ACHIEVED">🎯 Target Achieved</option>
+                  <option value="HEALTHY">🟢 On Track</option>
+                  <option value="LEAD_BOTTLENECK">🟡 Issuance Bottleneck</option>
+                  <option value="RECALL_FRICTION">🟠 Recall Friction</option>
+                  <option value="CRITICAL_RISK">🔴 Critical Risk</option>
+                  <option value="ANOMALY">⚠️ Irregular Inflow</option>
+                  <option value="INACTIVE">⚪ Dormant / Inactives</option>
+                </select>
+
+                <div class="relative w-full sm:w-56">
                   <input type="text" id="searchBranchInput" oninput="filterBranchBreakdown(this.value)" placeholder="Search dealership..." class="w-full pl-8 pr-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-xs text-white placeholder-gray-400 focus:outline-none focus:border-red-500 auto-upper">
                   <svg class="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>
@@ -2358,11 +2377,11 @@
         '<th class="px-3 py-3 border-b text-center w-8 bg-gray-50">#</th>' +
         '<th onclick="sortBranchTable(\'cabang\')" class="px-3 py-3 border-b sortable-th bg-gray-50">Dealership <span id="br-sort-cabang">↕</span></th>' +
         '<th onclick="sortBranchTable(\'potensi\')" class="px-2.5 py-3 border-b text-center sortable-th bg-purple-50/40 text-purple-800">Database Leads <span id="br-sort-potensi">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'regTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-blue-50/60 text-blue-900">Tickets Issued vs Tgt <span id="br-sort-regTarget">↕</span></th>' +
-        '<th onclick="sortBranchTable(\'redeemTarget\')" class="px-3 py-3 border-b text-center sortable-th bg-emerald-50/60 text-emerald-900">Redeemed vs Tgt <span id="br-sort-redeemTarget">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'progressIssued\')" class="px-3 py-3 border-b text-center sortable-th bg-blue-50/60 text-blue-900" title="Sortir berdasarkan % Issued">Tickets Issued vs Tgt <span id="br-sort-progressIssued">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'progressRedeem\')" class="px-3 py-3 border-b text-center sortable-th bg-emerald-50/60 text-emerald-900" title="Sortir berdasarkan % Redeemed">Redeemed vs Tgt <span id="br-sort-progressRedeem">↕</span></th>' +
         '<th onclick="sortBranchTable(\'realizationRate\')" class="px-2.5 py-3 border-b text-center sortable-th bg-amber-50/50 text-amber-900">Realization (30%) <span id="br-sort-realizationRate">↕</span></th>' +
         '<th onclick="sortBranchTable(\'revenue\')" class="px-3 py-3 border-b text-right sortable-th bg-gray-100 font-black">Gross Revenue <span id="br-sort-revenue">↕</span></th>' +
-        '<th class="px-3 py-3 border-b text-center bg-gray-50 text-gray-700">Funnel Status</th>';
+        '<th onclick="sortBranchTable(\'funnelStatus\')" class="px-3 py-3 border-b text-center sortable-th bg-gray-50 text-gray-700" title="Sortir berdasarkan Status Funnel">Funnel Status <span id="br-sort-funnelStatus">↕</span></th>';
       
       if (dashIsJanJun) {
         headHtml += '<th onclick="sortBranchTable(\'inS2Count\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-50 text-teal-800">Total Act In <span id="br-sort-inS2Count">↕</span></th>' +
@@ -2371,14 +2390,26 @@
       headHtml += '</tr>';
       setHTML('branchBreakdownHead', headHtml);
 
-      var filtered = rawBranchBreakdownData.filter(b => !branchSearchQuery || (b.cabang || '').toUpperCase().includes(branchSearchQuery));
+      var filtered = rawBranchBreakdownData.filter(b => {
+        var matchSearch = !branchSearchQuery || (b.cabang || '').toUpperCase().includes(branchSearchQuery);
+        var matchFunnel = !branchFunnelFilter || (b.funnelStatus === branchFunnelFilter);
+        return matchSearch && matchFunnel;
+      });
+
       filtered.sort((a, b) => {
         var valA = a[branchSortCol], valB = b[branchSortCol];
+        // 🔴 SORTING KOLOM PERSENTASE (MENGGUNAKAN parseRate UNTUK ANGKA DESIMAL % ASLI)
         if (branchSortCol === 'realizationRate' || branchSortCol === 'progressIssued' || branchSortCol === 'progressRedeem' || branchSortCol === 'progressInS2') {
           return branchSortOrder === 'asc' ? (parseRate(valA) - parseRate(valB)) : (parseRate(valB) - parseRate(valA));
         }
         if (typeof valA === 'string') return branchSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
         return branchSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
+      });
+
+      // 🔴 DAFTAR ID INDIKATOR PANAH YANG DIPERBARUI
+      ['cabang', 'potensi', 'progressIssued', 'progressRedeem', 'realizationRate', 'revenue', 'funnelStatus', 'inS2Count', 'progressInS2'].forEach(c => {
+        var el = document.getElementById('br-sort-' + c);
+        if (el) el.innerHTML = branchSortCol === c ? (branchSortOrder === 'asc' ? '<span class="text-red-600 font-bold">▲</span>' : '<span class="text-red-600 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
       });
 
       ['cabang', 'potensi', 'regTarget', 'redeemTarget', 'realizationRate', 'revenue', 'inS2Count', 'progressInS2'].forEach(c => {
