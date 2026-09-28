@@ -112,13 +112,44 @@
       return str;
     }
 
-    async function fetchAPI(action, payload = {}) {
-      try {
-        const response = await fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: action, payload: payload }) });
-        return await response.json();
-      } catch (error) {
-        console.error("API Error:", error);
-        return { success: false, message: "Gagal terhubung ke Database. Cek koneksi Anda." };
+    // 🔴 FETCH ENGINE DENGAN AUTO-RETRY & TIMEOUT 35 DETIK
+    async function fetchAPI(action, payload = {}, retries = 1) {
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 35000); // Batas toleransi 35 detik
+
+          const response = await fetch(GAS_API_URL, { 
+            method: 'POST', 
+            body: JSON.stringify({ action: action, payload: payload }),
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+
+          const result = await response.json();
+          if (result && result.success) return result;
+
+          // Jika server Google mengembalikan false (antrean), tunggu 1,5 detik lalu coba lagi otomatis
+          if (attempt < retries) {
+            await new Promise(r => setTimeout(r, 1500));
+            continue;
+          }
+          return result;
+        } catch (error) {
+          // Jika koneksi putus/timeout, coba 1x lagi secara diam-diam di latar belakang
+          if (attempt < retries) {
+            console.warn(`Mencoba ulang koneksi ${action} (Percobaan ke-${attempt + 2})...`);
+            await new Promise(r => setTimeout(r, 1500));
+            continue;
+          }
+          console.error("API Error:", error);
+          return { 
+            success: false, 
+            message: error.name === 'AbortError' 
+              ? 'Waktu tunggu habis (Server Google sedang antre komputasi). Silakan coba kembali.' 
+              : 'Gagal terhubung ke Database. Cek koneksi internet Anda.' 
+          };
+        }
       }
     }
 
@@ -2588,14 +2619,14 @@
       XLSX.writeFile(wb, "Loyalty_Redemptions.xlsx");
     }
     
-// 🔴 LOAD ANALYTICS DASHBOARD (DENGAN CACHE & DETEKSI GAGAL)
+// 🔴 LOAD ANALYTICS DASHBOARD (DENGAN CACHE, AUTO-RETRY & PESAN ERROR DINAMIS)
     function loadDashboard(forceRefresh = false) {
       var sDate = document.getElementById('dashStartDate').value;
       var eDate = document.getElementById('dashEndDate').value;
       var userCabang = sessionUser ? sessionUser.cabang : 'HO';
       var cacheKey = 'gls_dash_cache_' + userCabang + '_' + sDate + '_' + eDate;
 
-      // 1. Cek apakah data sudah pernah tersimpan di browser
+      // 1. Cek apakah data sudah pernah tersimpan di memori browser
       if (!forceRefresh) {
         var cachedData = sessionStorage.getItem(cacheKey);
         if (cachedData) {
@@ -2608,20 +2639,26 @@
       }
 
       document.getElementById('dashContent').classList.add('hidden'); 
-      document.getElementById('dashLoading').classList.remove('hidden'); 
+      var loadingEl = document.getElementById('dashLoading');
+      if (loadingEl) {
+        loadingEl.innerText = "Memproses Data Analitik Cabang...";
+        loadingEl.classList.remove('hidden'); 
+      }
       document.getElementById('earlyWarning').classList.add('hidden');
 
-      fetchAPI('getDashboardData', { startDate: sDate, endDate: eDate, cabang: userCabang }).then(function(res) {
-        document.getElementById('dashLoading').classList.add('hidden'); 
+      // Mengirim request dengan kuota 1x retry otomatis di latar belakang
+      fetchAPI('getDashboardData', { startDate: sDate, endDate: eDate, cabang: userCabang }, 1).then(function(res) {
+        if (loadingEl) loadingEl.classList.add('hidden'); 
 
         if (res && res.success) {
           sessionStorage.setItem(cacheKey, JSON.stringify(res));
           renderDashboardData(res);
         } else {
+          var errMsg = (res && res.message) ? res.message : 'Server sedang memproses antrean komputasi cabang lain.';
           Swal.fire({
             icon: 'warning',
             title: 'Server Sedang Sibuk',
-            text: 'Data analitik membutuhkan waktu komputasi lebih lama. Silakan coba muat ulang.',
+            text: errMsg,
             confirmButtonText: 'Coba Muat Ulang',
             showCancelButton: true,
             cancelButtonText: 'Batal'
@@ -2632,7 +2669,7 @@
           });
         }
       }).catch(function(err) {
-        document.getElementById('dashLoading').classList.add('hidden');
+        if (loadingEl) loadingEl.classList.add('hidden');
         Swal.fire('Koneksi Terputus', 'Gagal memproses data analitik dari server.', 'error');
       });
     }
