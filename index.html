@@ -3297,7 +3297,7 @@
       XLSX.writeFile(wb, "Settlement_Subsidi_HO_Report.xlsx");
     }
     
-    // 🔴 EXPORT A3 PORTRAIT: TEPAT 1 LEMBAR PROPORSIONAL (ANTI-HALAMAN 2)
+    // 🔴 FINAL ENGINE EXPORT A3 PORTRAIT: ANTI-TERPOTONG KIRI & PROPORSIONAL 1 LEMBAR PENUH
     function downloadDashboardPDF() {
       const dashContent = document.getElementById('dashContent');
       if (!dashContent || dashContent.classList.contains('hidden')) {
@@ -3305,23 +3305,26 @@
       }
 
       Swal.fire({
-        title: 'Menyusun A3 Portrait (1 Lembar)...',
-        text: 'Mengunci 24 cabang, menstabilkan grafik donut & menyelaraskan rasio A3...',
+        title: 'Menyusun A3 Portrait Presisi...',
+        text: 'Mengunci origin (0,0), memuat 24 cabang & menstabilkan layout A3...',
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
       });
 
       const prevScrollY = window.scrollY;
+      const mainEl = document.querySelector('main');
+      const prevMainScrollTop = mainEl ? mainEl.scrollTop : 0;
       window.scrollTo(0, 0);
+      if (mainEl) mainEl.scrollTop = 0;
 
-      // 1. Simpan filter cabang saat ini & reset sementara agar 24 cabang tercetak lengkap di PDF
+      // 1. Amankan filter cabang agar 24 cabang tercetak utuh di PDF
       const prevBranchSearch = branchSearchQuery;
       const prevFunnelFilter = typeof branchFunnelFilter !== 'undefined' ? branchFunnelFilter : '';
       branchSearchQuery = '';
       if (typeof branchFunnelFilter !== 'undefined') branchFunnelFilter = '';
       renderBranchBreakdown();
 
-      // 2. Render Grafik Donut ke Image Tajam Proporsional (200x135 px)
+      // 2. Snapshot Grafik Donut ke Image Proporsional (Anti-Gepeng)
       const canvas = document.getElementById('vehicleSegmentChart');
       let tempImg = null;
       if (canvas && canvas.width > 0 && canvas.height > 0) {
@@ -3329,7 +3332,7 @@
           tempImg = document.createElement('img');
           tempImg.id = 'tempVehicleImg';
           tempImg.src = canvas.toDataURL('image/png', 1.0);
-          tempImg.style.cssText = 'width: 200px !important; height: 135px !important; object-fit: contain !important; display: block !important; margin: 0 auto !important;';
+          tempImg.style.cssText = 'width: 190px !important; height: 130px !important; object-fit: contain !important; display: block !important; margin: 0 auto !important;';
           canvas.parentNode.insertBefore(tempImg, canvas);
           canvas.style.display = 'none';
         } catch(e) {}
@@ -3338,83 +3341,98 @@
       const vSeg = document.getElementById('view-vehicle-segment');
       if (vSeg) {
         vSeg.classList.remove('hidden');
-        vSeg.style.cssText = 'display: flex !important; align-items: center !important; justify-content: center !important; height: 140px !important; min-height: 140px !important;';
+        vSeg.style.cssText = 'display: flex !important; align-items: center !important; justify-content: center !important; height: 135px !important; min-height: 135px !important;';
       }
       const vMod = document.getElementById('view-vehicle-model');
       if (vMod) vMod.classList.add('hidden');
 
-      // 3. Header Resmi Dokumen A3
+      // 3. Kop Header Dokumen Resmi A3 PDCA
       const sDate = document.getElementById('dashStartDate').value || '-';
       const eDate = document.getElementById('dashEndDate').value || '-';
       const cabang = sessionUser ? sessionUser.cabang : 'HEAD OFFICE';
 
       const tempHeader = document.createElement('div');
       tempHeader.id = 'tempA3PdfHeader';
-      tempHeader.style.cssText = 'display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:4px;margin-bottom:4px;border-bottom:2px solid #dc2626;';
+      tempHeader.style.cssText = 'display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:3px;margin-bottom:4px;border-bottom:2px solid #dc2626;';
       tempHeader.innerHTML = `
         <div>
-          <h1 style="font-size:14px;font-weight:900;color:#111827;text-transform:uppercase;margin:0;letter-spacing:-0.3px;">
+          <h1 style="font-size:13.5px;font-weight:900;color:#111827;text-transform:uppercase;margin:0;letter-spacing:-0.2px;">
             A3 EXECUTIVE EVALUATION REPORT — GRADUAL LOYALTY SYSTEM
           </h1>
-          <p style="font-size:8px;color:#6b7280;margin-top:1px;margin-bottom:0;font-weight:600;">
+          <p style="font-size:7.5px;color:#6b7280;margin-top:1px;margin-bottom:0;font-weight:600;">
             Toyota Aftersales Retention Framework: Cohort Conversion, Workload S2, ARPU & Dealership Governance
           </p>
         </div>
         <div style="text-align:right;">
-          <p style="font-size:12px;font-weight:900;color:#dc2626;text-transform:uppercase;margin:0;">
+          <p style="font-size:11.5px;font-weight:900;color:#dc2626;text-transform:uppercase;margin:0;">
             ${cabang}
           </p>
-          <p style="font-size:7.5px;color:#4b5563;margin-top:1px;margin-bottom:0;">
+          <p style="font-size:7px;color:#4b5563;margin-top:1px;margin-bottom:0;">
             Periode: <b>${sDate}</b> s/d <b>${eDate}</b>
           </p>
         </div>
       `;
       dashContent.insertBefore(tempHeader, dashContent.firstChild);
 
-      // 4. Inject CSS Proporsional Khusus A3 (1040px x ~1440px)
+      // 4. Inject CSS Cetak Presisi (Kunci Posisi X=0 Mutlak & Format Kolom Rapi)
       const printStyle = document.createElement('style');
       printStyle.id = 'a3-direct-print-style';
       printStyle.innerHTML = `
         html.a3-printing-mode,
         body.a3-printing-mode {
-          height: auto !important;
-          min-height: auto !important;
+          position: relative !important;
+          width: 1040px !important;
+          min-width: 1040px !important;
+          max-width: 1040px !important;
+          margin: 0 !important;
+          padding: 0 !important;
           overflow: visible !important;
           background: #ffffff !important;
         }
+
         body.a3-printing-mode aside,
         body.a3-printing-mode header,
         body.a3-printing-mode nav,
         body.a3-printing-mode #earlyWarning {
           display: none !important;
         }
-        body.a3-printing-mode #app-wrapper {
+
+        /* 🔴 KUNCI UTAMA ANTI-TERPOTONG KIRI: Reset Semua Parent Container ke Origin 0 */
+        body.a3-printing-mode #app-wrapper,
+        body.a3-printing-mode main,
+        body.a3-printing-mode #view-dashboard {
           display: block !important;
-          height: auto !important;
-          overflow: visible !important;
-        }
-        body.a3-printing-mode main {
-          display: block !important;
-          padding: 0 !important;
-          margin: 0 !important;
-          height: auto !important;
-          max-height: none !important;
-          overflow: visible !important;
           width: 1040px !important;
-          background: #ffffff !important;
-        }
-        body.a3-printing-mode #dashContent {
-          width: 1040px !important;
+          min-width: 1040px !important;
           max-width: 1040px !important;
-          margin: 0 auto !important;
-          padding: 4px 6px !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          position: static !important;
+          left: 0 !important;
+          transform: none !important;
+          overflow: visible !important;
+        }
+
+        body.a3-printing-mode #dashContent {
+          position: absolute !important;
+          top: 0 !important;
+          left: 0 !important;
+          width: 1040px !important;
+          min-width: 1040px !important;
+          max-width: 1040px !important;
+          margin: 0 !important;
+          padding: 4px 8px !important;
+          box-sizing: border-box !important;
           background: #ffffff !important;
           display: block !important;
+          z-index: 999999 !important;
         }
+
         body.a3-printing-mode #dashContent > * {
           margin-top: 3px !important;
           margin-bottom: 0 !important;
         }
+
         body.a3-printing-mode .p-5 { padding: 4px 6px !important; }
         body.a3-printing-mode .p-4 { padding: 3px 5px !important; }
         body.a3-printing-mode .p-3 { padding: 2px 4px !important; }
@@ -3422,20 +3440,24 @@
         body.a3-printing-mode .gap-4,
         body.a3-printing-mode .gap-3 { gap: 3px !important; }
         body.a3-printing-mode h2,
-        body.a3-printing-mode h3 { font-size: 9.5px !important; }
-        body.a3-printing-mode .text-3xl { font-size: 14px !important; line-height: 1 !important; }
-        body.a3-printing-mode .text-2xl { font-size: 12px !important; line-height: 1 !important; }
-        body.a3-printing-mode .text-xl { font-size: 11px !important; line-height: 1 !important; }
+        body.a3-printing-mode h3 { font-size: 9px !important; }
+        body.a3-printing-mode .text-3xl { font-size: 13.5px !important; line-height: 1 !important; }
+        body.a3-printing-mode .text-2xl { font-size: 11.5px !important; line-height: 1 !important; }
+        body.a3-printing-mode .text-xl { font-size: 10.5px !important; line-height: 1 !important; }
+        body.a3-printing-mode .rounded-2xl,
+        body.a3-printing-mode .rounded-xl { border-radius: 6px !important; }
 
-        /* S2 WORKLOAD BOARD KOMPAK */
-        body.a3-printing-mode #s2MonthlyBoard {
-          gap: 3px !important;
-        }
-        body.a3-printing-mode #s2MonthlyBoard > div {
-          padding: 3px 4px !important;
+        /* Hapus simbol panah sorting (↕) saat cetak agar teks header rapi */
+        body.a3-printing-mode span[id^="br-sort-"],
+        body.a3-printing-mode span[id^="lb-sort-"] {
+          display: none !important;
         }
 
-        /* SA LEADERBOARD PRESISI */
+        /* WORKLOAD S2: Kompak & Bersih */
+        body.a3-printing-mode #s2MonthlyBoard { gap: 3px !important; }
+        body.a3-printing-mode #s2MonthlyBoard > div { padding: 3px 4px !important; }
+
+        /* SA LEADERBOARD: Kunci Lebar Kolom */
         body.a3-printing-mode table:has(#leaderboardBody) {
           width: 100% !important;
           table-layout: fixed !important;
@@ -3444,31 +3466,23 @@
         body.a3-printing-mode table:has(#leaderboardBody) th,
         body.a3-printing-mode table:has(#leaderboardBody) td {
           padding: 1.5px 2px !important;
-          font-size: 7.2px !important;
+          font-size: 7px !important;
           line-height: 1.1 !important;
           vertical-align: middle !important;
           white-space: nowrap !important;
           overflow: hidden !important;
           text-overflow: ellipsis !important;
         }
-        body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(1),
-        body.a3-printing-mode table:has(#leaderboardBody) td:nth-child(1) { width: 22px !important; text-align: center !important; }
-        body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(2),
-        body.a3-printing-mode table:has(#leaderboardBody) td:nth-child(2) { width: 75px !important; text-align: left !important; }
-        body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(3),
-        body.a3-printing-mode table:has(#leaderboardBody) td:nth-child(3) { width: 130px !important; text-align: left !important; }
-        body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(4),
-        body.a3-printing-mode table:has(#leaderboardBody) td:nth-child(4) { width: 45px !important; text-align: center !important; }
-        body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(5),
-        body.a3-printing-mode table:has(#leaderboardBody) td:nth-child(5) { width: 45px !important; text-align: center !important; }
-        body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(6),
-        body.a3-printing-mode table:has(#leaderboardBody) td:nth-child(6) { width: 75px !important; text-align: right !important; }
-        body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(7),
-        body.a3-printing-mode table:has(#leaderboardBody) td:nth-child(7) { width: 65px !important; text-align: right !important; }
-        body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(8),
-        body.a3-printing-mode table:has(#leaderboardBody) td:nth-child(8) { width: 40px !important; text-align: center !important; }
+        body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(1) { width: 22px !important; text-align: center !important; }
+        body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(2) { width: 85px !important; text-align: left !important; }
+        body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(3) { width: 135px !important; text-align: left !important; }
+        body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(4) { width: 50px !important; text-align: center !important; }
+        body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(5) { width: 50px !important; text-align: center !important; }
+        body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(6) { width: 85px !important; text-align: right !important; }
+        body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(7) { width: 75px !important; text-align: right !important; }
+        body.a3-printing-mode table:has(#leaderboardBody) th:nth-child(8) { width: 45px !important; text-align: center !important; }
 
-        /* TABEL 24 CABANG: BUKA PENUH & PROPORSIONAL 1 HALAMAN */
+        /* TABEL 24 CABANG: Buka Penuh, Bebas Tumpang Tindih */
         body.a3-printing-mode #hoBreakdownSection {
           display: block !important;
           height: auto !important;
@@ -3489,19 +3503,30 @@
         body.a3-printing-mode table:has(#hoBreakdownBody) th,
         body.a3-printing-mode table:has(#hoBreakdownBody) td {
           padding: 1.2px 2px !important;
-          font-size: 6.8px !important;
+          font-size: 6.7px !important;
           line-height: 1.05 !important;
           vertical-align: middle !important;
           white-space: nowrap !important;
           overflow: hidden !important;
           text-overflow: ellipsis !important;
         }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(1),
-        body.a3-printing-mode #hoBreakdownBody td:nth-child(1) { width: 18px !important; text-align: center !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(2),
-        body.a3-printing-mode #hoBreakdownBody td:nth-child(2) { width: 90px !important; text-align: left !important; }
+        body.a3-printing-mode table:has(#hoBreakdownBody) td * {
+          font-size: 6.7px !important;
+          line-height: 1.05 !important;
+        }
 
-        /* Sembunyikan elemen kontrol saat cetak PDF */
+        /* Kunci Pembagian Lebar Persentase Kolom Tabel Cabang */
+        body.a3-printing-mode #hoBreakdownSection table th:nth-child(1) { width: 2.2% !important; text-align: center !important; }
+        body.a3-printing-mode #hoBreakdownSection table th:nth-child(2) { width: 11.5% !important; text-align: left !important; }
+        body.a3-printing-mode #hoBreakdownSection table th:nth-child(3) { width: 7.5% !important; text-align: center !important; }
+        body.a3-printing-mode #hoBreakdownSection table th:nth-child(4) { width: 14% !important; text-align: center !important; }
+        body.a3-printing-mode #hoBreakdownSection table th:nth-child(5) { width: 14% !important; text-align: center !important; }
+        body.a3-printing-mode #hoBreakdownSection table th:nth-child(6) { width: 8.5% !important; text-align: center !important; }
+        body.a3-printing-mode #hoBreakdownSection table th:nth-child(7) { width: 12.8% !important; text-align: right !important; }
+        body.a3-printing-mode #hoBreakdownSection table th:nth-child(8) { width: 14.5% !important; text-align: center !important; }
+        body.a3-printing-mode #hoBreakdownSection table th:nth-child(9) { width: 7.5% !important; text-align: center !important; }
+        body.a3-printing-mode #hoBreakdownSection table th:nth-child(10) { width: 7.5% !important; text-align: center !important; }
+
         body.a3-printing-mode button,
         body.a3-printing-mode input,
         body.a3-printing-mode select,
@@ -3515,7 +3540,7 @@
       document.documentElement.classList.add('a3-printing-mode');
       document.body.classList.add('a3-printing-mode');
 
-      // 5. Cleanup & Restore State
+      // 5. Cleanup & Restore
       const restoreOriginal = () => {
         document.documentElement.classList.remove('a3-printing-mode');
         document.body.classList.remove('a3-printing-mode');
@@ -3527,11 +3552,12 @@
         if (canvas) canvas.style.display = '';
         if (vSeg) vSeg.style.cssText = '';
         
-        // Pulihkan filter user sebelumnya
         branchSearchQuery = prevBranchSearch;
         if (typeof branchFunnelFilter !== 'undefined') branchFunnelFilter = prevFunnelFilter;
         renderBranchBreakdown();
+
         window.scrollTo(0, prevScrollY);
+        if (mainEl) mainEl.scrollTop = prevMainScrollTop;
       };
 
       const filename = `A3_Report_Loyalty_${cabang.replace(/\s+/g, '_')}_${sDate}_sd_${eDate}.pdf`;
@@ -3544,9 +3570,8 @@
           scale: 2, 
           useCORS: true, 
           logging: false, 
-          scrollY: 0, 
-          scrollX: 0,
-          windowWidth: 1040
+          scrollX: 0, 
+          scrollY: 0
         },
         jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' }
       };
@@ -3557,7 +3582,7 @@
           Swal.fire({
             icon: 'success',
             title: 'A3 Report Sempurna!',
-            text: 'Dokumen berhasil dicetak tepat 1 lembar A3 portrait dengan 24 cabang lengkap.',
+            text: 'Laporan tercetak rapi, tidak terpotong, dan memuat 24 cabang lengkap dalam 1 lembar A3.',
             timer: 2000,
             showConfirmButton: false
           });
