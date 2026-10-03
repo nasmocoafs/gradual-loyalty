@@ -2384,8 +2384,10 @@
         '<th onclick="sortBranchTable(\'funnelStatus\')" class="px-3 py-3 border-b text-center sortable-th bg-gray-50 text-gray-700" title="Sortir berdasarkan Status Funnel">Funnel Status <span id="br-sort-funnelStatus">↕</span></th>';
       
       if (dashIsJanJun) {
-        headHtml += '<th onclick="sortBranchTable(\'inS2Count\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-50 text-teal-800">Total Act In <span id="br-sort-inS2Count">↕</span></th>' +
-                    '<th onclick="sortBranchTable(\'progressInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-100 text-teal-900 font-black">Progress S2 <span id="br-sort-progressInS2">↕</span></th>';
+        headHtml += '<th onclick="sortBranchTable(\'targetInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-50/70 text-teal-900 font-bold" title="Target Semester 2 Kolom F">Target In S2 <span id="br-sort-targetInS2">↕</span></th>' +
+                    '<th onclick="sortBranchTable(\'inS2Count\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-50 text-teal-800">Total Act In <span id="br-sort-inS2Count">↕</span></th>' +
+                    '<th onclick="sortBranchTable(\'progressInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-100 text-teal-900 font-black">Progress S2 <span id="br-sort-progressInS2">↕</span></th>' +
+                    '<th onclick="sortBranchTable(\'gapInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-rose-50 text-rose-900 font-bold" title="Sisa Unit yang Harus Dicapai">Gap S2 <span id="br-sort-gapInS2">↕</span></th>';
       }
       headHtml += '</tr>';
       setHTML('branchBreakdownHead', headHtml);
@@ -2398,20 +2400,25 @@
 
       filtered.sort((a, b) => {
         var valA = a[branchSortCol], valB = b[branchSortCol];
-        // 🔴 SORTING KOLOM PERSENTASE (MENGGUNAKAN parseRate UNTUK ANGKA DESIMAL % ASLI)
+        // Sort khusus persentase
         if (branchSortCol === 'realizationRate' || branchSortCol === 'progressIssued' || branchSortCol === 'progressRedeem' || branchSortCol === 'progressInS2') {
           return branchSortOrder === 'asc' ? (parseRate(valA) - parseRate(valB)) : (parseRate(valB) - parseRate(valA));
+        }
+        // Sort khusus Gap Remaining S2
+        if (branchSortCol === 'gapInS2') {
+          var gapA = Math.max(0, (Number(a.targetInS2) || 0) - (Number(a.inS2Count) || 0));
+          var gapB = Math.max(0, (Number(b.targetInS2) || 0) - (Number(b.inS2Count) || 0));
+          return branchSortOrder === 'asc' ? (gapA - gapB) : (gapB - gapA);
         }
         if (typeof valA === 'string') return branchSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
         return branchSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
       });
 
-      // 🔴 DAFTAR ID INDIKATOR PANAH YANG DIPERBARUI
-      ['cabang', 'potensi', 'progressIssued', 'progressRedeem', 'realizationRate', 'revenue', 'funnelStatus', 'inS2Count', 'progressInS2'].forEach(c => {
+      // Update daftar panah header (ditambahkan targetInS2 & gapInS2)
+      ['cabang', 'potensi', 'progressIssued', 'progressRedeem', 'realizationRate', 'revenue', 'funnelStatus', 'targetInS2', 'inS2Count', 'progressInS2', 'gapInS2'].forEach(c => {
         var el = document.getElementById('br-sort-' + c);
         if (el) el.innerHTML = branchSortCol === c ? (branchSortOrder === 'asc' ? '<span class="text-red-600 font-bold">▲</span>' : '<span class="text-red-600 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
       });
-
       ['cabang', 'potensi', 'regTarget', 'redeemTarget', 'realizationRate', 'revenue', 'inS2Count', 'progressInS2'].forEach(c => {
         var el = document.getElementById('br-sort-' + c);
         if (el) el.innerHTML = branchSortCol === c ? (branchSortOrder === 'asc' ? '<span class="text-red-600 font-bold">▲</span>' : '<span class="text-red-600 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
@@ -2474,9 +2481,23 @@
             statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-500 border border-gray-300">⚪ Dormant / Inactives</span>';
           }
 
+          // Hitung Gap S2 per Cabang (Target In - Total Act In)
+          var tgtS2 = Number(b.targetInS2) || 0;
+          var actS2 = Number(b.inS2Count) || 0;
+          var gapS2 = Math.max(0, tgtS2 - actS2);
+          var gapBadge = gapS2 === 0 
+            ? '<span class="px-1.5 py-0.5 rounded text-[9px] bg-emerald-100 text-emerald-800 font-black border border-emerald-300">Tercapai ✔</span>'
+            : `<span class="font-mono font-bold text-rose-600">-${formatNum(gapS2)}</span>`;
+
           var inS2Cells = dashIsJanJun ? 
-            `<td class="px-2.5 py-3 text-center font-bold text-teal-800 bg-teal-50/40 border-b border-gray-100">${formatNum(b.inS2Count || 0)}</td>
-             <td class="px-2.5 py-3 text-center border-b border-gray-100"><span class="px-2 py-0.5 rounded text-xs border bg-teal-50 border-teal-200 text-teal-900 font-bold">${b.progressInS2 || '0,0'}%</span></td>` : '';
+            `<!-- 1. Target In S2 (Kolom F) -->
+             <td class="px-2.5 py-3 text-center font-bold text-teal-950 bg-teal-50/30 border-b border-gray-100">${formatNum(tgtS2)}</td>
+             <!-- 2. Total Act In -->
+             <td class="px-2.5 py-3 text-center font-black text-teal-800 bg-teal-50/60 border-b border-gray-100">${formatNum(actS2)}</td>
+             <!-- 3. Progress % S2 -->
+             <td class="px-2.5 py-3 text-center border-b border-gray-100"><span class="px-2 py-0.5 rounded text-xs border bg-teal-50 border-teal-200 text-teal-900 font-bold">${b.progressInS2 || '0,0'}%</span></td>
+             <!-- 4. Remaining Gap -->
+             <td class="px-2.5 py-3 text-center bg-rose-50/30 border-b border-gray-100">${gapBadge}</td>` : '';
           
           bdHtml += `<tr onclick="openRedeemModalFilteredByBranch('${b.cabang}')" class="hover:bg-blue-50 cursor-pointer transition text-xs" title="Klik untuk melihat unit ${b.cabang}">
             <td class="px-3 py-3 text-center border-b border-gray-100 font-medium text-gray-500">${idx + 1}</td>
@@ -2516,7 +2537,8 @@
           </tr>`;
         });
       } else {
-        bdHtml = `<tr><td colspan="${dashIsJanJun ? 10 : 8}" class="px-4 py-8 text-center text-gray-400 italic font-medium">No dealership performance data available.</td></tr>`;
+        // Colspan bertambah 2 kolom saat periode S1 aktif (dari 10 menjadi 12)
+        bdHtml = `<tr><td colspan="${dashIsJanJun ? 12 : 8}" class="px-4 py-8 text-center text-gray-400 italic font-medium">No dealership performance data available.</td></tr>`;
       }
       setHTML('hoBreakdownBody', bdHtml);
 
@@ -2525,10 +2547,17 @@
       var avgRedeemProg = totalTgtRedeem > 0 ? ((totalRedT / totalTgtRedeem) * 100).toFixed(1).replace('.', ',') : '0,0';
       var avgRealization = totalRegT > 0 ? ((totalRedT / totalRegT) * 100).toFixed(1).replace('.', ',') : '0,0';
       var totalProgressS2 = totalTargetS2 > 0 ? ((totalInS2 / totalTargetS2) * 100).toFixed(1).replace('.', ',') : '0,0';
+      var totalGapS2 = Math.max(0, totalTargetS2 - totalInS2);
 
       var footInS2 = dashIsJanJun ? 
-        `<td class="px-2.5 py-3 text-center font-black text-teal-900 bg-teal-100/70">${formatNum(totalInS2)}</td>
-         <td class="px-2.5 py-3 text-center font-black text-teal-950 bg-teal-200/80">${totalProgressS2}%</td>` : '';
+        `<!-- Total Target In S2 -->
+         <td class="px-2.5 py-3 text-center font-black text-teal-950 bg-teal-100/50">${formatNum(totalTargetS2)}</td>
+         <!-- Total Act In S2 -->
+         <td class="px-2.5 py-3 text-center font-black text-teal-900 bg-teal-100/70">${formatNum(totalInS2)}</td>
+         <!-- Total Progress % -->
+         <td class="px-2.5 py-3 text-center font-black text-teal-950 bg-teal-200/80">${totalProgressS2}%</td>
+         <!-- Total Gap S2 -->
+         <td class="px-2.5 py-3 text-center font-black text-rose-800 bg-rose-100/60 font-mono">-${formatNum(totalGapS2)}</td>` : '';
       
       setHTML('hoBreakdownFoot', `<tr class="bg-gray-100 text-xs">
         <td colspan="2" class="px-3 py-3 text-center uppercase tracking-wider font-black">TOTAL REGIONAL</td>
