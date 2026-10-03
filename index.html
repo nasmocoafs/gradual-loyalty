@@ -2373,14 +2373,16 @@
     }
     // 🔴 DEALERSHIP BREAKDOWN: SIMPLIFIED DENGAN IRREGULARITY CONTROL & PACING TARGET
     function renderBranchBreakdown() {
+      // 1. Deklarasikan variabel label benchmark SEBELUM headHtml dirangkai
+      var benchLabel = dashIsJanJun ? '30%' : '60%';
+
       var headHtml = '<tr>' +
         '<th class="px-3 py-3 border-b text-center w-8 bg-gray-50">#</th>' +
         '<th onclick="sortBranchTable(\'cabang\')" class="px-3 py-3 border-b sortable-th bg-gray-50">Dealership <span id="br-sort-cabang">↕</span></th>' +
         '<th onclick="sortBranchTable(\'potensi\')" class="px-2.5 py-3 border-b text-center sortable-th bg-purple-50/40 text-purple-800">Database Leads <span id="br-sort-potensi">↕</span></th>' +
         '<th onclick="sortBranchTable(\'progressIssued\')" class="px-3 py-3 border-b text-center sortable-th bg-blue-50/60 text-blue-900" title="Sortir berdasarkan % Issued">Tickets Issued vs Tgt <span id="br-sort-progressIssued">↕</span></th>' +
         '<th onclick="sortBranchTable(\'progressRedeem\')" class="px-3 py-3 border-b text-center sortable-th bg-emerald-50/60 text-emerald-900" title="Sortir berdasarkan % Redeemed">Redeemed vs Tgt <span id="br-sort-progressRedeem">↕</span></th>' +
-        var benchLabel = dashIsJanJun ? '30%' : '60%';
-headHtml += '<th onclick="sortBranchTable(\'realizationRate\')" class="px-2.5 py-3 border-b text-center sortable-th bg-amber-50/50 text-amber-900">Realization (' + benchLabel + ') <span id="br-sort-realizationRate">↕</span></th>' +
+        '<th onclick="sortBranchTable(\'realizationRate\')" class="px-2.5 py-3 border-b text-center sortable-th bg-amber-50/50 text-amber-900">Realization (' + benchLabel + ') <span id="br-sort-realizationRate">↕</span></th>' +
         '<th onclick="sortBranchTable(\'revenue\')" class="px-3 py-3 border-b text-right sortable-th bg-gray-100 font-black">Gross Revenue <span id="br-sort-revenue">↕</span></th>' +
         '<th onclick="sortBranchTable(\'funnelStatus\')" class="px-3 py-3 border-b text-center sortable-th bg-gray-50 text-gray-700" title="Sortir berdasarkan Status Funnel">Funnel Status <span id="br-sort-funnelStatus">↕</span></th>';
       
@@ -2415,12 +2417,8 @@ headHtml += '<th onclick="sortBranchTable(\'realizationRate\')" class="px-2.5 py
         return branchSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
       });
 
-      // Update daftar panah header (ditambahkan targetInS2 & gapInS2)
+      // 🔴 Update daftar panah header tunggal (menghilangkan duplikasi)
       ['cabang', 'potensi', 'progressIssued', 'progressRedeem', 'realizationRate', 'revenue', 'funnelStatus', 'targetInS2', 'inS2Count', 'progressInS2', 'gapInS2'].forEach(c => {
-        var el = document.getElementById('br-sort-' + c);
-        if (el) el.innerHTML = branchSortCol === c ? (branchSortOrder === 'asc' ? '<span class="text-red-600 font-bold">▲</span>' : '<span class="text-red-600 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
-      });
-      ['cabang', 'potensi', 'regTarget', 'redeemTarget', 'realizationRate', 'revenue', 'inS2Count', 'progressInS2'].forEach(c => {
         var el = document.getElementById('br-sort-' + c);
         if (el) el.innerHTML = branchSortCol === c ? (branchSortOrder === 'asc' ? '<span class="text-red-600 font-bold">▲</span>' : '<span class="text-red-600 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
       });
