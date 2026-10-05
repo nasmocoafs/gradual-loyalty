@@ -2417,7 +2417,7 @@
         return branchSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
       });
 
-      // 🔴 Update daftar panah header tunggal (menghilangkan duplikasi)
+      // 🔴 Update daftar panah header tunggal (blok lama dihapus agar panah tidak tertimpa)
       ['cabang', 'potensi', 'progressIssued', 'progressRedeem', 'realizationRate', 'revenue', 'funnelStatus', 'targetInS2', 'inS2Count', 'progressInS2', 'gapInS2'].forEach(c => {
         var el = document.getElementById('br-sort-' + c);
         if (el) el.innerHTML = branchSortCol === c ? (branchSortOrder === 'asc' ? '<span class="text-red-600 font-bold">▲</span>' : '<span class="text-red-600 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
@@ -2834,7 +2834,7 @@
             if (earlyWarningBadge) earlyWarningBadge.className = 'text-[10px] font-black uppercase px-2.5 py-1 rounded bg-amber-200 text-amber-900 border border-amber-300 shrink-0';
           }
 
-          setText('earlyWarningTitle', 'PACING ALERT: REALISASI KEDATANGAN TIKET BARU ' + realizationRate + '% (TARGET 30,0%)');
+          setText('earlyWarningTitle', 'PACING ALERT: REALISASI KEDATANGAN TIKET BARU ' + realizationRate + '% (TARGET ' + benchText + ')');
           setText('earlyWarningDesc', 'Baru tercapai ' + formatNum(totalRedeemed) + ' dari target ' + formatNum(targetRedeemGoal) + ' unit redeem (Sisa ' + formatNum(remRedeem) + ' unit lagi). Tingkatkan recall reminder SA.');
         } else {
           earlyWarningEl.classList.add('hidden');
@@ -2860,15 +2860,15 @@
       setText('fnIssuedS8', formatNum(res.ticketsIssuedS8 || 0));
       setText('fnIssuedS9', formatNum(res.ticketsIssuedS9 || 0));
 
-      // Indikator Warna & Peringatan Konektor Realization vs 30%
+      // Indikator Warna & Peringatan Konektor Realization Dinamis (30% S1 / 60% Bulanan)
       var relConnEl = document.getElementById('fnRealizationConn');
       if (relConnEl) {
-        if (parseFloat(actualRealizationRate) >= 30.0) {
+        if (parseFloat(actualRealizationRate) >= targetBenchmark) {
           relConnEl.className = 'flex items-center gap-1.5 text-[10px] font-black text-emerald-700 py-0.5';
-          setText('fnRealizationRate', `Realization: ${actualRealizationRate}% (Target ≥30% ✔)`);
+          setText('fnRealizationRate', `Realization: ${actualRealizationRate}% (Target ≥${Math.round(targetBenchmark)}% ✔)`);
         } else {
           relConnEl.className = 'flex items-center gap-1.5 text-[10px] font-black text-rose-600 py-0.5 animate-pulse';
-          setText('fnRealizationRate', `Realization: ${actualRealizationRate}% (Di Bawah Target 30% ⚠️)`);
+          setText('fnRealizationRate', `Realization: ${actualRealizationRate}% (Di Bawah Target ${Math.round(targetBenchmark)}% ⚠️)`);
         }
       }
 
@@ -3557,17 +3557,19 @@
           line-height: 1.05 !important;
         }
 
-        /* Kunci Pembagian Lebar Kolom Tabel 24 Cabang */
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(1) { width: 2.2% !important; text-align: center !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(2) { width: 11.5% !important; text-align: left !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(3) { width: 7.5% !important; text-align: center !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(4) { width: 14% !important; text-align: center !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(5) { width: 14% !important; text-align: center !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(6) { width: 8.5% !important; text-align: center !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(7) { width: 12.8% !important; text-align: right !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(8) { width: 14.5% !important; text-align: center !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(9) { width: 7.5% !important; text-align: center !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(10) { width: 7.5% !important; text-align: center !important; }
+        /* 🔴 Kunci Pembagian Lebar Kolom Tabel 24 Cabang (Mendukung Penuh 12 Kolom Saat S1) */
+        body.a3-printing-mode #branchBreakdownHead th:nth-child(1) { width: 2.5% !important; text-align: center !important; }
+        body.a3-printing-mode #branchBreakdownHead th:nth-child(2) { width: 11% !important; text-align: left !important; }
+        body.a3-printing-mode #branchBreakdownHead th:nth-child(3) { width: 6.5% !important; text-align: center !important; }
+        body.a3-printing-mode #branchBreakdownHead th:nth-child(4) { width: 12.5% !important; text-align: center !important; }
+        body.a3-printing-mode #branchBreakdownHead th:nth-child(5) { width: 12.5% !important; text-align: center !important; }
+        body.a3-printing-mode #branchBreakdownHead th:nth-child(6) { width: 7.5% !important; text-align: center !important; }
+        body.a3-printing-mode #branchBreakdownHead th:nth-child(7) { width: 12% !important; text-align: right !important; }
+        body.a3-printing-mode #branchBreakdownHead th:nth-child(8) { width: 13.5% !important; text-align: center !important; }
+        body.a3-printing-mode #branchBreakdownHead th:nth-child(9) { width: 6% !important; text-align: center !important; }
+        body.a3-printing-mode #branchBreakdownHead th:nth-child(10) { width: 6% !important; text-align: center !important; }
+        body.a3-printing-mode #branchBreakdownHead th:nth-child(11) { width: 5% !important; text-align: center !important; }
+        body.a3-printing-mode #branchBreakdownHead th:nth-child(12) { width: 5% !important; text-align: center !important; }
       `;
       document.head.appendChild(printStyle);
       document.documentElement.classList.add('a3-printing-mode');
