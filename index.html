@@ -3417,7 +3417,7 @@
       XLSX.writeFile(wb, "Settlement_Subsidi_HO_Report.xlsx");
     }
     
-    // 🔴 REVISED ENGINE A3: ANTI-TUMPANG TINDIH, ANTI-MELAYANG & 1 LEMBAR PRESISI
+    // 🔴 DEDICATED A3 EXECUTIVE REPORT BUILDER (BEBAS TUMPANG TINDIH & MENDUKUNG 14 KOLOM PENUH)
     function downloadDashboardPDF() {
       const dashContent = document.getElementById('dashContent');
       if (!dashContent || dashContent.classList.contains('hidden')) {
@@ -3425,281 +3425,416 @@
       }
 
       Swal.fire({
-        title: 'Menyusun A3 Portrait Presisi...',
-        text: 'Mengunci tabel 24 cabang, posisi grafik & menyelaraskan layout...',
+        title: 'Menyusun Laporan Eksekutif A3...',
+        text: 'Merender matriks 14 kolom, 24 cabang & grafik segmen presisi...',
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
       });
 
-      const prevScrollY = window.scrollY;
-      const mainEl = document.querySelector('main');
-      const prevMainScrollTop = mainEl ? mainEl.scrollTop : 0;
-      window.scrollTo(0, 0);
-      if (mainEl) mainEl.scrollTop = 0;
+      const getText = (id) => {
+        const el = document.getElementById(id);
+        return el ? el.innerText.trim() : '-';
+      };
 
-      // 1. Reset filter cabang sementara agar 24 cabang tercetak lengkap
-      const prevBranchSearch = branchSearchQuery;
-      const prevFunnelFilter = typeof branchFunnelFilter !== 'undefined' ? branchFunnelFilter : '';
-      branchSearchQuery = '';
-      if (typeof branchFunnelFilter !== 'undefined') branchFunnelFilter = '';
-      renderBranchBreakdown();
-
-      // 2. Snapshot Grafik Donut (HINDARI object-fit agar tidak melompat ke pojok kiri atas)
-      const canvas = document.getElementById('vehicleSegmentChart');
-      let tempImg = null;
-      if (canvas && canvas.width > 0 && canvas.height > 0) {
-        try {
-          tempImg = document.createElement('img');
-          tempImg.id = 'tempVehicleImg';
-          tempImg.src = canvas.toDataURL('image/png', 1.0);
-          tempImg.style.cssText = 'width: 165px !important; height: 115px !important; display: block !important; margin: 0 auto !important; border: 0 !important;';
-          canvas.parentNode.insertBefore(tempImg, canvas);
-          canvas.style.display = 'none';
-        } catch(e) {}
-      }
-
-      const vSeg = document.getElementById('view-vehicle-segment');
-      if (vSeg) {
-        vSeg.classList.remove('hidden');
-        vSeg.style.cssText = 'display: block !important; text-align: center !important; height: 120px !important; min-height: 120px !important; padding: 2px 0 !important;';
-      }
-      const vMod = document.getElementById('view-vehicle-model');
-      if (vMod) vMod.classList.add('hidden');
-
-      // 3. Kop Header Dokumen Resmi A3
       const sDate = document.getElementById('dashStartDate').value || '-';
       const eDate = document.getElementById('dashEndDate').value || '-';
       const cabang = sessionUser ? sessionUser.cabang : 'HEAD OFFICE';
+      const benchLabel = dashIsJanJun ? '30%' : '60%';
 
-      const tempHeader = document.createElement('div');
-      tempHeader.id = 'tempA3PdfHeader';
-      tempHeader.style.cssText = 'display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:3px;margin-bottom:3px;border-bottom:2px solid #dc2626;';
-      tempHeader.innerHTML = `
-        <div>
-          <h1 style="font-size:13px;font-weight:900;color:#111827;text-transform:uppercase;margin:0;letter-spacing:-0.2px;">
-            A3 EXECUTIVE EVALUATION REPORT — GRADUAL LOYALTY SYSTEM
-          </h1>
-          <p style="font-size:7.5px;color:#6b7280;margin-top:1px;margin-bottom:0;font-weight:600;">
-            Toyota Aftersales Retention Framework: Cohort Conversion, Workload S2, ARPU & Dealership Governance
-          </p>
+      // 1. Ambil Snapshot Donut Chart sebagai Base64 (Dimensi Dikunci di Tabel)
+      const canvas = document.getElementById('vehicleSegmentChart');
+      let chartImgHtml = '<div style="font-size:9px;color:#9ca3af;padding:20px 0;">Data segmen belum tersedia</div>';
+      if (canvas && canvas.width > 0 && canvas.height > 0 && canvas.style.display !== 'none') {
+        try {
+          const dataUrl = canvas.toDataURL('image/png', 1.0);
+          chartImgHtml = `<img src="${dataUrl}" style="width:210px;height:125px;display:block;margin:0 auto;" />`;
+        } catch (e) {}
+      }
+
+      // 2. Bangun Baris Top 5 SA Leaderboard
+      let saRowsHtml = '';
+      const saList = (rawLeaderboardData || []).slice(0, 5);
+      if (saList.length > 0) {
+        saList.forEach((sa, i) => {
+          const bg = i % 2 === 1 ? '#f8fafc' : '#ffffff';
+          const cooPct = parseFloat(sa.cooRatio || 0);
+          const cooColor = cooPct >= 100 ? '#065f46' : '#92400e';
+          const cooBg = cooPct >= 100 ? '#d1fae5' : '#fef3c7';
+          saRowsHtml += `
+            <tr style="background:${bg};border-bottom:1px solid #e2e8f0;">
+              <td style="padding:3px 4px;text-align:center;font-weight:800;color:#334155;">${i + 1}</td>
+              <td style="padding:3px 4px;font-weight:700;color:#475569;">${sa.cabang || '-'}</td>
+              <td style="padding:3px 4px;font-weight:800;color:#0f172a;">${sa.nama || '-'}</td>
+              <td style="padding:3px 4px;text-align:center;font-weight:700;color:#1d4ed8;">${formatNum(sa.registered || 0)}</td>
+              <td style="padding:3px 4px;text-align:center;font-weight:800;color:#047857;">${formatNum(sa.redeemed || 0)}</td>
+              <td style="padding:3px 4px;text-align:right;font-weight:800;color:#0f172a;">${formatRp(sa.revenue || 0)}</td>
+              <td style="padding:3px 4px;text-align:right;font-weight:700;color:#4338ca;">${formatRp(sa.arpu || 0)}</td>
+              <td style="padding:3px 4px;text-align:center;"><span style="background:${cooBg};color:${cooColor};padding:1px 4px;border-radius:3px;font-weight:800;font-size:7px;">${sa.cooRatio || '0'}%</span></td>
+            </tr>`;
+        });
+      } else {
+        saRowsHtml = `<tr><td colspan="8" style="padding:12px;text-align:center;color:#94a3b8;">Belum ada data performa SA</td></tr>`;
+      }
+
+      // 3. Bangun Kotak Workload S2 dari DOM #s2MonthlyBoard
+      const s2Cards = document.querySelectorAll('#s2MonthlyBoard > div');
+      let s2Html = '';
+      if (s2Cards.length > 0 && s2Cards.length >= 2) {
+        s2Html = `<table style="width:100%;border-collapse:separate;border-spacing:4px 0;"><tr>`;
+        s2Cards.forEach(card => {
+          s2Html += `<td style="width:${(100 / s2Cards.length).toFixed(1)}%;vertical-align:top;background:#faf5ff;border:1px solid #e9d5ff;border-radius:5px;padding:4px;font-size:7.5px;">${card.innerHTML}</td>`;
+        });
+        s2Html += `</tr></table>`;
+      } else {
+        s2Html = `<div style="padding:6px;text-align:center;color:#94a3b8;font-size:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;">Tidak ada proyeksi Semester 2 pada periode ini</div>`;
+      }
+
+      // 4. Bangun Tabel 24 Cabang (14 Kolom Presisi)
+      let brRowsHtml = '';
+      let totPot = 0, totReg = 0, totTgtIss = 0, totRed = 0, totTgtRed = 0, totRev = 0;
+      let totTgtS2 = 0, totActS2 = 0, totLyS2 = 0;
+
+      const branchList = (rawBranchBreakdownData || []).slice();
+      branchList.forEach((b, idx) => {
+        const pot = Number(b.potensi) || 0;
+        const reg = Number(b.regTarget) || 0;
+        const tgtIss = Number(b.targetIssued) || 0;
+        const red = Number(b.redeemTarget) || 0;
+        const tgtRed = Number(b.targetRedeem) || 0;
+        const rev = Number(b.revenue) || 0;
+        const tgtS2 = Number(b.targetInS2) || 0;
+        const actS2 = Number(b.inS2Count) || 0;
+        const gapS2 = Math.max(0, tgtS2 - actS2);
+        const lyS2 = Number(b.inS2LastYear) || 0;
+
+        totPot += pot; totReg += reg; totTgtIss += tgtIss;
+        totRed += red; totTgtRed += tgtRed; totRev += rev;
+        totTgtS2 += tgtS2; totActS2 += actS2; totLyS2 += lyS2;
+
+        const progIss = tgtIss > 0 ? ((reg / tgtIss) * 100).toFixed(1) : '0.0';
+        const progRed = tgtRed > 0 ? ((red / tgtRed) * 100).toFixed(1) : '0.0';
+        const relRate = reg > 0 ? ((red / reg) * 100).toFixed(1) : '0.0';
+        const progS2 = b.progressInS2 || (tgtS2 > 0 ? ((actS2 / tgtS2) * 100).toFixed(1) : '0,0');
+        const growthRate = lyS2 > 0 ? (((actS2 - lyS2) / lyS2) * 100).toFixed(1) : (actS2 > 0 ? '100.0' : '0.0');
+        const growthNum = parseFloat(growthRate);
+
+        let stsBg = '#dcfce7', stsCol = '#166534', stsTxt = 'On Track';
+        if (b.funnelStatus === 'ACHIEVED') { stsBg = '#059669'; stsCol = '#ffffff'; stsTxt = 'Target Achieved'; }
+        else if (b.funnelStatus === 'LEAD_BOTTLENECK') { stsBg = '#fef9c3'; stsCol = '#854d0e'; stsTxt = 'Issuance Bottleneck'; }
+        else if (b.funnelStatus === 'RECALL_FRICTION') { stsBg = '#ffedd5'; stsCol = '#9a3412'; stsTxt = 'Recall Friction'; }
+        else if (b.funnelStatus === 'CRITICAL_RISK') { stsBg = '#ffe4e6'; stsCol = '#9f1239'; stsTxt = 'Critical Risk'; }
+        else if (b.funnelStatus === 'INACTIVE') { stsBg = '#f1f5f9'; stsCol = '#64748b'; stsTxt = 'Dormant'; }
+
+        const rowBg = idx % 2 === 1 ? '#f8fafc' : '#ffffff';
+        const s2ColsHtml = dashIsJanJun ? `
+          <td style="padding:2.5px 3px;text-align:center;font-weight:700;color:#115e59;background:#f0fdfa;">${formatNum(tgtS2)}</td>
+          <td style="padding:2.5px 3px;text-align:center;font-weight:800;color:#0f766e;background:#ccfbf1;">${formatNum(actS2)}</td>
+          <td style="padding:2.5px 3px;text-align:center;font-weight:800;color:#134e4a;">${progS2}%</td>
+          <td style="padding:2.5px 3px;text-align:center;font-weight:700;color:${gapS2 === 0 ? '#059669' : '#e11d48'};">${gapS2 === 0 ? 'Tercapai' : '-' + formatNum(gapS2)}</td>
+          <td style="padding:2.5px 3px;text-align:center;font-weight:700;color:#475569;background:#f1f5f9;">${formatNum(lyS2)}</td>
+          <td style="padding:2.5px 3px;text-align:center;font-weight:800;color:${growthNum >= 0 ? '#047857' : '#be123c'};">${growthNum > 0 ? '+' : ''}${growthRate}%</td>
+        ` : '';
+
+        brRowsHtml += `
+          <tr style="background:${rowBg};border-bottom:1px solid #e2e8f0;">
+            <td style="padding:2.5px 3px;text-align:center;color:#64748b;font-weight:600;">${idx + 1}</td>
+            <td style="padding:2.5px 4px;font-weight:800;color:#0f172a;">${b.cabang}</td>
+            <td style="padding:2.5px 3px;text-align:center;font-weight:700;color:#581c87;">${formatNum(pot)}</td>
+            <td style="padding:2.5px 3px;text-align:center;"><b style="color:#1e40af;">${formatNum(reg)}</b><span style="color:#64748b;">/${formatNum(tgtIss)}</span> <span style="background:#dbeafe;color:#1e3a8a;padding:0.5px 3px;border-radius:2px;font-weight:700;">${progIss}%</span></td>
+            <td style="padding:2.5px 3px;text-align:center;"><b style="color:#065f46;">${formatNum(red)}</b><span style="color:#64748b;">/${formatNum(tgtRed)}</span> <span style="background:#d1fae5;color:#065f46;padding:0.5px 3px;border-radius:2px;font-weight:700;">${progRed}%</span></td>
+            <td style="padding:2.5px 3px;text-align:center;font-weight:800;color:${parseFloat(relRate) >= (dashIsJanJun ? 30 : 60) ? '#047857' : '#dc2626'};">${relRate}%</td>
+            <td style="padding:2.5px 4px;text-align:right;font-weight:800;color:#0f172a;">${formatRp(rev)}</td>
+            <td style="padding:2.5px 3px;text-align:center;"><span style="background:${stsBg};color:${stsCol};padding:1px 4px;border-radius:3px;font-weight:800;font-size:6.8px;">${stsTxt}</span></td>
+            ${s2ColsHtml}
+          </tr>`;
+      });
+
+      const totProgIss = totTgtIss > 0 ? ((totReg / totTgtIss) * 100).toFixed(1) : '0.0';
+      const totProgRed = totTgtRed > 0 ? ((totRed / totTgtRed) * 100).toFixed(1) : '0.0';
+      const totRel = totReg > 0 ? ((totRed / totReg) * 100).toFixed(1) : '0.0';
+      const totProgS2 = totTgtS2 > 0 ? ((totActS2 / totTgtS2) * 100).toFixed(1) : '0.0';
+      const totGapS2 = Math.max(0, totTgtS2 - totActS2);
+      const totGrowth = totLyS2 > 0 ? (((totActS2 - totLyS2) / totLyS2) * 100).toFixed(1) : '0.0';
+
+      const s2HeadCols = dashIsJanJun ? `
+        <th style="padding:4px 2px;text-align:center;background:#ccfbf1;color:#115e59;width:5.5%;">TGT IN S2</th>
+        <th style="padding:4px 2px;text-align:center;background:#99f6e4;color:#0f766e;width:5.5%;">ACT IN S2</th>
+        <th style="padding:4px 2px;text-align:center;background:#ccfbf1;color:#134e4a;width:5.5%;">PROG S2</th>
+        <th style="padding:4px 2px;text-align:center;background:#ffe4e6;color:#9f1239;width:5%;">GAP S2</th>
+        <th style="padding:4px 2px;text-align:center;background:#e2e8f0;color:#334155;width:5%;">IN S2 LY</th>
+        <th style="padding:4px 2px;text-align:center;background:#d1fae5;color:#065f46;width:6%;">GROWTH S2</th>
+      ` : '';
+
+      const s2FootCols = dashIsJanJun ? `
+        <td style="padding:4px 2px;text-align:center;font-weight:900;background:#ccfbf1;color:#115e59;">${formatNum(totTgtS2)}</td>
+        <td style="padding:4px 2px;text-align:center;font-weight:900;background:#99f6e4;color:#0f766e;">${formatNum(totActS2)}</td>
+        <td style="padding:4px 2px;text-align:center;font-weight:900;background:#5eead4;color:#134e4a;">${totProgS2}%</td>
+        <td style="padding:4px 2px;text-align:center;font-weight:900;background:#fecdd3;color:#881337;">-${formatNum(totGapS2)}</td>
+        <td style="padding:4px 2px;text-align:center;font-weight:900;background:#cbd5e1;color:#1e293b;">${formatNum(totLyS2)}</td>
+        <td style="padding:4px 2px;text-align:center;font-weight:900;background:${parseFloat(totGrowth) >= 0 ? '#a7f3d0' : '#fecdd3'};color:${parseFloat(totGrowth) >= 0 ? '#065f46' : '#881337'};">${parseFloat(totGrowth) > 0 ? '+' : ''}${totGrowth}%</td>
+      ` : '';
+
+      // 5. Rakit Kontainer A3 Khusus di Luar Layar
+      const printContainer = document.createElement('div');
+      printContainer.id = 'a3DedicatedPrintContainer';
+      printContainer.style.cssText = 'width:1080px;background:#ffffff;padding:8px 12px;font-family:Inter,sans-serif;color:#0f172a;box-sizing:border-box;';
+
+      printContainer.innerHTML = `
+        <!-- KOP DOKUMEN A3 -->
+        <table style="width:100%;border-bottom:2.5px solid #dc2626;padding-bottom:4px;margin-bottom:6px;">
+          <tr>
+            <td style="vertical-align:bottom;">
+              <div style="font-size:15px;font-weight:900;color:#0f172a;letter-spacing:-0.3px;text-transform:uppercase;">
+                A3 EXECUTIVE EVALUATION REPORT — GRADUAL LOYALTY SYSTEM
+              </div>
+              <div style="font-size:8.5px;color:#475569;font-weight:600;margin-top:1px;">
+                Toyota Nasmoco Aftersales Retention Governance: Cohort Funnel, Workload S2, Financial ROI & 24-Dealership Matrix
+              </div>
+            </td>
+            <td style="text-align:right;vertical-align:bottom;">
+              <div style="font-size:12px;font-weight:900;color:#dc2626;text-transform:uppercase;">${cabang}</div>
+              <div style="font-size:8px;color:#334155;font-weight:600;">Periode Evaluasi: <b>${sDate}</b> s/d <b>${eDate}</b></div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- ZONA 1: 4 KARTU KONTROL PACING -->
+        <div style="background:#1e1b4b;color:#ffffff;padding:6px 8px;border-radius:6px;margin-bottom:6px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #312e81;padding-bottom:3px;margin-bottom:5px;font-size:8.5px;">
+            <span><b style="background:#3b82f6;padding:1px 5px;border-radius:3px;margin-right:5px;">1. PACING & FUNNEL CONTROL</b> <b>Targeted Loyalty Performance (Input vs Output)</b></span>
+            <span style="color:#bfdbfe;">🎯 Asumsi Realisasi Target: <b>${getText('dashAsumsiRealisasi')}</b> dari Tiket Terbit</span>
+          </div>
+          <table style="width:100%;border-collapse:separate;border-spacing:6px 0;">
+            <tr>
+              <td style="width:25%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:5px;padding:5px;text-align:center;">
+                <div style="font-size:7.5px;color:#bfdbfe;font-weight:700;text-transform:uppercase;">Total Database Leads</div>
+                <div style="font-size:17px;font-weight:900;color:#ffffff;margin:2px 0;">${getText('kpiLeads')}</div>
+                <div style="font-size:7.5px;color:#6ee7b7;font-weight:700;">In S2 Return: ${getText('kpiLeadsInS2')}</div>
+              </td>
+              <td style="width:25%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:5px;padding:5px;text-align:center;">
+                <div style="font-size:7.5px;color:#bfdbfe;font-weight:700;text-transform:uppercase;">Tickets Issued (${getText('kpiIssuedProgBadge')})</div>
+                <div style="font-size:17px;font-weight:900;color:#93c5fd;margin:2px 0;">${getText('kpiTargetConverted')} <span style="font-size:10px;color:#cbd5e1;">/ ${getText('kpiTargetIssuedGoal')}</span></div>
+                <div style="font-size:7.5px;color:#fde047;font-weight:700;">Sisa Target: ${getText('kpiTargetIssuedRem')} Unit</div>
+              </td>
+              <td style="width:25%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:5px;padding:5px;text-align:center;">
+                <div style="font-size:7.5px;color:#bfdbfe;font-weight:700;text-transform:uppercase;">Redeemed Units (${getText('kpiRedeemProgBadge')})</div>
+                <div style="font-size:17px;font-weight:900;color:#6ee7b7;margin:2px 0;">${getText('kpiTargetRedeemed')} <span style="font-size:10px;color:#cbd5e1;">/ ${getText('kpiTargetRedeemGoal')}</span></div>
+                <div style="font-size:7.5px;color:#fde047;font-weight:700;">Sisa Target: ${getText('kpiTargetRedeemRem')} Unit</div>
+              </td>
+              <td style="width:25%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:5px;padding:5px;text-align:center;">
+                <div style="font-size:7.5px;color:#fde047;font-weight:700;text-transform:uppercase;">Realization Rate (${getText('kpiQualityBadge')})</div>
+                <div style="font-size:17px;font-weight:900;color:#facc15;margin:2px 0;">${getText('kpiRealizationRate')}</div>
+                <div style="font-size:7.5px;color:#e2e8f0;">Lock-in: <b>${getText('kpiTargetLockInRate')}</b> | Conv: <b>${getText('kpiTargetConvRate')}</b></div>
+              </td>
+            </tr>
+          </table>
         </div>
-        <div style="text-align:right;">
-          <p style="font-size:11px;font-weight:900;color:#dc2626;text-transform:uppercase;margin:0;">
-            ${cabang}
-          </p>
-          <p style="font-size:7px;color:#4b5563;margin-top:1px;margin-bottom:0;">
-            Periode: <b>${sDate}</b> s/d <b>${eDate}</b>
-          </p>
+
+        <!-- ZONA 2: WORKLOAD S2 -->
+        <div style="border:1px solid #e2e8f0;border-radius:6px;padding:5px 8px;margin-bottom:6px;background:#ffffff;">
+          <div style="font-size:8.5px;font-weight:900;color:#0f172a;text-transform:uppercase;margin-bottom:4px;">
+            📅 2. Proyeksi Workload & Kapasitas Servis Berkala Semester 2 (With vs Without Program)
+          </div>
+          ${s2Html}
+        </div>
+
+        <!-- ZONA 3: FUNNEL S8/S9 & FINANCIAL ROI -->
+        <table style="width:100%;border-collapse:separate;border-spacing:6px 0;margin-bottom:6px;">
+          <tr>
+            <!-- Kiri: Stepped Funnel -->
+            <td style="width:38%;vertical-align:top;border:1px solid #e2e8f0;border-radius:6px;padding:6px;background:#ffffff;">
+              <div style="font-size:8.5px;font-weight:900;color:#0f172a;border-bottom:1px solid #f1f5f9;padding-bottom:3px;margin-bottom:5px;text-transform:uppercase;">
+                🔻 3A. Retention Funnel (Servis 8 vs Servis 9)
+              </div>
+              <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:4px;text-align:center;margin-bottom:4px;">
+                <div style="font-size:7.5px;font-weight:800;color:#334155;">1. TARGET LEADS COHORT (100% BASELINE)</div>
+                <div style="font-size:14px;font-weight:900;color:#0f172a;">${getText('fnLeads')}</div>
+                <div style="font-size:7.5px;color:#475569;">S8: <b>${getText('fnLeadsS8')}</b> &nbsp;|&nbsp; S9: <b>${getText('fnLeadsS9')}</b></div>
+              </div>
+              <div style="text-align:center;font-size:7.5px;font-weight:800;color:#1d4ed8;margin:2px 0;">↓ ${getText('fnLockInRate')} ↓</div>
+              <div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:4px;padding:4px;text-align:center;margin-bottom:4px;">
+                <div style="font-size:7.5px;font-weight:800;color:#1e3a8a;">2. TICKETS ISSUED (${getText('fnIssuedProg')})</div>
+                <div style="font-size:13px;font-weight:900;color:#1e40af;">${getText('fnIssued')} <span style="font-size:9px;color:#3b82f6;">/ ${getText('fnTargetIssued')}</span></div>
+                <div style="font-size:7.5px;color:#1e3a8a;">S8: <b>${getText('fnIssuedS8')}</b> &nbsp;|&nbsp; S9: <b>${getText('fnIssuedS9')}</b></div>
+              </div>
+              <div style="text-align:center;font-size:7.5px;font-weight:800;color:#047857;margin:2px 0;">↓ ${getText('fnRealizationRate')} ↓</div>
+              <div style="background:#ecfdf5;border:1px solid #6ee7b7;border-radius:4px;padding:4px;text-align:center;">
+                <div style="font-size:7.5px;font-weight:800;color:#065f46;">3. REDEEMED UNITS (${getText('fnRedeemedProg')})</div>
+                <div style="font-size:13px;font-weight:900;color:#047857;">${getText('fnRedeemed')} <span style="font-size:9px;color:#10b981;">/ ${getText('fnTargetRedeem')}</span></div>
+                <div style="font-size:7.5px;color:#065f46;">S8: <b>${getText('fnRedeemedS8')}</b> &nbsp;|&nbsp; S9: <b>${getText('fnRedeemedS9')}</b></div>
+              </div>
+            </td>
+
+            <!-- Kanan: Financial Realization, ARPU & Subsidy ROI -->
+            <td style="width:62%;vertical-align:top;border:1px solid #86efac;border-radius:6px;padding:6px;background:#f0fdf4;">
+              <div style="font-size:8.5px;font-weight:900;color:#14532d;border-bottom:1px solid #bbf7d0;padding-bottom:3px;margin-bottom:5px;text-transform:uppercase;">
+                💰 3B. Financial Realization, ARPU vs COO & Subsidy ROI
+              </div>
+              <table style="width:100%;border-collapse:collapse;margin-bottom:5px;">
+                <tr>
+                  <td style="width:48%;vertical-align:top;padding-right:6px;">
+                    <div style="font-size:7.5px;font-weight:800;color:#166534;text-transform:uppercase;">Total Actual Revenue (Gross)</div>
+                    <div style="font-size:18px;font-weight:900;color:#15803d;margin:2px 0;">${getText('kpiActual')}</div>
+                    <div style="font-size:8px;color:#14532d;line-height:1.35;">
+                      • S8 Gross: <b>${getText('kpiRevS8')}</b><br/>
+                      • S9 Gross: <b>${getText('kpiRevS9')}</b><br/>
+                      • Projected Target: <b>${getText('kpiSaved')}</b>
+                    </div>
+                  </td>
+                  <td style="width:52%;vertical-align:top;background:#ffffff;border:1px solid #bbf7d0;border-radius:5px;padding:5px;">
+                    <div style="display:flex;justify-content:space-between;font-size:7.5px;font-weight:800;color:#14532d;border-bottom:1px solid #dcfce7;padding-bottom:2px;margin-bottom:3px;">
+                      <span>REVENUE PER UNIT (ARPU)</span>
+                      <span style="background:#16a34a;color:#fff;padding:0.5px 4px;border-radius:2px;">${getText('kpiCooRatioTotalBadge')}</span>
+                    </div>
+                    <div style="font-size:12px;font-weight:900;color:#166534;">${getText('kpiArpuTotal')} <span style="font-size:7.5px;color:#64748b;font-weight:600;">(Ideal COO: ${getText('kpiIdealCooTotal')})</span></div>
+                    <table style="width:100%;margin-top:4px;font-size:7.2px;border-collapse:separate;border-spacing:3px 0;">
+                      <tr>
+                        <td style="background:#ecfdf5;border:1px solid #a7f3d0;padding:3px;border-radius:3px;width:50%;">
+                          <b>S8 (70k): ${getText('kpiArpuS8')}</b><br/>COO: ${getText('kpiIdealCooS8')} (<b>${getText('kpiCooRatioS8')}</b>)
+                        </td>
+                        <td style="background:#eff6ff;border:1px solid #bfdbfe;padding:3px;border-radius:3px;width:50%;">
+                          <b>S9 (80k): ${getText('kpiArpuS9')}</b><br/>COO: ${getText('kpiIdealCooS9')} (<b>${getText('kpiCooRatioS9')}</b>)
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Baris Subsidi & GP Multiplier -->
+              <table style="width:100%;background:#ffffff;border:1px solid #a7f3d0;border-radius:5px;padding:4px;margin-bottom:5px;font-size:7.5px;text-align:center;">
+                <tr>
+                  <td style="width:33%;border-right:1px solid #e2e8f0;">
+                    <div style="color:#065f46;font-weight:800;">INVESTASI SUBSIDI HO</div>
+                    <div style="font-size:11px;font-weight:900;color:#047857;">${getText('dashTotalSubsidi')}</div>
+                    <div style="color:#059669;font-size:6.8px;">${getText('dashCacUnit')}</div>
+                  </td>
+                  <td style="width:34%;border-right:1px solid #e2e8f0;">
+                    <div style="color:#115e59;font-weight:800;">ESTIMASI GROSS PROFIT (GP)</div>
+                    <div style="font-size:11px;font-weight:900;color:#0f766e;">${getText('dashTotalGp')}</div>
+                    <div style="color:#0d9488;font-size:6.8px;">Realisasi GPM: <b>${getText('dashBlendedGpm')}</b></div>
+                  </td>
+                  <td style="width:33%;">
+                    <div style="color:#3730a3;font-weight:800;">GP MULTIPLIER</div>
+                    <div style="font-size:12px;font-weight:900;color:#4338ca;">${getText('dashGpMultiplier')}</div>
+                    <div style="color:#4f46e5;font-size:6.8px;">Rev Multiplier: <b>${getText('dashRoiMultiplier')}</b></div>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Baris Outstanding Potential -->
+              <div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:5px;padding:4px 6px;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <div style="font-size:7px;font-weight:800;color:#be123c;text-transform:uppercase;">Potential Revenue Outstanding (Unconverted Leads)</div>
+                  <div style="font-size:12px;font-weight:900;color:#be123c;">${getText('kpiLost')}</div>
+                </div>
+                <div style="font-size:7.5px;color:#9f1239;text-align:right;">
+                  S8 Outst: <b>${getText('kpiOutS8')}</b><br/>S9 Outst: <b>${getText('kpiOutS9')}</b>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- ZONA 4: TOP 5 SA LEADERBOARD & VEHICLE SEGMENT CHART -->
+        <table style="width:100%;border-collapse:separate;border-spacing:6px 0;margin-bottom:6px;">
+          <tr>
+            <td style="width:68%;vertical-align:top;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;background:#ffffff;">
+              <div style="background:#0f172a;color:#ffffff;padding:4px 8px;font-size:8px;font-weight:800;text-transform:uppercase;display:flex;justify-content:space-between;">
+                <span>🏆 4A. Top 5 Service Advisor Leaderboard</span>
+                <span style="color:#94a3b8;font-weight:500;">Ranked by Redeemed Units & Gross Revenue</span>
+              </div>
+              <table style="width:100%;border-collapse:collapse;font-size:7.5px;">
+                <thead>
+                  <tr style="background:#f1f5f9;color:#475569;text-transform:uppercase;font-size:6.8px;">
+                    <th style="padding:3px 4px;text-align:center;width:6%;">#</th>
+                    <th style="padding:3px 4px;text-align:left;width:16%;">Cabang</th>
+                    <th style="padding:3px 4px;text-align:left;width:28%;">Service Advisor</th>
+                    <th style="padding:3px 4px;text-align:center;width:9%;">Issued</th>
+                    <th style="padding:3px 4px;text-align:center;width:9%;">Redeem</th>
+                    <th style="padding:3px 4px;text-align:right;width:14%;">Gross Rev</th>
+                    <th style="padding:3px 4px;text-align:right;width:11%;">ARPU/RO</th>
+                    <th style="padding:3px 4px;text-align:center;width:7%;">vs COO</th>
+                  </tr>
+                </thead>
+                <tbody>${saRowsHtml}</tbody>
+              </table>
+            </td>
+            <td style="width:32%;vertical-align:top;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;background:#ffffff;text-align:center;">
+              <div style="background:#0f172a;color:#ffffff;padding:4px 8px;font-size:8px;font-weight:800;text-transform:uppercase;text-align:left;">
+                🚘 4B. Vehicle Segment Distribution
+              </div>
+              <div style="padding:4px;display:flex;align-items:center;justify-content:center;height:130px;">
+                ${chartImgHtml}
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- ZONA 5: TABEL 24 CABANG (14 KOLOM UTUH & RAPI) -->
+        <div style="border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;background:#ffffff;">
+          <div style="background:#0f172a;color:#ffffff;padding:4px 8px;font-size:8px;font-weight:800;text-transform:uppercase;display:flex;justify-content:space-between;">
+            <span>📊 5. Dealership Performance, Irregularity Control & S2 YoY Growth Matrix (${branchList.length} Branches)</span>
+            <span style="color:#facc15;">Target Realization Benchmark: ${benchLabel}</span>
+          </div>
+          <table style="width:100%;border-collapse:collapse;font-size:6.8px;">
+            <thead>
+              <tr style="background:#f1f5f9;color:#334155;font-weight:800;border-bottom:1.5px solid #cbd5e1;font-size:6.5px;">
+                <th style="padding:4px 2px;text-align:center;width:2.2%;">#</th>
+                <th style="padding:4px 4px;text-align:left;width:9.5%;">DEALERSHIP</th>
+                <th style="padding:4px 2px;text-align:center;width:5%;">LEADS</th>
+                <th style="padding:4px 2px;text-align:center;width:12.5%;">ISSUED VS TGT</th>
+                <th style="padding:4px 2px;text-align:center;width:12.5%;">REDEEM VS TGT</th>
+                <th style="padding:4px 2px;text-align:center;width:5.5%;">REAL (${benchLabel})</th>
+                <th style="padding:4px 4px;text-align:right;width:10.3%;">GROSS REVENUE</th>
+                <th style="padding:4px 2px;text-align:center;width:10%;">FUNNEL STATUS</th>
+                ${s2HeadCols}
+              </tr>
+            </thead>
+            <tbody>${brRowsHtml}</tbody>
+            <tfoot>
+              <tr style="background:#e2e8f0;color:#0f172a;font-weight:900;border-top:2px solid #94a3b8;font-size:7px;">
+                <td colspan="2" style="padding:4px;text-align:center;">TOTAL REGIONAL</td>
+                <td style="padding:4px 2px;text-align:center;color:#581c87;">${formatNum(totPot)}</td>
+                <td style="padding:4px 2px;text-align:center;color:#1e3a8a;">${formatNum(totReg)} / ${formatNum(totTgtIss)} (${totProgIss}%)</td>
+                <td style="padding:4px 2px;text-align:center;color:#065f46;">${formatNum(totRed)} / ${formatNum(totTgtRed)} (${totProgRed}%)</td>
+                <td style="padding:4px 2px;text-align:center;color:#b45309;">${totRel}%</td>
+                <td style="padding:4px 4px;text-align:right;color:#0f172a;">${formatRp(totRev)}</td>
+                <td style="padding:4px 2px;text-align:center;color:#312e81;">PACING S2</td>
+                ${s2FootCols}
+              </tr>
+            </tfoot>
+          </table>
         </div>
       `;
-      dashContent.insertBefore(tempHeader, dashContent.firstChild);
 
-      // 4. Inject CSS Khusus Cetak (SELECTOR LANGSUNG TANPA :has())
-      const printStyle = document.createElement('style');
-      printStyle.id = 'a3-direct-print-style';
-      printStyle.innerHTML = `
-        html.a3-printing-mode,
-        body.a3-printing-mode {
-          display: block !important;
-          width: 1040px !important;
-          min-width: 1040px !important;
-          max-width: 1040px !important;
-          height: auto !important;
-          margin: 0 !important;
-          padding: 0 !important;
-          overflow: visible !important;
-          background: #ffffff !important;
-        }
-
-        body.a3-printing-mode aside,
-        body.a3-printing-mode header,
-        body.a3-printing-mode nav,
-        body.a3-printing-mode #earlyWarning,
-        body.a3-printing-mode #view-portal,
-        body.a3-printing-mode #view-login,
-        body.a3-printing-mode #view-register,
-        body.a3-printing-mode #view-validate,
-        body.a3-printing-mode #view-mra,
-        body.a3-printing-mode #view-audit,
-        body.a3-printing-mode #view-panduan,
-        body.a3-printing-mode #modalTicketDetail,
-        body.a3-printing-mode #modalRedeemDetail,
-        body.a3-printing-mode #uploadModal,
-        body.a3-printing-mode button,
-        body.a3-printing-mode input,
-        body.a3-printing-mode select {
-          display: none !important;
-        }
-
-        /* Hilangkan padding geser dari main & parent agar sisi kiri tidak terpotong */
-        body.a3-printing-mode #app-wrapper,
-        body.a3-printing-mode main,
-        body.a3-printing-mode #view-dashboard {
-          display: block !important;
-          width: 1040px !important;
-          margin: 0 !important;
-          padding: 0 !important;
-          position: static !important;
-          transform: none !important;
-          overflow: visible !important;
-        }
-
-        body.a3-printing-mode #dashContent {
-          display: block !important;
-          position: static !important;
-          width: 1040px !important;
-          margin: 0 !important;
-          padding: 3px 6px !important;
-          box-sizing: border-box !important;
-          background: #ffffff !important;
-          height: auto !important;
-        }
-
-        body.a3-printing-mode #dashContent > * {
-          margin-top: 3px !important;
-          margin-bottom: 0 !important;
-        }
-
-        body.a3-printing-mode .p-5 { padding: 4px 6px !important; }
-        body.a3-printing-mode .p-4 { padding: 3px 5px !important; }
-        body.a3-printing-mode .p-3 { padding: 2px 4px !important; }
-        body.a3-printing-mode .gap-6,
-        body.a3-printing-mode .gap-4,
-        body.a3-printing-mode .gap-3 { gap: 3px !important; }
-        body.a3-printing-mode h2,
-        body.a3-printing-mode h3 { font-size: 9px !important; }
-        body.a3-printing-mode .text-3xl { font-size: 13.5px !important; line-height: 1 !important; }
-        body.a3-printing-mode .text-2xl { font-size: 11.5px !important; line-height: 1 !important; }
-        body.a3-printing-mode .text-xl { font-size: 10.5px !important; line-height: 1 !important; }
-        body.a3-printing-mode .rounded-2xl,
-        body.a3-printing-mode .rounded-xl { border-radius: 4px !important; }
-
-        /* Sembunyikan karakter panah sort agar header bersih */
-        body.a3-printing-mode span[id^="br-sort-"],
-        body.a3-printing-mode span[id^="lb-sort-"] {
-          display: none !important;
-        }
-
-        /* Workload S2 */
-        body.a3-printing-mode #s2MonthlyBoard { gap: 3px !important; }
-        body.a3-printing-mode #s2MonthlyBoard > div { padding: 2.5px 3.5px !important; }
-
-        /* SA Leaderboard (SELECTOR LANGSUNG TANPA :has) */
-        body.a3-printing-mode #leaderboardBody {
-          overflow: visible !important;
-        }
-        body.a3-printing-mode #leaderboardBody tr td,
-        body.a3-printing-mode table thead tr th {
-          padding: 1.5px 3px !important;
-          font-size: 7px !important;
-          line-height: 1.1 !important;
-          vertical-align: middle !important;
-          white-space: nowrap !important;
-        }
-
-        /* 🔴 TABEL 24 CABANG: KUNCI STRUKTUR NORMAL BLOCK (HEADER DI ATAS, TABEL DI BAWAH) */
-        body.a3-printing-mode #hoBreakdownSection {
-          display: block !important;
-          height: auto !important;
-          max-height: none !important;
-          overflow: visible !important;
-          border: 1px solid #e5e7eb !important;
-        }
-        body.a3-printing-mode #hoBreakdownSection > div:first-child {
-          display: block !important;
-          padding: 3px 6px !important;
-          background: #111827 !important;
-        }
-        body.a3-printing-mode #hoBreakdownSection > div:last-child {
-          display: block !important;
-          max-height: none !important;
-          overflow: visible !important;
-        }
-
-        /* KUNCI TINGGI BARIS & PADDING MIKRO LANGSUNG KE TD / TH */
-        body.a3-printing-mode #branchBreakdownHead tr th,
-        body.a3-printing-mode #hoBreakdownBody tr td,
-        body.a3-printing-mode #hoBreakdownFoot tr td {
-          padding: 1px 2.5px !important;
-          font-size: 6.6px !important;
-          line-height: 1.05 !important;
-          vertical-align: middle !important;
-          white-space: nowrap !important;
-          height: 13.5px !important;
-        }
-        body.a3-printing-mode #hoBreakdownBody tr td * {
-          font-size: 6.6px !important;
-          line-height: 1.05 !important;
-        }
-
-        /* 🔴 Kunci Pembagian Lebar Kolom Tabel 24 Cabang (Mendukung Penuh 12 Kolom Saat S1) */
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(1) { width: 2.5% !important; text-align: center !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(2) { width: 11% !important; text-align: left !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(3) { width: 6.5% !important; text-align: center !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(4) { width: 12.5% !important; text-align: center !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(5) { width: 12.5% !important; text-align: center !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(6) { width: 7.5% !important; text-align: center !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(7) { width: 12% !important; text-align: right !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(8) { width: 13.5% !important; text-align: center !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(9) { width: 6% !important; text-align: center !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(10) { width: 6% !important; text-align: center !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(11) { width: 5% !important; text-align: center !important; }
-        body.a3-printing-mode #branchBreakdownHead th:nth-child(12) { width: 5% !important; text-align: center !important; }
-      `;
-      document.head.appendChild(printStyle);
-      document.documentElement.classList.add('a3-printing-mode');
-      document.body.classList.add('a3-printing-mode');
-
-      // 5. Cleanup & Restore
-      const restoreOriginal = () => {
-        document.documentElement.classList.remove('a3-printing-mode');
-        document.body.classList.remove('a3-printing-mode');
-        const s = document.getElementById('a3-direct-print-style');
-        if (s) s.remove();
-        const h = document.getElementById('tempA3PdfHeader');
-        if (h) h.remove();
-        if (tempImg) tempImg.remove();
-        if (canvas) canvas.style.display = '';
-        if (vSeg) vSeg.style.cssText = '';
-        
-        branchSearchQuery = prevBranchSearch;
-        if (typeof branchFunnelFilter !== 'undefined') branchFunnelFilter = prevFunnelFilter;
-        renderBranchBreakdown();
-
-        window.scrollTo(0, prevScrollY);
-        if (mainEl) mainEl.scrollTop = prevMainScrollTop;
-      };
+      document.body.appendChild(printContainer);
 
       const filename = `A3_Report_Loyalty_${cabang.replace(/\s+/g, '_')}_${sDate}_sd_${eDate}.pdf`;
-
       const opt = {
         margin: [3, 3, 3, 3],
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-          scale: 2, 
-          useCORS: true, 
-          logging: false
-        },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
         jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' }
       };
 
       setTimeout(() => {
-        html2pdf().set(opt).from(dashContent).save().then(() => {
-          restoreOriginal();
+        html2pdf().set(opt).from(printContainer).save().then(() => {
+          printContainer.remove();
           Swal.fire({
             icon: 'success',
-            title: 'A3 Report Sempurna!',
-            text: 'Dokumen tercetak rapi dalam 1 lembar A3: tidak terpotong dan 24 cabang tersusun rapat.',
+            title: 'A3 Report Berhasil Diunduh!',
+            text: 'Seluruh 14 kolom, 24 cabang & grafik tercetak presisi dalam 1 lembar A3.',
             timer: 2000,
             showConfirmButton: false
           });
-        }).catch((err) => {
+        }).catch(err => {
           console.error(err);
-          restoreOriginal();
+          printContainer.remove();
           Swal.fire('Error', 'Gagal memproses dokumen A3 PDF.', 'error');
         });
-      }, 500);
+      }, 300);
     }
   </script>
 </body>
