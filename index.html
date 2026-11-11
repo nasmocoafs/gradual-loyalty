@@ -3417,7 +3417,7 @@
       XLSX.writeFile(wb, "Settlement_Subsidi_HO_Report.xlsx");
     }
     
-    // 🔴 PERFECTED A3 EXECUTIVE REPORT ENGINE (PROPORTIONAL, SVG CHART ANTI-GLITCH & DYNAMIC PDCA NOTES)
+    // 🔴 A3 EXECUTIVE REPORT ENGINE (SAFE MARGIN 1020PX, ZERO INLINE-COLLISION & PDCA NOTES)
     function downloadDashboardPDF() {
       const dashContent = document.getElementById('dashContent');
       if (!dashContent || dashContent.classList.contains('hidden')) {
@@ -3425,8 +3425,8 @@
       }
 
       Swal.fire({
-        title: 'Menyusun Laporan Eksekutif A3...',
-        text: 'Mengatur proporsi 6 zona, grafik SVG & catatan evaluasi PDCA...',
+        title: 'Menyusun Laporan A3 Presisi...',
+        text: 'Menyelaraskan margin A3, matriks 24 cabang & catatan evaluasi...',
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
       });
@@ -3442,7 +3442,7 @@
       const benchLabel = dashIsJanJun ? '30%' : '60%';
       const benchNum = dashIsJanJun ? 30.0 : 60.0;
 
-      // 1. BANGUN GRAFIK DONUT DARI INLINE SVG + LEGENDA (100% ANTI-MELOMPAT KE KIRI ATAS)
+      // 1. BANGUN DISTRIBUSI SEGMEN KENDARAAN (BAR & TABEL MURNI - 100% BEBAS OVERLAP)
       const segColors = ['#06b6d4', '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#64748b'];
       const segLabels = ['New Entry', 'Economy', 'Standard', 'Medium Luxury', 'Luxury', 'Commercial'];
       let segValues = [0, 0, 0, 0, 0, 0];
@@ -3452,54 +3452,50 @@
       }
       const totalSegUnits = segValues.reduce((a, b) => a + b, 0);
 
-      let svgCircles = '';
+      let stackedBarCells = '';
       let legendRows = '';
-      const radius = 38;
-      const circumference = 2 * Math.PI * radius;
-      let accumulatedPct = 0;
 
       segLabels.forEach((lbl, idx) => {
         const val = segValues[idx] || 0;
-        const pct = totalSegUnits > 0 ? (val / totalSegUnits) : 0;
-        const pctText = (pct * 100).toFixed(1) + '%';
-        const dashArray = `${(pct * circumference).toFixed(2)} ${circumference.toFixed(2)}`;
-        const dashOffset = (-accumulatedPct * circumference).toFixed(2);
-        accumulatedPct += pct;
+        const pct = totalSegUnits > 0 ? ((val / totalSegUnits) * 100) : 0;
+        const pctText = pct.toFixed(1) + '%';
 
-        if (val > 0) {
-          svgCircles += `<circle r="${radius}" cx="50" cy="50" fill="transparent" stroke="${segColors[idx]}" stroke-width="18" stroke-dasharray="${dashArray}" stroke-dashoffset="${dashOffset}" transform="rotate(-90 50 50)" />`;
+        if (pct > 0) {
+          stackedBarCells += `<td style="width:${pct}%;background:${segColors[idx]};height:10px;"></td>`;
         }
 
         legendRows += `
-          <tr>
-            <td style="padding:1.5px 3px;white-space:nowrap;">
-              <span style="display:inline-block;width:7px;height:7px;background:${segColors[idx]};border-radius:2px;margin-right:4px;vertical-align:middle;"></span>
-              <span style="font-weight:700;color:#334155;font-size:7.2px;">${lbl}</span>
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td style="padding:2.5px 4px;font-weight:700;color:#1e293b;font-size:7.2px;">
+              <span style="display:inline-block;width:7px;height:7px;background:${segColors[idx]};border-radius:2px;margin-right:4px;"></span>${lbl}
             </td>
-            <td style="padding:1.5px 3px;text-align:right;font-weight:800;color:#0f172a;font-size:7.2px;">${formatNum(val)}</td>
-            <td style="padding:1.5px 3px;text-align:right;font-weight:700;color:#64748b;font-size:7px;">(${pctText})</td>
+            <td style="padding:2.5px 4px;width:32%;">
+              <div style="width:100%;background:#f1f5f9;height:5px;border-radius:2px;overflow:hidden;">
+                <div style="width:${Math.min(100, pct)}%;background:${segColors[idx]};height:5px;"></div>
+              </div>
+            </td>
+            <td style="padding:2.5px 4px;text-align:right;font-weight:800;color:#0f172a;font-size:7.2px;">${formatNum(val)} Unit</td>
+            <td style="padding:2.5px 4px;text-align:right;font-weight:700;color:#475569;font-size:7px;">${pctText}</td>
           </tr>`;
       });
 
-      if (totalSegUnits === 0) {
-        svgCircles = `<circle r="${radius}" cx="50" cy="50" fill="transparent" stroke="#e2e8f0" stroke-width="18" />`;
+      if (!stackedBarCells) {
+        stackedBarCells = `<td style="width:100%;background:#e2e8f0;height:10px;"></td>`;
       }
 
-      const vehicleSvgHtml = `
-        <table style="width:100%;border-collapse:collapse;">
-          <tr>
-            <td style="width:42%;text-align:center;vertical-align:middle;padding:2px;">
-              <svg width="102" height="102" viewBox="0 0 100 100" style="display:block;margin:0 auto;">
-                ${svgCircles}
-                <text x="50" y="47" text-anchor="middle" fill="#0f172a" font-size="12" font-weight="900" font-family="Inter,sans-serif">${formatNum(totalSegUnits)}</text>
-                <text x="50" y="58" text-anchor="middle" fill="#64748b" font-size="6.5" font-weight="700" font-family="Inter,sans-serif">UNIT REDEEM</text>
-              </svg>
-            </td>
-            <td style="width:58%;vertical-align:middle;padding-right:4px;">
-              <table style="width:100%;border-collapse:collapse;">${legendRows}</table>
-            </td>
-          </tr>
-        </table>`;
+      const vehicleDistHtml = `
+        <div style="padding:5px 8px;">
+          <table style="width:100%;margin-bottom:4px;font-size:7.5px;">
+            <tr>
+              <td style="font-weight:800;color:#334155;">TOTAL REDEEMED BY SEGMENT</td>
+              <td style="text-align:right;font-weight:900;color:#047857;">${formatNum(totalSegUnits)} Unit (100%)</td>
+            </tr>
+          </table>
+          <table style="width:100%;border-collapse:collapse;border-radius:3px;overflow:hidden;margin-bottom:5px;">
+            <tr>${stackedBarCells}</tr>
+          </table>
+          <table style="width:100%;border-collapse:collapse;">${legendRows}</table>
+        </div>`;
 
       // 2. BANGUN BARIS TOP 5 SA LEADERBOARD
       let saRowsHtml = '';
@@ -3509,37 +3505,84 @@
           const bg = i % 2 === 1 ? '#f8fafc' : '#ffffff';
           const cooPct = parseFloat(sa.cooRatio || 0);
           const cooColor = cooPct >= 100 ? '#065f46' : '#92400e';
-          const cooBg = cooPct >= 100 ? '#d1fae5' : '#fef3c7';
           saRowsHtml += `
             <tr style="background:${bg};border-bottom:1px solid #e2e8f0;">
-              <td style="padding:3.5px 4px;text-align:center;font-weight:900;color:#334155;">${i + 1}</td>
-              <td style="padding:3.5px 4px;font-weight:700;color:#475569;white-space:nowrap;">${sa.cabang || '-'}</td>
-              <td style="padding:3.5px 4px;font-weight:800;color:#0f172a;white-space:nowrap;">${sa.nama || '-'}</td>
-              <td style="padding:3.5px 4px;text-align:center;font-weight:700;color:#1d4ed8;">${formatNum(sa.registered || 0)}</td>
-              <td style="padding:3.5px 4px;text-align:center;font-weight:900;color:#047857;background:#ecfdf5;">${formatNum(sa.redeemed || 0)}</td>
-              <td style="padding:3.5px 4px;text-align:right;font-weight:800;color:#0f172a;white-space:nowrap;">${formatRp(sa.revenue || 0)}</td>
-              <td style="padding:3.5px 4px;text-align:right;font-weight:700;color:#4338ca;white-space:nowrap;">${formatRp(sa.arpu || 0)}</td>
-              <td style="padding:3.5px 4px;text-align:center;"><span style="background:${cooBg};color:${cooColor};padding:1px 4px;border-radius:3px;font-weight:800;font-size:7px;">${sa.cooRatio || '0'}%</span></td>
+              <td style="padding:4px 3px;text-align:center;font-weight:800;color:#334155;">${i + 1}</td>
+              <td style="padding:4px 5px;font-weight:700;color:#475569;">${sa.cabang || '-'}</td>
+              <td style="padding:4px 5px;font-weight:800;color:#0f172a;">${sa.nama || '-'}</td>
+              <td style="padding:4px 3px;text-align:center;font-weight:700;color:#1d4ed8;">${formatNum(sa.registered || 0)}</td>
+              <td style="padding:4px 3px;text-align:center;font-weight:800;color:#047857;background:#ecfdf5;">${formatNum(sa.redeemed || 0)}</td>
+              <td style="padding:4px 5px;text-align:right;font-weight:800;color:#0f172a;">${formatRp(sa.revenue || 0)}</td>
+              <td style="padding:4px 5px;text-align:right;font-weight:700;color:#4338ca;">${formatRp(sa.arpu || 0)}</td>
+              <td style="padding:4px 3px;text-align:center;font-weight:800;color:${cooColor};">${sa.cooRatio || '0'}%</td>
             </tr>`;
         });
       } else {
         saRowsHtml = `<tr><td colspan="8" style="padding:14px;text-align:center;color:#94a3b8;">Belum ada data performa SA</td></tr>`;
       }
 
-      // 3. BANGUN KARTU WORKLOAD S2 SECARA PROPORSIONAL
-      const s2Cards = document.querySelectorAll('#s2MonthlyBoard > div');
+      // 3. EKSTRAK & BANGUN KARTU WORKLOAD S2 DENGAN TABEL BERSIH (ANTI-TABRAKAN)
+      const s2DomCards = document.querySelectorAll('#s2MonthlyBoard > div');
       let s2Html = '';
-      if (s2Cards.length >= 2) {
-        s2Html = `<table style="width:100%;border-collapse:separate;border-spacing:5px 0;table-layout:fixed;"><tr>`;
-        s2Cards.forEach(card => {
-          s2Html += `<td style="vertical-align:top;background:#faf5ff;border:1px solid #d8b4fe;border-radius:5px;padding:4px 5px;font-size:7.5px;">${card.innerHTML}</td>`;
+      if (s2DomCards.length >= 2) {
+        s2Html = `<table style="width:100%;border-collapse:separate;border-spacing:4px 0;table-layout:fixed;"><tr>`;
+        s2DomCards.forEach(card => {
+          const mTitle = card.querySelector('.text-purple-900') ? card.querySelector('.text-purple-900').innerText.trim() : '-';
+          const mRatio = card.querySelector('span.rounded') ? card.querySelector('span.rounded').innerText.trim() : '0%';
+          const mainNums = card.querySelectorAll('.grid-cols-2 p.text-sm');
+          const tgtIn = mainNums[0] ? mainNums[0].innerText.trim() : '0';
+          const actIn = mainNums[1] ? mainNums[1].innerText.trim() : '0';
+          const progNums = card.querySelectorAll('.text-left b');
+          const wProg = progNums[0] ? progNums[0].innerText.trim() : '0';
+          const woProg = progNums[1] ? progNums[1].innerText.trim() : '0';
+          const sbNums = card.querySelectorAll('.border-t b');
+          const s8Val = sbNums[0] ? sbNums[0].innerText.trim() : '0';
+          const s9Val = sbNums[1] ? sbNums[1].innerText.trim() : '0';
+
+          s2Html += `
+            <td style="vertical-align:top;background:#faf5ff;border:1px solid #d8b4fe;border-radius:5px;padding:4px;">
+              <table style="width:100%;border-bottom:1px solid #e9d5ff;padding-bottom:2px;margin-bottom:3px;font-size:7.2px;">
+                <tr>
+                  <td style="font-weight:900;color:#581c87;">${mTitle}</td>
+                  <td style="text-align:right;font-weight:800;color:#6b21a8;">${mRatio}</td>
+                </tr>
+              </table>
+              <table style="width:100%;background:#ffffff;border:1px solid #e9d5ff;border-radius:3px;margin-bottom:3px;text-align:center;font-size:7px;">
+                <tr>
+                  <td style="width:50%;padding:2px;border-right:1px solid #f3e8ff;">
+                    <div style="font-size:6px;color:#64748b;font-weight:700;">TARGET IN</div>
+                    <div style="font-size:9.5px;font-weight:900;color:#6b21a8;">${tgtIn}</div>
+                  </td>
+                  <td style="width:50%;padding:2px;">
+                    <div style="font-size:6px;color:#64748b;font-weight:700;">TOTAL ACT IN</div>
+                    <div style="font-size:9.5px;font-weight:900;color:#0f172a;">${actIn}</div>
+                  </td>
+                </tr>
+              </table>
+              <table style="width:100%;font-size:6.5px;color:#334155;margin-bottom:2px;">
+                <tr>
+                  <td>W/ Prog:</td>
+                  <td style="text-align:right;font-weight:800;color:#047857;">${wProg}</td>
+                </tr>
+                <tr>
+                  <td>W/o Prog:</td>
+                  <td style="text-align:right;font-weight:800;color:#475569;">${woProg}</td>
+                </tr>
+              </table>
+              <table style="width:100%;border-top:1px solid #e9d5ff;padding-top:2px;font-size:6.5px;color:#581c87;font-weight:700;">
+                <tr>
+                  <td style="text-align:left;">S8: ${s8Val}</td>
+                  <td style="text-align:right;">S9: ${s9Val}</td>
+                </tr>
+              </table>
+            </td>`;
         });
         s2Html += `</tr></table>`;
       } else {
         s2Html = `<div style="padding:6px;text-align:center;color:#94a3b8;font-size:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;">Tidak ada proyeksi Semester 2 pada periode ini</div>`;
       }
 
-      // 4. BANGUN TABEL 24 CABANG (14 KOLOM 1 BARIS RATA / ANTI-WRAPPING) & ANALISIS OTOMATIS UNTUK CATATAN PDCA
+      // 4. BANGUN TABEL 24 CABANG (TEKS TUNGGAL TANPA NESTED SPAN AGAR TIDAK PERNAH BERTUMPUK)
       let brRowsHtml = '';
       let totPot = 0, totReg = 0, totTgtIss = 0, totRed = 0, totTgtRed = 0, totRev = 0;
       let totTgtS2 = 0, totActS2 = 0, totLyS2 = 0;
@@ -3577,7 +3620,6 @@
         const growthNum = lyS2 > 0 ? (((actS2 - lyS2) / lyS2) * 100) : (actS2 > 0 ? 100.0 : 0.0);
         const growthRate = growthNum.toFixed(1);
 
-        // Kelompokkan untuk Catatan Evaluasi Otomatis
         if (b.funnelStatus === 'ACHIEVED' || progRedNum >= 100) {
           achievedBranches.push(`${b.cabang} (${progRed}%)`);
         }
@@ -3585,14 +3627,14 @@
           bottleneckBranches.push({ name: b.cabang, pct: progIssNum, txt: `${b.cabang} (${progIss}%)` });
         }
         if (b.funnelStatus === 'RECALL_FRICTION' || (progIssNum >= 50 && relRateNum < 20)) {
-          frictionBranches.push(`${b.cabang} (Real: ${relRate}%)`);
+          frictionBranches.push(`${b.cabang} (${relRate}%)`);
         }
         if (growthNum > 0 && lyS2 > 0) {
           positiveGrowthBranches.push(`${b.cabang} (+${growthRate}%)`);
         }
 
-        let stsBg = '#dcfce7', stsCol = '#166534', stsTxt = 'On Track';
-        if (b.funnelStatus === 'ACHIEVED') { stsBg = '#059669'; stsCol = '#ffffff'; stsTxt = 'Target Achieved'; }
+        let stsCol = '#166534', stsBg = '#dcfce7', stsTxt = 'On Track';
+        if (b.funnelStatus === 'ACHIEVED') { stsBg = '#d1fae5'; stsCol = '#065f46'; stsTxt = 'Target Achieved'; }
         else if (b.funnelStatus === 'LEAD_BOTTLENECK') { stsBg = '#fef9c3'; stsCol = '#854d0e'; stsTxt = 'Issuance Bottleneck'; }
         else if (b.funnelStatus === 'RECALL_FRICTION') { stsBg = '#ffedd5'; stsCol = '#9a3412'; stsTxt = 'Recall Friction'; }
         else if (b.funnelStatus === 'CRITICAL_RISK') { stsBg = '#ffe4e6'; stsCol = '#9f1239'; stsTxt = 'Critical Risk'; }
@@ -3600,30 +3642,25 @@
 
         const rowBg = idx % 2 === 1 ? '#f8fafc' : '#ffffff';
         const s2ColsHtml = dashIsJanJun ? `
-          <td style="padding:2.5px 2px;text-align:center;font-weight:700;color:#115e59;background:#f0fdfa;white-space:nowrap;">${formatNum(tgtS2)}</td>
-          <td style="padding:2.5px 2px;text-align:center;font-weight:800;color:#0f766e;background:#ccfbf1;white-space:nowrap;">${formatNum(actS2)}</td>
-          <td style="padding:2.5px 2px;text-align:center;font-weight:800;color:#134e4a;white-space:nowrap;">${progS2}%</td>
-          <td style="padding:2.5px 2px;text-align:center;font-weight:700;color:${gapS2 === 0 ? '#059669' : '#e11d48'};background:#fff1f2;white-space:nowrap;">${gapS2 === 0 ? 'Tercapai' : '-' + formatNum(gapS2)}</td>
-          <td style="padding:2.5px 2px;text-align:center;font-weight:700;color:#475569;background:#f1f5f9;white-space:nowrap;">${formatNum(lyS2)}</td>
-          <td style="padding:2.5px 2px;text-align:center;font-weight:800;color:${growthNum >= 0 ? '#047857' : '#be123c'};white-space:nowrap;">${growthNum > 0 ? '+' : ''}${growthRate}%</td>
+          <td style="padding:2.5px 3px;text-align:center;font-weight:700;color:#115e59;background:#f0fdfa;">${formatNum(tgtS2)}</td>
+          <td style="padding:2.5px 3px;text-align:center;font-weight:800;color:#0f766e;background:#ccfbf1;">${formatNum(actS2)}</td>
+          <td style="padding:2.5px 3px;text-align:center;font-weight:800;color:#134e4a;">${progS2}%</td>
+          <td style="padding:2.5px 3px;text-align:center;font-weight:700;color:${gapS2 === 0 ? '#059669' : '#e11d48'};background:#fff1f2;">${gapS2 === 0 ? 'Tercapai' : '-' + formatNum(gapS2)}</td>
+          <td style="padding:2.5px 3px;text-align:center;font-weight:700;color:#475569;background:#f1f5f9;">${formatNum(lyS2)}</td>
+          <td style="padding:2.5px 3px;text-align:center;font-weight:800;color:${growthNum >= 0 ? '#047857' : '#be123c'};">${growthNum > 0 ? '+' : ''}${growthRate}%</td>
         ` : '';
 
+        // Gunakan Single Text Node per sel agar html2canvas tidak salah hitung jarak huruf
         brRowsHtml += `
-          <tr style="background:${rowBg};border-bottom:1px solid #e2e8f0;height:16px;">
-            <td style="padding:2.5px 2px;text-align:center;color:#64748b;font-weight:700;white-space:nowrap;">${idx + 1}</td>
-            <td style="padding:2.5px 4px;font-weight:800;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${b.cabang}</td>
-            <td style="padding:2.5px 2px;text-align:center;font-weight:700;color:#581c87;white-space:nowrap;">${formatNum(pot)}</td>
-            <td style="padding:2.5px 2px;text-align:center;white-space:nowrap;">
-              <b style="color:#1e40af;">${formatNum(reg)}</b><span style="color:#64748b;">/${formatNum(tgtIss)}</span>
-              <span style="background:#dbeafe;color:#1e3a8a;padding:0.5px 3px;border-radius:2px;font-weight:800;font-size:6.3px;margin-left:2px;">${progIss}%</span>
-            </td>
-            <td style="padding:2.5px 2px;text-align:center;white-space:nowrap;">
-              <b style="color:#065f46;">${formatNum(red)}</b><span style="color:#64748b;">/${formatNum(tgtRed)}</span>
-              <span style="background:#d1fae5;color:#065f46;padding:0.5px 3px;border-radius:2px;font-weight:800;font-size:6.3px;margin-left:2px;">${progRed}%</span>
-            </td>
-            <td style="padding:2.5px 2px;text-align:center;font-weight:800;color:${relRateNum >= benchNum ? '#047857' : '#dc2626'};white-space:nowrap;">${relRate}%</td>
-            <td style="padding:2.5px 4px;text-align:right;font-weight:800;color:#0f172a;white-space:nowrap;">${formatRp(rev)}</td>
-            <td style="padding:2.5px 2px;text-align:center;white-space:nowrap;"><span style="background:${stsBg};color:${stsCol};padding:1px 4px;border-radius:3px;font-weight:800;font-size:6.3px;display:inline-block;">${stsTxt}</span></td>
+          <tr style="background:${rowBg};border-bottom:1px solid #e2e8f0;">
+            <td style="padding:2.5px 3px;text-align:center;color:#64748b;font-weight:700;">${idx + 1}</td>
+            <td style="padding:2.5px 4px;font-weight:800;color:#0f172a;">${b.cabang}</td>
+            <td style="padding:2.5px 3px;text-align:center;font-weight:700;color:#581c87;">${formatNum(pot)}</td>
+            <td style="padding:2.5px 3px;text-align:center;font-weight:700;color:#1e3a8a;background:#eff6ff;">${formatNum(reg)} / ${formatNum(tgtIss)} (${progIss}%)</td>
+            <td style="padding:2.5px 3px;text-align:center;font-weight:700;color:#065f46;background:#ecfdf5;">${formatNum(red)} / ${formatNum(tgtRed)} (${progRed}%)</td>
+            <td style="padding:2.5px 3px;text-align:center;font-weight:800;color:${relRateNum >= benchNum ? '#047857' : '#dc2626'};">${relRate}%</td>
+            <td style="padding:2.5px 4px;text-align:right;font-weight:800;color:#0f172a;">${formatRp(rev)}</td>
+            <td style="padding:2.5px 3px;text-align:center;font-weight:800;color:${stsCol};background:${stsBg};">${stsTxt}</td>
             ${s2ColsHtml}
           </tr>`;
       });
@@ -3632,7 +3669,7 @@
       const topBottleneckTxt = bottleneckBranches.slice(0, 6).map(x => x.txt).join(', ') || 'Tidak ada';
       const topFrictionTxt = frictionBranches.slice(0, 5).join(', ') || 'Tidak ada';
       const topAchievedTxt = achievedBranches.join(', ') || 'Belum ada';
-      const topGrowthTxt = positiveGrowthBranches.join(', ') || 'Belum ada cabang tumbuh positif YoY';
+      const topGrowthTxt = positiveGrowthBranches.join(', ') || 'Belum ada';
 
       const totProgIss = totTgtIss > 0 ? ((totReg / totTgtIss) * 100).toFixed(1) : '0.0';
       const totProgRed = totTgtRed > 0 ? ((totRed / totTgtRed) * 100).toFixed(1) : '0.0';
@@ -3642,160 +3679,156 @@
       const totGrowth = totLyS2 > 0 ? (((totActS2 - totLyS2) / totLyS2) * 100).toFixed(1) : '0.0';
 
       const s2HeadCols = dashIsJanJun ? `
-        <th style="padding:4px 2px;text-align:center;background:#ccfbf1;color:#115e59;width:5.3%;">TGT S2</th>
-        <th style="padding:4px 2px;text-align:center;background:#99f6e4;color:#0f766e;width:5.3%;">ACT S2</th>
-        <th style="padding:4px 2px;text-align:center;background:#ccfbf1;color:#134e4a;width:5.3%;">PROG S2</th>
-        <th style="padding:4px 2px;text-align:center;background:#ffe4e6;color:#9f1239;width:5.0%;">GAP S2</th>
-        <th style="padding:4px 2px;text-align:center;background:#e2e8f0;color:#334155;width:5.2%;">IN S2 LY</th>
-        <th style="padding:4px 2px;text-align:center;background:#d1fae5;color:#065f46;width:6.2%;">GROWTH S2</th>
+        <th style="padding:4px 2px;text-align:center;background:#ccfbf1;color:#115e59;">TGT S2</th>
+        <th style="padding:4px 2px;text-align:center;background:#99f6e4;color:#0f766e;">ACT S2</th>
+        <th style="padding:4px 2px;text-align:center;background:#ccfbf1;color:#134e4a;">PROG S2</th>
+        <th style="padding:4px 2px;text-align:center;background:#ffe4e6;color:#9f1239;">GAP S2</th>
+        <th style="padding:4px 2px;text-align:center;background:#e2e8f0;color:#334155;">IN S2 LY</th>
+        <th style="padding:4px 2px;text-align:center;background:#d1fae5;color:#065f46;">GROWTH S2</th>
       ` : '';
 
       const s2FootCols = dashIsJanJun ? `
-        <td style="padding:4px 2px;text-align:center;font-weight:900;background:#ccfbf1;color:#115e59;white-space:nowrap;">${formatNum(totTgtS2)}</td>
-        <td style="padding:4px 2px;text-align:center;font-weight:900;background:#99f6e4;color:#0f766e;white-space:nowrap;">${formatNum(totActS2)}</td>
-        <td style="padding:4px 2px;text-align:center;font-weight:900;background:#5eead4;color:#134e4a;white-space:nowrap;">${totProgS2}%</td>
-        <td style="padding:4px 2px;text-align:center;font-weight:900;background:#fecdd3;color:#881337;white-space:nowrap;">-${formatNum(totGapS2)}</td>
-        <td style="padding:4px 2px;text-align:center;font-weight:900;background:#cbd5e1;color:#1e293b;white-space:nowrap;">${formatNum(totLyS2)}</td>
-        <td style="padding:4px 2px;text-align:center;font-weight:900;background:${parseFloat(totGrowth) >= 0 ? '#a7f3d0' : '#fecdd3'};color:${parseFloat(totGrowth) >= 0 ? '#065f46' : '#881337'};white-space:nowrap;">${parseFloat(totGrowth) > 0 ? '+' : ''}${totGrowth}%</td>
+        <td style="padding:4px 2px;text-align:center;font-weight:900;background:#ccfbf1;color:#115e59;">${formatNum(totTgtS2)}</td>
+        <td style="padding:4px 2px;text-align:center;font-weight:900;background:#99f6e4;color:#0f766e;">${formatNum(totActS2)}</td>
+        <td style="padding:4px 2px;text-align:center;font-weight:900;background:#5eead4;color:#134e4a;">${totProgS2}%</td>
+        <td style="padding:4px 2px;text-align:center;font-weight:900;background:#fecdd3;color:#881337;">-${formatNum(totGapS2)}</td>
+        <td style="padding:4px 2px;text-align:center;font-weight:900;background:#cbd5e1;color:#1e293b;">${formatNum(totLyS2)}</td>
+        <td style="padding:4px 2px;text-align:center;font-weight:900;background:${parseFloat(totGrowth) >= 0 ? '#a7f3d0' : '#fecdd3'};color:${parseFloat(totGrowth) >= 0 ? '#065f46' : '#881337'};">${parseFloat(totGrowth) > 0 ? '+' : ''}${totGrowth}%</td>
       ` : '';
 
-      // 5. SEMBUNYIKAN WORKSPACE SEMENTARA AGAR TIDAK MENGGANGGU KOORDINAT HTML2CANVAS
-      const appWrapper = document.getElementById('app-wrapper');
-      const prevBodyClass = document.body.className;
-      if (appWrapper) appWrapper.style.display = 'none';
-      document.body.className = '';
-      document.body.style.cssText = 'margin:0;padding:0;background:#ffffff;width:1120px;';
-
+      // 5. RAKIT KONTAINER A3 DENGAN LEBAR AMAN 1020PX (TIDAK MEMOTONG MARGIN KIRI/KANAN)
       const printContainer = document.createElement('div');
       printContainer.id = 'a3DedicatedPrintContainer';
-      printContainer.style.cssText = 'width:1120px;background:#ffffff;padding:10px 14px;font-family:Inter,sans-serif;color:#0f172a;box-sizing:border-box;';
+      printContainer.style.cssText = 'width:1020px;margin:0;padding:4px 10px;background:#ffffff;font-family:Inter,sans-serif;color:#0f172a;box-sizing:border-box;';
 
       printContainer.innerHTML = `
         <!-- KOP DOKUMEN A3 -->
-        <table style="width:100%;border-bottom:2.5px solid #dc2626;padding-bottom:4px;margin-bottom:6px;">
+        <table style="width:100%;border-bottom:2.5px solid #dc2626;padding-bottom:4px;margin-bottom:5px;">
           <tr>
-            <td style="vertical-align:bottom;">
-              <div style="font-size:15px;font-weight:900;color:#0f172a;letter-spacing:-0.3px;text-transform:uppercase;">
+            <td style="vertical-align:bottom;text-align:left;">
+              <div style="font-size:14px;font-weight:900;color:#0f172a;text-transform:uppercase;">
                 A3 EXECUTIVE EVALUATION REPORT — GRADUAL LOYALTY SYSTEM
               </div>
-              <div style="font-size:8.5px;color:#475569;font-weight:600;margin-top:1px;">
+              <div style="font-size:8px;color:#475569;font-weight:600;margin-top:1px;">
                 Toyota Nasmoco Aftersales Retention Governance: Cohort Funnel, Workload S2, Financial ROI & 24-Dealership Matrix
               </div>
             </td>
             <td style="text-align:right;vertical-align:bottom;">
-              <div style="font-size:12px;font-weight:900;color:#dc2626;text-transform:uppercase;">${cabang}</div>
-              <div style="font-size:8px;color:#334155;font-weight:600;">Periode Evaluasi: <b>${sDate}</b> s/d <b>${eDate}</b></div>
+              <div style="font-size:11.5px;font-weight:900;color:#dc2626;text-transform:uppercase;">${cabang}</div>
+              <div style="font-size:7.5px;color:#334155;font-weight:700;">Periode Evaluasi: ${sDate} s/d ${eDate}</div>
             </td>
           </tr>
         </table>
 
         <!-- ZONA 1: 4 KARTU KONTROL PACING -->
-        <div style="background:#1e1b4b;color:#ffffff;padding:6px 8px;border-radius:6px;margin-bottom:6px;">
-          <table style="width:100%;border-bottom:1px solid #312e81;padding-bottom:3px;margin-bottom:5px;font-size:8px;">
+        <div style="background:#1e1b4b;color:#ffffff;padding:5px 8px;border-radius:6px;margin-bottom:5px;">
+          <table style="width:100%;border-bottom:1px solid #312e81;padding-bottom:3px;margin-bottom:4px;font-size:7.8px;">
             <tr>
-              <td style="text-align:left;"><span style="background:#3b82f6;padding:1px 5px;border-radius:3px;font-weight:900;margin-right:5px;">1. PACING & FUNNEL CONTROL</span> <b>Targeted Loyalty Performance (Input vs Output)</b></td>
-              <td style="text-align:right;color:#bfdbfe;">🎯 Asumsi Realisasi Target: <b>${getText('dashAsumsiRealisasi')}</b> dari Tiket Terbit</td>
+              <td style="text-align:left;font-weight:800;color:#93c5fd;">1. PACING & FUNNEL CONTROL — Targeted Loyalty Performance (Input vs Output)</td>
+              <td style="text-align:right;color:#bfdbfe;font-weight:700;">Asumsi Realisasi Target: ${getText('dashAsumsiRealisasi')} dari Tiket Terbit</td>
             </tr>
           </table>
-          <table style="width:100%;border-collapse:separate;border-spacing:6px 0;table-layout:fixed;">
+          <table style="width:100%;border-collapse:separate;border-spacing:5px 0;table-layout:fixed;">
             <tr>
-              <td style="width:25%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:5px;padding:5px;text-align:center;">
-                <div style="font-size:7.5px;color:#bfdbfe;font-weight:700;text-transform:uppercase;">Total Database Leads</div>
-                <div style="font-size:16px;font-weight:900;color:#ffffff;margin:2px 0;">${getText('kpiLeads')}</div>
-                <div style="font-size:7.5px;color:#6ee7b7;font-weight:700;">In S2 Return: ${getText('kpiLeadsInS2')}</div>
+              <td style="width:25%;background:#312e81;border:1px solid #4338ca;border-radius:5px;padding:4px;text-align:center;">
+                <div style="font-size:7px;color:#bfdbfe;font-weight:700;">TOTAL DATABASE LEADS</div>
+                <div style="font-size:15px;font-weight:900;color:#ffffff;margin:1.5px 0;">${getText('kpiLeads')}</div>
+                <div style="font-size:7px;color:#6ee7b7;font-weight:700;">In S2 Return: ${getText('kpiLeadsInS2')}</div>
               </td>
-              <td style="width:25%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:5px;padding:5px;text-align:center;">
-                <div style="font-size:7.5px;color:#bfdbfe;font-weight:700;text-transform:uppercase;">Tickets Issued (${getText('kpiIssuedProgBadge')})</div>
-                <div style="font-size:16px;font-weight:900;color:#93c5fd;margin:2px 0;">${getText('kpiTargetConverted')} <span style="font-size:10px;color:#cbd5e1;">/ ${getText('kpiTargetIssuedGoal')}</span></div>
-                <div style="font-size:7.5px;color:#fde047;font-weight:700;">Sisa Target: ${getText('kpiTargetIssuedRem')} Unit</div>
+              <td style="width:25%;background:#312e81;border:1px solid #4338ca;border-radius:5px;padding:4px;text-align:center;">
+                <div style="font-size:7px;color:#bfdbfe;font-weight:700;">TICKETS ISSUED (${getText('kpiIssuedProgBadge')})</div>
+                <div style="font-size:15px;font-weight:900;color:#93c5fd;margin:1.5px 0;">${getText('kpiTargetConverted')} / ${getText('kpiTargetIssuedGoal')}</div>
+                <div style="font-size:7px;color:#fde047;font-weight:700;">Sisa Target: ${getText('kpiTargetIssuedRem')} Unit</div>
               </td>
-              <td style="width:25%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:5px;padding:5px;text-align:center;">
-                <div style="font-size:7.5px;color:#bfdbfe;font-weight:700;text-transform:uppercase;">Redeemed Units (${getText('kpiRedeemProgBadge')})</div>
-                <div style="font-size:16px;font-weight:900;color:#6ee7b7;margin:2px 0;">${getText('kpiTargetRedeemed')} <span style="font-size:10px;color:#cbd5e1;">/ ${getText('kpiTargetRedeemGoal')}</span></div>
-                <div style="font-size:7.5px;color:#fde047;font-weight:700;">Sisa Target: ${getText('kpiTargetRedeemRem')} Unit</div>
+              <td style="width:25%;background:#312e81;border:1px solid #4338ca;border-radius:5px;padding:4px;text-align:center;">
+                <div style="font-size:7px;color:#bfdbfe;font-weight:700;">REDEEMED UNITS (${getText('kpiRedeemProgBadge')})</div>
+                <div style="font-size:15px;font-weight:900;color:#6ee7b7;margin:1.5px 0;">${getText('kpiTargetRedeemed')} / ${getText('kpiTargetRedeemGoal')}</div>
+                <div style="font-size:7px;color:#fde047;font-weight:700;">Sisa Target: ${getText('kpiTargetRedeemRem')} Unit</div>
               </td>
-              <td style="width:25%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:5px;padding:5px;text-align:center;">
-                <div style="font-size:7.5px;color:#fde047;font-weight:700;text-transform:uppercase;">Realization (${getText('kpiQualityBadge')})</div>
-                <div style="font-size:16px;font-weight:900;color:#facc15;margin:2px 0;">${getText('kpiRealizationRate')}</div>
-                <div style="font-size:7.5px;color:#e2e8f0;">Lock-in: <b>${getText('kpiTargetLockInRate')}</b> | Conv: <b>${getText('kpiTargetConvRate')}</b></div>
+              <td style="width:25%;background:#312e81;border:1px solid #4338ca;border-radius:5px;padding:4px;text-align:center;">
+                <div style="font-size:7px;color:#fde047;font-weight:700;">REALIZATION (${getText('kpiQualityBadge')})</div>
+                <div style="font-size:15px;font-weight:900;color:#facc15;margin:1.5px 0;">${getText('kpiRealizationRate')}</div>
+                <div style="font-size:7px;color:#e2e8f0;font-weight:600;">Lock-in: ${getText('kpiTargetLockInRate')} | Conv: ${getText('kpiTargetConvRate')}</div>
               </td>
             </tr>
           </table>
         </div>
 
         <!-- ZONA 2: WORKLOAD S2 -->
-        <div style="border:1px solid #cbd5e1;border-radius:6px;padding:5px 8px;margin-bottom:6px;background:#ffffff;">
-          <div style="font-size:8px;font-weight:900;color:#0f172a;text-transform:uppercase;margin-bottom:4px;">
-            📅 2. Proyeksi Workload & Kapasitas Servis Berkala Semester 2 (Sebaran Kedatangan With vs Without Program)
+        <div style="border:1px solid #cbd5e1;border-radius:6px;padding:4px 6px;margin-bottom:5px;background:#ffffff;">
+          <div style="font-size:7.8px;font-weight:900;color:#0f172a;text-transform:uppercase;margin-bottom:3px;">
+            2. PROYEKSI WORKLOAD & KAPASITAS SERVIS BERKALA SEMESTER 2 (SEBARAN KEDATANGAN WITH VS WITHOUT PROGRAM)
           </div>
           ${s2Html}
         </div>
 
-        <!-- ZONA 3: FUNNEL S8/S9 & FINANCIAL ROI (BEBAS TUMPANG TINDIH) -->
-        <table style="width:100%;border-collapse:separate;border-spacing:6px 0;margin-bottom:6px;table-layout:fixed;">
+        <!-- ZONA 3: FUNNEL S8/S9 & FINANCIAL ROI -->
+        <table style="width:100%;border-collapse:separate;border-spacing:5px 0;margin-bottom:5px;table-layout:fixed;">
           <tr>
-            <!-- Kiri: Stepped Funnel -->
-            <td style="width:36%;vertical-align:top;border:1px solid #cbd5e1;border-radius:6px;padding:6px;background:#ffffff;">
-              <div style="font-size:8px;font-weight:900;color:#0f172a;border-bottom:1px solid #e2e8f0;padding-bottom:3px;margin-bottom:5px;text-transform:uppercase;">
-                🔻 3A. Retention Funnel (Servis 8 vs Servis 9)
+            <!-- Kiri: Stepped Funnel (Tabel Terpisah Per Elemen) -->
+            <td style="width:36%;vertical-align:top;border:1px solid #cbd5e1;border-radius:6px;padding:5px;background:#ffffff;">
+              <div style="font-size:7.8px;font-weight:900;color:#0f172a;border-bottom:1px solid #e2e8f0;padding-bottom:2px;margin-bottom:4px;text-transform:uppercase;">
+                3A. RETENTION FUNNEL (SERVIS 8 VS SERVIS 9)
               </div>
-              <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:4px;text-align:center;">
-                <div style="font-size:7px;font-weight:800;color:#334155;">1. TARGET LEADS COHORT (100% BASELINE)</div>
-                <div style="font-size:13px;font-weight:900;color:#0f172a;">${getText('fnLeads')}</div>
-                <div style="font-size:7.2px;color:#475569;">S8: <b>${getText('fnLeadsS8')}</b> &nbsp;|&nbsp; S9: <b>${getText('fnLeadsS9')}</b></div>
+              <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:3px 6px;">
+                <div style="font-size:6.8px;font-weight:800;color:#334155;text-align:center;">1. TARGET LEADS COHORT (100% BASELINE)</div>
+                <div style="font-size:12.5px;font-weight:900;color:#0f172a;text-align:center;">${getText('fnLeads')}</div>
+                <table style="width:100%;font-size:7px;color:#334155;font-weight:700;border-top:1px solid #e2e8f0;margin-top:2px;padding-top:1px;">
+                  <tr><td style="text-align:left;">S8: ${getText('fnLeadsS8')}</td><td style="text-align:right;">S9: ${getText('fnLeadsS9')}</td></tr>
+                </table>
               </div>
-              <div style="text-align:center;font-size:7px;font-weight:800;color:#1d4ed8;margin:2.5px 0;">↓ ${getText('fnLockInRate')} ↓</div>
-              <div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:4px;padding:4px;text-align:center;">
-                <div style="font-size:7px;font-weight:800;color:#1e3a8a;">2. TICKETS ISSUED (${getText('fnIssuedProg')})</div>
-                <div style="font-size:12.5px;font-weight:900;color:#1e40af;">${getText('fnIssued')} <span style="font-size:8.5px;color:#3b82f6;">/ ${getText('fnTargetIssued')}</span></div>
-                <div style="font-size:7.2px;color:#1e3a8a;">S8: <b>${getText('fnIssuedS8')}</b> &nbsp;|&nbsp; S9: <b>${getText('fnIssuedS9')}</b></div>
+              <div style="text-align:center;font-size:6.8px;font-weight:800;color:#1d4ed8;margin:2px 0;">↓ ${getText('fnLockInRate')} ↓</div>
+              <div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:4px;padding:3px 6px;">
+                <div style="font-size:6.8px;font-weight:800;color:#1e3a8a;text-align:center;">2. TICKETS ISSUED (${getText('fnIssuedProg')})</div>
+                <div style="font-size:12px;font-weight:900;color:#1e40af;text-align:center;">${getText('fnIssued')} / ${getText('fnTargetIssued')}</div>
+                <table style="width:100%;font-size:7px;color:#1e3a8a;font-weight:700;border-top:1px solid #bfdbfe;margin-top:2px;padding-top:1px;">
+                  <tr><td style="text-align:left;">S8: ${getText('fnIssuedS8')}</td><td style="text-align:right;">S9: ${getText('fnIssuedS9')}</td></tr>
+                </table>
               </div>
-              <div style="text-align:center;font-size:7px;font-weight:800;color:#047857;margin:2.5px 0;">↓ ${getText('fnRealizationRate')} ↓</div>
-              <div style="background:#ecfdf5;border:1px solid #6ee7b7;border-radius:4px;padding:4px;text-align:center;">
-                <div style="font-size:7px;font-weight:800;color:#065f46;">3. REDEEMED UNITS (${getText('fnRedeemedProg')})</div>
-                <div style="font-size:12.5px;font-weight:900;color:#047857;">${getText('fnRedeemed')} <span style="font-size:8.5px;color:#10b981;">/ ${getText('fnTargetRedeem')}</span></div>
-                <div style="font-size:7.2px;color:#065f46;">S8: <b>${getText('fnRedeemedS8')}</b> &nbsp;|&nbsp; S9: <b>${getText('fnRedeemedS9')}</b></div>
+              <div style="text-align:center;font-size:6.8px;font-weight:800;color:#047857;margin:2px 0;">↓ ${getText('fnRealizationRate')} ↓</div>
+              <div style="background:#ecfdf5;border:1px solid #6ee7b7;border-radius:4px;padding:3px 6px;">
+                <div style="font-size:6.8px;font-weight:800;color:#065f46;text-align:center;">3. REDEEMED UNITS (${getText('fnRedeemedProg')})</div>
+                <div style="font-size:12px;font-weight:900;color:#047857;text-align:center;">${getText('fnRedeemed')} / ${getText('fnTargetRedeem')}</div>
+                <table style="width:100%;font-size:7px;color:#065f46;font-weight:700;border-top:1px solid #a7f3d0;margin-top:2px;padding-top:1px;">
+                  <tr><td style="text-align:left;">S8: ${getText('fnRedeemedS8')}</td><td style="text-align:right;">S9: ${getText('fnRedeemedS9')}</td></tr>
+                </table>
               </div>
             </td>
 
             <!-- Kanan: Financial Realization, ARPU & Subsidy ROI -->
-            <td style="width:64%;vertical-align:top;border:1px solid #86efac;border-radius:6px;padding:6px;background:#f0fdf4;">
-              <div style="font-size:8px;font-weight:900;color:#14532d;border-bottom:1px solid #bbf7d0;padding-bottom:3px;margin-bottom:5px;text-transform:uppercase;">
-                💰 3B. Financial Realization, ARPU vs COO & Subsidy ROI
+            <td style="width:64%;vertical-align:top;border:1px solid #86efac;border-radius:6px;padding:5px;background:#f0fdf4;">
+              <div style="font-size:7.8px;font-weight:900;color:#14532d;border-bottom:1px solid #bbf7d0;padding-bottom:2px;margin-bottom:4px;text-transform:uppercase;">
+                3B. FINANCIAL REALIZATION, ARPU VS COO & SUBSIDY ROI
               </div>
-              <table style="width:100%;border-collapse:collapse;margin-bottom:5px;table-layout:fixed;">
+              <table style="width:100%;border-collapse:collapse;margin-bottom:4px;table-layout:fixed;">
                 <tr>
-                  <td style="width:45%;vertical-align:top;padding-right:6px;">
-                    <div style="font-size:7.2px;font-weight:800;color:#166534;text-transform:uppercase;">Total Actual Revenue (Gross)</div>
-                    <div style="font-size:16px;font-weight:900;color:#15803d;margin:2px 0;white-space:nowrap;">${getText('kpiActual')}</div>
-                    <div style="font-size:7.5px;color:#14532d;line-height:1.4;">
-                      • S8 Gross: <b>${getText('kpiRevS8')}</b><br/>
-                      • S9 Gross: <b>${getText('kpiRevS9')}</b><br/>
-                      • Projected Target: <b>${getText('kpiSaved')}</b>
-                    </div>
+                  <td style="width:44%;vertical-align:top;padding-right:5px;">
+                    <div style="font-size:7px;font-weight:800;color:#166534;">TOTAL ACTUAL REVENUE (GROSS)</div>
+                    <div style="font-size:15px;font-weight:900;color:#15803d;margin:2px 0;">${getText('kpiActual')}</div>
+                    <div style="font-size:7.2px;color:#14532d;font-weight:700;margin-bottom:1px;">S8 Gross: ${getText('kpiRevS8')}</div>
+                    <div style="font-size:7.2px;color:#14532d;font-weight:700;margin-bottom:1px;">S9 Gross: ${getText('kpiRevS9')}</div>
+                    <div style="font-size:7px;color:#15803d;font-weight:600;">Projected Target: ${getText('kpiSaved')}</div>
                   </td>
-                  <td style="width:55%;vertical-align:top;background:#ffffff;border:1px solid #bbf7d0;border-radius:5px;padding:5px;">
-                    <table style="width:100%;border-bottom:1px solid #dcfce7;padding-bottom:2px;margin-bottom:3px;">
+                  <td style="width:56%;vertical-align:top;background:#ffffff;border:1px solid #bbf7d0;border-radius:4px;padding:4px;">
+                    <table style="width:100%;border-bottom:1px solid #dcfce7;padding-bottom:2px;margin-bottom:3px;font-size:7px;">
                       <tr>
-                        <td style="font-size:7.2px;font-weight:800;color:#14532d;">REVENUE PER UNIT (ARPU)</td>
-                        <td style="text-align:right;"><span style="background:#16a34a;color:#fff;padding:1px 4px;border-radius:2px;font-size:6.8px;font-weight:800;">${getText('kpiCooRatioTotalBadge')}</span></td>
+                        <td style="font-weight:800;color:#14532d;">REVENUE PER UNIT (ARPU)</td>
+                        <td style="text-align:right;font-weight:800;color:#15803d;">${getText('kpiCooRatioTotalBadge')}</td>
                       </tr>
                     </table>
-                    <table style="width:100%;margin-bottom:4px;">
+                    <div style="font-size:10.5px;font-weight:900;color:#166534;">Aktual / RO: ${getText('kpiArpuTotal')}</div>
+                    <div style="font-size:7px;color:#475569;font-weight:700;margin-bottom:3px;">Acuan Ideal COO: ${getText('kpiIdealCooTotal')}</div>
+                    <table style="width:100%;font-size:6.8px;border-collapse:separate;border-spacing:3px 0;table-layout:fixed;">
                       <tr>
-                        <td style="font-size:11px;font-weight:900;color:#166534;white-space:nowrap;">Aktual: ${getText('kpiArpuTotal')}</td>
-                        <td style="text-align:right;font-size:7.2px;color:#475569;font-weight:700;white-space:nowrap;">Ideal COO: ${getText('kpiIdealCooTotal')}</td>
-                      </tr>
-                    </table>
-                    <table style="width:100%;font-size:7px;border-collapse:separate;border-spacing:3px 0;table-layout:fixed;">
-                      <tr>
-                        <td style="background:#ecfdf5;border:1px solid #a7f3d0;padding:3px 4px;border-radius:3px;width:50%;white-space:nowrap;">
+                        <td style="background:#ecfdf5;border:1px solid #a7f3d0;padding:2.5px 4px;border-radius:3px;width:50%;">
                           <div style="font-weight:800;color:#065f46;">S8: ${getText('kpiArpuS8')}</div>
-                          <div style="color:#475569;font-size:6.5px;">COO: ${getText('kpiIdealCooS8')} (<b>${getText('kpiCooRatioS8')}</b>)</div>
+                          <div style="color:#475569;">COO: ${getText('kpiIdealCooS8')}</div>
+                          <div style="font-weight:800;color:#047857;">Ratio: ${getText('kpiCooRatioS8')}</div>
                         </td>
-                        <td style="background:#eff6ff;border:1px solid #bfdbfe;padding:3px 4px;border-radius:3px;width:50%;white-space:nowrap;">
+                        <td style="background:#eff6ff;border:1px solid #bfdbfe;padding:2.5px 4px;border-radius:3px;width:50%;">
                           <div style="font-weight:800;color:#1e40af;">S9: ${getText('kpiArpuS9')}</div>
-                          <div style="color:#475569;font-size:6.5px;">COO: ${getText('kpiIdealCooS9')} (<b>${getText('kpiCooRatioS9')}</b>)</div>
+                          <div style="color:#475569;">COO: ${getText('kpiIdealCooS9')}</div>
+                          <div style="font-weight:800;color:#1d4ed8;">Ratio: ${getText('kpiCooRatioS9')}</div>
                         </td>
                       </tr>
                     </table>
@@ -3804,35 +3837,36 @@
               </table>
 
               <!-- Baris Subsidi & GP Multiplier -->
-              <table style="width:100%;background:#ffffff;border:1px solid #a7f3d0;border-radius:5px;padding:4px;margin-bottom:4px;font-size:7.2px;text-align:center;table-layout:fixed;">
+              <table style="width:100%;background:#ffffff;border:1px solid #a7f3d0;border-radius:4px;padding:3px;margin-bottom:4px;font-size:7px;text-align:center;table-layout:fixed;">
                 <tr>
                   <td style="width:33%;border-right:1px solid #e2e8f0;">
                     <div style="color:#065f46;font-weight:800;">INVESTASI SUBSIDI HO</div>
-                    <div style="font-size:10.5px;font-weight:900;color:#047857;">${getText('dashTotalSubsidi')}</div>
-                    <div style="color:#059669;font-size:6.5px;">${getText('dashCacUnit')}</div>
+                    <div style="font-size:10px;font-weight:900;color:#047857;">${getText('dashTotalSubsidi')}</div>
+                    <div style="color:#059669;font-size:6.5px;font-weight:600;">${getText('dashCacUnit')}</div>
                   </td>
                   <td style="width:34%;border-right:1px solid #e2e8f0;">
                     <div style="color:#115e59;font-weight:800;">ESTIMASI GROSS PROFIT (GP)</div>
-                    <div style="font-size:10.5px;font-weight:900;color:#0f766e;">${getText('dashTotalGp')}</div>
-                    <div style="color:#0d9488;font-size:6.5px;">Realisasi GPM: <b>${getText('dashBlendedGpm')}</b></div>
+                    <div style="font-size:10px;font-weight:900;color:#0f766e;">${getText('dashTotalGp')}</div>
+                    <div style="color:#0d9488;font-size:6.5px;font-weight:600;">Realisasi GPM: ${getText('dashBlendedGpm')}</div>
                   </td>
                   <td style="width:33%;">
                     <div style="color:#3730a3;font-weight:800;">GP MULTIPLIER</div>
-                    <div style="font-size:11px;font-weight:900;color:#4338ca;">${getText('dashGpMultiplier')}</div>
-                    <div style="color:#4f46e5;font-size:6.5px;">Rev Multiplier: <b>${getText('dashRoiMultiplier')}</b></div>
+                    <div style="font-size:10.5px;font-weight:900;color:#4338ca;">${getText('dashGpMultiplier')}</div>
+                    <div style="color:#4f46e5;font-size:6.5px;font-weight:600;">Rev Multiplier: ${getText('dashRoiMultiplier')}</div>
                   </td>
                 </tr>
               </table>
 
-              <!-- Baris Outstanding Potential -->
-              <table style="width:100%;background:#fff1f2;border:1px solid #fecdd3;border-radius:5px;padding:3px 6px;">
+              <!-- Baris Outstanding Potential (2 Kolom Terpisah Agar Tidak Bertumpuk) -->
+              <table style="width:100%;background:#fff1f2;border:1px solid #fecdd3;border-radius:4px;padding:3px 6px;table-layout:fixed;">
                 <tr>
-                  <td style="text-align:left;">
-                    <div style="font-size:6.8px;font-weight:800;color:#be123c;text-transform:uppercase;">Potential Revenue Outstanding (Unconverted Leads)</div>
-                    <div style="font-size:11px;font-weight:900;color:#be123c;">${getText('kpiLost')}</div>
+                  <td style="width:52%;text-align:left;">
+                    <div style="font-size:6.5px;font-weight:800;color:#be123c;">POTENTIAL REVENUE OUTSTANDING (UNCONVERTED)</div>
+                    <div style="font-size:10.5px;font-weight:900;color:#be123c;">${getText('kpiLost')}</div>
                   </td>
-                  <td style="text-align:right;font-size:7px;color:#9f1239;">
-                    S8 Outst: <b>${getText('kpiOutS8')}</b> &nbsp;|&nbsp; S9 Outst: <b>${getText('kpiOutS9')}</b>
+                  <td style="width:48%;text-align:right;font-size:6.8px;color:#9f1239;font-weight:700;">
+                    <div>S8 Outst: ${getText('kpiOutS8')}</div>
+                    <div>S9 Outst: ${getText('kpiOutS9')}</div>
                   </td>
                 </tr>
               </table>
@@ -3840,103 +3874,101 @@
           </tr>
         </table>
 
-        <!-- ZONA 4: TOP 5 SA LEADERBOARD & VEHICLE SEGMENT SVG CHART -->
-        <table style="width:100%;border-collapse:separate;border-spacing:6px 0;margin-bottom:6px;table-layout:fixed;">
+        <!-- ZONA 4: TOP 5 SA LEADERBOARD & VEHICLE SEGMENT DISTRIBUTION -->
+        <table style="width:100%;border-collapse:separate;border-spacing:5px 0;margin-bottom:5px;table-layout:fixed;">
           <tr>
-            <td style="width:65%;vertical-align:top;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;background:#ffffff;">
-              <table style="width:100%;background:#0f172a;color:#ffffff;padding:3.5px 8px;font-size:7.8px;font-weight:800;">
+            <td style="width:63%;vertical-align:top;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;background:#ffffff;">
+              <table style="width:100%;background:#0f172a;color:#ffffff;padding:3px 8px;font-size:7.5px;font-weight:800;">
                 <tr>
-                  <td>🏆 4A. TOP 5 SERVICE ADVISOR LEADERBOARD</td>
-                  <td style="text-align:right;color:#94a3b8;font-weight:500;font-size:7px;">Ranked by Redeemed Units & Gross Revenue</td>
+                  <td>4A. TOP 5 SERVICE ADVISOR LEADERBOARD</td>
+                  <td style="text-align:right;color:#94a3b8;font-weight:600;font-size:6.8px;">Ranked by Redeemed Units & Gross Revenue</td>
                 </tr>
               </table>
-              <table style="width:100%;border-collapse:collapse;font-size:7.2px;table-layout:fixed;">
+              <table style="width:100%;border-collapse:collapse;font-size:7px;">
                 <thead>
-                  <tr style="background:#f1f5f9;color:#475569;text-transform:uppercase;font-size:6.6px;border-bottom:1px solid #cbd5e1;">
-                    <th style="padding:3px 2px;text-align:center;width:5%;">#</th>
-                    <th style="padding:3px 4px;text-align:left;width:15%;">Cabang</th>
-                    <th style="padding:3px 4px;text-align:left;width:29%;">Service Advisor</th>
-                    <th style="padding:3px 2px;text-align:center;width:9%;">Issued</th>
-                    <th style="padding:3px 2px;text-align:center;width:9%;">Redeem</th>
-                    <th style="padding:3px 4px;text-align:right;width:15%;">Gross Rev</th>
-                    <th style="padding:3px 4px;text-align:right;width:11%;">ARPU/RO</th>
-                    <th style="padding:3px 2px;text-align:center;width:7%;">vs COO</th>
+                  <tr style="background:#f1f5f9;color:#475569;text-transform:uppercase;font-size:6.5px;border-bottom:1px solid #cbd5e1;">
+                    <th style="padding:3px;text-align:center;">#</th>
+                    <th style="padding:3px 5px;text-align:left;">Cabang</th>
+                    <th style="padding:3px 5px;text-align:left;">Service Advisor</th>
+                    <th style="padding:3px;text-align:center;">Issued</th>
+                    <th style="padding:3px;text-align:center;">Redeem</th>
+                    <th style="padding:3px 5px;text-align:right;">Gross Rev</th>
+                    <th style="padding:3px 5px;text-align:right;">ARPU/RO</th>
+                    <th style="padding:3px;text-align:center;">vs COO</th>
                   </tr>
                 </thead>
                 <tbody>${saRowsHtml}</tbody>
               </table>
             </td>
-            <td style="width:35%;vertical-align:top;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;background:#ffffff;">
-              <div style="background:#0f172a;color:#ffffff;padding:3.5px 8px;font-size:7.8px;font-weight:800;text-transform:uppercase;">
-                🚘 4B. VEHICLE SEGMENT DISTRIBUTION (REDEEMED)
+            <td style="width:37%;vertical-align:top;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;background:#ffffff;">
+              <div style="background:#0f172a;color:#ffffff;padding:3px 8px;font-size:7.5px;font-weight:800;text-transform:uppercase;">
+                4B. VEHICLE SEGMENT DISTRIBUTION (REDEEMED)
               </div>
-              <div style="padding:6px 4px;">
-                ${vehicleSvgHtml}
-              </div>
+              ${vehicleDistHtml}
             </td>
           </tr>
         </table>
 
-        <!-- ZONA 5: TABEL 24 CABANG (14 KOLOM PROPORSIONAL & 1 BARIS RATA) -->
-        <div style="border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;background:#ffffff;margin-bottom:6px;">
-          <table style="width:100%;background:#0f172a;color:#ffffff;padding:3.5px 8px;font-size:7.8px;font-weight:800;">
+        <!-- ZONA 5: TABEL 24 CABANG -->
+        <div style="border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;background:#ffffff;margin-bottom:5px;">
+          <table style="width:100%;background:#0f172a;color:#ffffff;padding:3px 8px;font-size:7.5px;font-weight:800;">
             <tr>
-              <td>📊 5. DEALERSHIP PERFORMANCE, IRREGULARITY CONTROL & S2 YOY GROWTH MATRIX (${branchList.length} BRANCHES)</td>
-              <td style="text-align:right;color:#facc15;font-size:7.2px;">Target Realization Benchmark: ${benchLabel}</td>
+              <td>5. DEALERSHIP PERFORMANCE, IRREGULARITY CONTROL & S2 YOY GROWTH MATRIX (${branchList.length} BRANCHES)</td>
+              <td style="text-align:right;color:#facc15;font-size:7px;">Target Realization Benchmark: ${benchLabel}</td>
             </tr>
           </table>
-          <table style="width:100%;border-collapse:collapse;font-size:6.8px;table-layout:fixed;">
+          <table style="width:100%;border-collapse:collapse;font-size:6.7px;">
             <thead>
               <tr style="background:#f1f5f9;color:#334155;font-weight:800;border-bottom:1.5px solid #cbd5e1;font-size:6.3px;">
-                <th style="padding:3.5px 2px;text-align:center;width:2.2%;">#</th>
-                <th style="padding:3.5px 4px;text-align:left;width:9.5%;">DEALERSHIP</th>
-                <th style="padding:3.5px 2px;text-align:center;width:4.8%;">LEADS</th>
-                <th style="padding:3.5px 2px;text-align:center;width:12.5%;">ISSUED VS TGT</th>
-                <th style="padding:3.5px 2px;text-align:center;width:12.5%;">REDEEM VS TGT</th>
-                <th style="padding:3.5px 2px;text-align:center;width:5.2%;">REAL (${benchLabel})</th>
-                <th style="padding:3.5px 4px;text-align:right;width:10.5%;">GROSS REVENUE</th>
-                <th style="padding:3.5px 2px;text-align:center;width:10.5%;">FUNNEL STATUS</th>
+                <th style="padding:3.5px 2px;text-align:center;">#</th>
+                <th style="padding:3.5px 4px;text-align:left;">DEALERSHIP</th>
+                <th style="padding:3.5px 2px;text-align:center;">LEADS</th>
+                <th style="padding:3.5px 2px;text-align:center;">ISSUED VS TGT</th>
+                <th style="padding:3.5px 2px;text-align:center;">REDEEM VS TGT</th>
+                <th style="padding:3.5px 2px;text-align:center;">REAL (${benchLabel})</th>
+                <th style="padding:3.5px 4px;text-align:right;">GROSS REVENUE</th>
+                <th style="padding:3.5px 2px;text-align:center;">FUNNEL STATUS</th>
                 ${s2HeadCols}
               </tr>
             </thead>
             <tbody>${brRowsHtml}</tbody>
             <tfoot>
               <tr style="background:#e2e8f0;color:#0f172a;font-weight:900;border-top:1.5px solid #64748b;font-size:6.8px;">
-                <td colspan="2" style="padding:4px;text-align:center;">TOTAL REGIONAL</td>
-                <td style="padding:4px 2px;text-align:center;color:#581c87;">${formatNum(totPot)}</td>
-                <td style="padding:4px 2px;text-align:center;color:#1e3a8a;">${formatNum(totReg)}/${formatNum(totTgtIss)} (${totProgIss}%)</td>
-                <td style="padding:4px 2px;text-align:center;color:#065f46;">${formatNum(totRed)}/${formatNum(totTgtRed)} (${totProgRed}%)</td>
-                <td style="padding:4px 2px;text-align:center;color:#b45309;">${totRel}%</td>
-                <td style="padding:4px 4px;text-align:right;color:#0f172a;">${formatRp(totRev)}</td>
-                <td style="padding:4px 2px;text-align:center;color:#312e81;">PACING S2</td>
+                <td colspan="2" style="padding:3.5px 4px;text-align:center;">TOTAL REGIONAL</td>
+                <td style="padding:3.5px 2px;text-align:center;color:#581c87;">${formatNum(totPot)}</td>
+                <td style="padding:3.5px 2px;text-align:center;color:#1e3a8a;">${formatNum(totReg)} / ${formatNum(totTgtIss)} (${totProgIss}%)</td>
+                <td style="padding:3.5px 2px;text-align:center;color:#065f46;">${formatNum(totRed)} / ${formatNum(totTgtRed)} (${totProgRed}%)</td>
+                <td style="padding:3.5px 2px;text-align:center;color:#b45309;">${totRel}%</td>
+                <td style="padding:3.5px 4px;text-align:right;color:#0f172a;">${formatRp(totRev)}</td>
+                <td style="padding:3.5px 2px;text-align:center;color:#312e81;">PACING S2</td>
                 ${s2FootCols}
               </tr>
             </tfoot>
           </table>
         </div>
 
-        <!-- ZONA 6: CATATAN EVALUASI EKSEKUTIF & RENCANA TINDAK LANJUT (PDCA ACTION PLAN) -->
-        <div style="border:1.5px solid #94a3b8;border-radius:6px;background:#f8fafc;padding:5px 8px;">
-          <div style="font-size:8px;font-weight:900;color:#0f172a;text-transform:uppercase;border-bottom:1px solid #cbd5e1;padding-bottom:2.5px;margin-bottom:4px;">
-            📌 6. CATATAN EVALUASI EKSEKUTIF & RENCANA TINDAK LANJUT MANAJEMEN (PDCA GOVERNANCE NOTES)
+        <!-- ZONA 6: CATATAN EVALUASI EKSEKUTIF & RENCANA TINDAK LANJUT (TANPA INLINE BOLD DI TENGAH KALIMAT) -->
+        <div style="border:1.5px solid #94a3b8;border-radius:6px;background:#f8fafc;padding:4px 8px;">
+          <div style="font-size:7.5px;font-weight:900;color:#0f172a;text-transform:uppercase;border-bottom:1px solid #cbd5e1;padding-bottom:2px;margin-bottom:3px;">
+            6. CATATAN EVALUASI EKSEKUTIF & RENCANA TINDAK LANJUT MANAJEMEN (PDCA GOVERNANCE NOTES)
           </div>
-          <table style="width:100%;border-collapse:separate;border-spacing:6px 0;table-layout:fixed;font-size:7px;line-height:1.35;">
+          <table style="width:100%;border-collapse:separate;border-spacing:5px 0;table-layout:fixed;font-size:6.7px;line-height:1.35;color:#1e293b;font-weight:600;">
             <tr>
-              <td style="width:33%;vertical-align:top;background:#ffffff;border:1px solid #e2e8f0;border-left:3px solid #10b981;border-radius:4px;padding:4px 6px;">
+              <td style="width:33%;vertical-align:top;background:#ffffff;border:1px solid #cbd5e1;border-left:3px solid #10b981;border-radius:4px;padding:4px 6px;">
                 <div style="font-weight:900;color:#065f46;margin-bottom:2px;text-transform:uppercase;">A. Evaluasi Kualitas Finansial & ROI</div>
-                • <b>Efisiensi Subsidi Tinggi:</b> Investasi subsidi HO sebesar <b>${getText('dashTotalSubsidi')}</b> menghasilkan Gross Revenue <b>${getText('kpiActual')}</b> dan Estimasi GP <b>${getText('dashTotalGp')}</b> (GP Multiplier <b>${getText('dashGpMultiplier')}</b>, GPM <b>${getText('dashBlendedGpm')}</b>).<br/>
-                • <b>Kualitas Upselling RO:</b> Realisasi ARPU mencapai <b>${getText('kpiArpuTotal')}/RO</b> (${getText('kpiCooRatioTotalBadge')}), melampaui standar estimasi biaya servis di database target.
+                <div style="margin-bottom:2px;">• Efisiensi Subsidi: Investasi HO sebesar ${getText('dashTotalSubsidi')} menghasilkan Gross Revenue ${getText('kpiActual')} dan Estimasi GP ${getText('dashTotalGp')} (Multiplier ${getText('dashGpMultiplier')}, GPM ${getText('dashBlendedGpm')}).</div>
+                <div>• Kualitas Upselling RO: Realisasi ARPU mencapai ${getText('kpiArpuTotal')}/RO (${getText('kpiCooRatioTotalBadge')}), melampaui acuan biaya servis di database target.</div>
               </td>
-              <td style="width:34%;vertical-align:top;background:#ffffff;border:1px solid #e2e8f0;border-left:3px solid #f59e0b;border-radius:4px;padding:4px 6px;">
+              <td style="width:34%;vertical-align:top;background:#ffffff;border:1px solid #cbd5e1;border-left:3px solid #f59e0b;border-radius:4px;padding:4px 6px;">
                 <div style="font-weight:900;color:#92400e;margin-bottom:2px;text-transform:uppercase;">B. Pemetaan Irregularitas & Bottleneck Cabang</div>
-                • <b>Top Benchmark & Growth:</b> Cabang Target Achieved: <b>${topAchievedTxt}</b>. Pertumbuhan In S2 YoY Positif: <b>${topGrowthTxt}</b>.<br/>
-                • <b>Issuance Bottleneck (Prioritas Lock-in SA):</b> <b>${topBottleneckTxt}</b>.<br/>
-                • <b>Recall Friction (Tinggi Tiket, Rendah Kasir):</b> <b>${topFrictionTxt}</b>.
+                <div style="margin-bottom:1.5px;">• Target Achieved: ${topAchievedTxt} | Growth S2 Positif: ${topGrowthTxt}.</div>
+                <div style="margin-bottom:1.5px;">• Issuance Bottleneck (Prioritas Lock-In): ${topBottleneckTxt}.</div>
+                <div>• Recall Friction (Tinggi Tiket, Rendah Kasir): ${topFrictionTxt}.</div>
               </td>
-              <td style="width:33%;vertical-align:top;background:#ffffff;border:1px solid #e2e8f0;border-left:3px solid #ef4444;border-radius:4px;padding:4px 6px;">
+              <td style="width:33%;vertical-align:top;background:#ffffff;border:1px solid #cbd5e1;border-left:3px solid #ef4444;border-radius:4px;padding:4px 6px;">
                 <div style="font-weight:900;color:#991b1b;margin-bottom:2px;text-transform:uppercase;">C. Action Plan (Kepala Bengkel, SA & MRA)</div>
-                • <b>Disiplin Lock-In SA:</b> Cabang berstatus <i>Issuance Bottleneck</i> wajib mengunci penerbitan voucher S8/S9 saat penyerahan unit untuk mengejar sisa target <b>${getText('kpiTargetIssuedRem')} tiket</b>.<br/>
-                • <b>MRA Recall & Pull-Ahead S2:</b> Lakukan WA Blast & Call H-14 sebelum masa aktif 6 bulan (Full Benefit) berakhir, khususnya menarik lebih awal beban puncak bulan September agar mengejar Gap S2 (<b>-${formatNum(totGapS2)} unit</b>).
+                <div style="margin-bottom:2px;">• Disiplin Lock-In SA: Cabang Issuance Bottleneck wajib mengunci penerbitan voucher S8/S9 saat penyerahan unit guna mengejar sisa target ${getText('kpiTargetIssuedRem')} tiket.</div>
+                <div>• MRA Recall & Pull-Ahead S2: Lakukan WA Blast & Call H-14 sebelum batas 6 bulan berakhir untuk menarik beban puncak September dan mengejar Gap S2 (-${formatNum(totGapS2)} unit).</div>
               </td>
             </tr>
           </table>
@@ -3945,35 +3977,28 @@
 
       document.body.appendChild(printContainer);
 
-      const restoreWorkspace = () => {
-        printContainer.remove();
-        document.body.style.cssText = '';
-        document.body.className = prevBodyClass;
-        if (appWrapper) appWrapper.style.display = '';
-      };
-
       const filename = `A3_Report_Loyalty_${cabang.replace(/\s+/g, '_')}_${sDate}_sd_${eDate}.pdf`;
       const opt = {
-        margin: [3, 3, 3, 3],
+        margin: [5, 6, 5, 6],
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0, windowWidth: 1120 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
         jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' }
       };
 
       setTimeout(() => {
         html2pdf().set(opt).from(printContainer).save().then(() => {
-          restoreWorkspace();
+          printContainer.remove();
           Swal.fire({
             icon: 'success',
             title: 'Laporan A3 Selesai!',
-            text: 'Dokumen A3 proporsional lengkap dengan grafik segmen & catatan evaluasi PDCA berhasil diunduh.',
+            text: 'Dokumen A3 berhasil diunduh dengan margin utuh dan teks bebas bertumpuk.',
             timer: 2000,
             showConfirmButton: false
           });
         }).catch(err => {
           console.error(err);
-          restoreWorkspace();
+          printContainer.remove();
           Swal.fire('Error', 'Gagal memproses dokumen A3 PDF.', 'error');
         });
       }, 300);
