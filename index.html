@@ -2390,7 +2390,9 @@
         headHtml += '<th onclick="sortBranchTable(\'targetInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-50/70 text-teal-900 font-bold" title="Target Semester 2 Kolom F">Target In S2 <span id="br-sort-targetInS2">↕</span></th>' +
                     '<th onclick="sortBranchTable(\'inS2Count\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-50 text-teal-800">Total Act In <span id="br-sort-inS2Count">↕</span></th>' +
                     '<th onclick="sortBranchTable(\'progressInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-teal-100 text-teal-900 font-black">Progress S2 <span id="br-sort-progressInS2">↕</span></th>' +
-                    '<th onclick="sortBranchTable(\'gapInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-rose-50 text-rose-900 font-bold" title="Sisa Unit yang Harus Dicapai">Gap S2 <span id="br-sort-gapInS2">↕</span></th>';
+                    '<th onclick="sortBranchTable(\'gapInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-rose-50 text-rose-900 font-bold" title="Sisa Unit yang Harus Dicapai">Gap S2 <span id="br-sort-gapInS2">↕</span></th>' +
+                    '<th onclick="sortBranchTable(\'inS2LastYear\')" class="px-2.5 py-3 border-b text-center sortable-th bg-slate-100 text-slate-800 font-bold" title="Realisasi In S2 Tahun Lalu (Kolom K)">In S2 LY <span id="br-sort-inS2LastYear">↕</span></th>' +
+                    '<th onclick="sortBranchTable(\'growthInS2\')" class="px-2.5 py-3 border-b text-center sortable-th bg-emerald-50 text-emerald-950 font-black" title="Growth In S2 vs Tahun Lalu">Growth S2 <span id="br-sort-growthInS2">↕</span></th>';
       }
       headHtml += '</tr>';
       setHTML('branchBreakdownHead', headHtml);
@@ -2403,8 +2405,8 @@
 
       filtered.sort((a, b) => {
         var valA = a[branchSortCol], valB = b[branchSortCol];
-        // Sort khusus persentase
-        if (branchSortCol === 'realizationRate' || branchSortCol === 'progressIssued' || branchSortCol === 'progressRedeem' || branchSortCol === 'progressInS2') {
+        // Sort khusus persentase (ditambahkan growthInS2)
+        if (branchSortCol === 'realizationRate' || branchSortCol === 'progressIssued' || branchSortCol === 'progressRedeem' || branchSortCol === 'progressInS2' || branchSortCol === 'growthInS2') {
           return branchSortOrder === 'asc' ? (parseRate(valA) - parseRate(valB)) : (parseRate(valB) - parseRate(valA));
         }
         // Sort khusus Gap Remaining S2
@@ -2417,8 +2419,8 @@
         return branchSortOrder === 'asc' ? ((Number(valA) || 0) - (Number(valB) || 0)) : ((Number(valB) || 0) - (Number(valA) || 0));
       });
 
-      // 🔴 Update daftar panah header tunggal (blok lama dihapus agar panah tidak tertimpa)
-      ['cabang', 'potensi', 'progressIssued', 'progressRedeem', 'realizationRate', 'revenue', 'funnelStatus', 'targetInS2', 'inS2Count', 'progressInS2', 'gapInS2'].forEach(c => {
+      // 🔴 Update daftar panah (ditambahkan inS2LastYear & growthInS2)
+      ['cabang', 'potensi', 'progressIssued', 'progressRedeem', 'realizationRate', 'revenue', 'funnelStatus', 'targetInS2', 'inS2Count', 'progressInS2', 'gapInS2', 'inS2LastYear', 'growthInS2'].forEach(c => {
         var el = document.getElementById('br-sort-' + c);
         if (el) el.innerHTML = branchSortCol === c ? (branchSortOrder === 'asc' ? '<span class="text-red-600 font-bold">▲</span>' : '<span class="text-red-600 font-bold">▼</span>') : '<span class="text-gray-400 font-mono">↕</span>';
       });
@@ -2427,7 +2429,7 @@
       
       var bdHtml = '';
       var totalPot = 0, totalRegT = 0, totalTgtIssued = 0, totalRedT = 0, totalTgtRedeem = 0, totalRev = 0;
-      var totalInS2 = 0, totalTargetS2 = 0;
+      var totalInS2 = 0, totalTargetS2 = 0, totalInS2LastYear = 0; // 🔴 Tambah totalInS2LastYear
 
       if (filtered.length > 0) {
         filtered.forEach(function(b, idx) {
@@ -2446,7 +2448,8 @@
           totalRev += rev;
           totalInS2 += Number(b.inS2Count) || 0;
           totalTargetS2 += Number(b.targetInS2) || 0;
-
+          totalInS2LastYear += Number(b.inS2LastYear) || 0; // 🔴 Akumulasikan tahun lalu
+          
           // Hitung Pacing Issued
           var progIssPct = tgtIss > 0 ? ((reg / tgtIss) * 100).toFixed(1) : (b.progressIssued || '0,0');
           var issBadgeClass = parseRate(progIssPct) >= 80 ? 'bg-blue-100 text-blue-800 border-blue-300 font-black' : (parseRate(progIssPct) >= 40 ? 'bg-slate-100 text-slate-800 border-slate-300' : 'bg-amber-100 text-amber-800 border-amber-300 font-bold');
@@ -2488,6 +2491,19 @@
             ? '<span class="px-1.5 py-0.5 rounded text-[9px] bg-emerald-100 text-emerald-800 font-black border border-emerald-300">Tercapai ✔</span>'
             : `<span class="font-mono font-bold text-rose-600">-${formatNum(gapS2)}</span>`;
 
+          // 🔴 Hitung Growth In S2 vs Tahun Lalu
+          var lyS2 = Number(b.inS2LastYear) || 0;
+          var growthRate = lyS2 > 0 ? (((actS2 - lyS2) / lyS2) * 100).toFixed(1) : (actS2 > 0 ? "100.0" : "0.0");
+          var growthNum = parseFloat(growthRate);
+          var growthBadge = '';
+          if (lyS2 === 0 && actS2 === 0) {
+            growthBadge = '<span class="text-gray-400 font-medium">-</span>';
+          } else if (growthNum >= 0) {
+            growthBadge = `<span class="px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">+${growthRate}%</span>`;
+          } else {
+            growthBadge = `<span class="px-1.5 py-0.5 rounded text-[10px] font-black bg-rose-100 text-rose-800 border border-rose-300">${growthRate}%</span>`;
+          }
+
           var inS2Cells = dashIsJanJun ? 
             `<!-- 1. Target In S2 (Kolom F) -->
              <td class="px-2.5 py-3 text-center font-bold text-teal-950 bg-teal-50/30 border-b border-gray-100">${formatNum(tgtS2)}</td>
@@ -2496,7 +2512,11 @@
              <!-- 3. Progress % S2 -->
              <td class="px-2.5 py-3 text-center border-b border-gray-100"><span class="px-2 py-0.5 rounded text-xs border bg-teal-50 border-teal-200 text-teal-900 font-bold">${b.progressInS2 || '0,0'}%</span></td>
              <!-- 4. Remaining Gap -->
-             <td class="px-2.5 py-3 text-center bg-rose-50/30 border-b border-gray-100">${gapBadge}</td>` : '';
+             <td class="px-2.5 py-3 text-center bg-rose-50/30 border-b border-gray-100">${gapBadge}</td>
+             <!-- 5. In S2 Tahun Lalu (Kolom K) -->
+             <td class="px-2.5 py-3 text-center font-bold text-slate-700 bg-slate-50/60 border-b border-gray-100">${formatNum(lyS2)}</td>
+             <!-- 6. Growth In S2 (YoY) -->
+             <td class="px-2.5 py-3 text-center border-b border-gray-100">${growthBadge}</td>` : '';
           
           // Cek apakah baris ini adalah cabang milik user yang sedang login
           var userCurrentCbg = sessionUser ? (sessionUser.cabang || '').replace(/^NS\s+/i, '').toUpperCase().trim() : '';
@@ -2550,8 +2570,8 @@
           </tr>`;
         });
       } else {
-        // Colspan bertambah 2 kolom saat periode S1 aktif (dari 10 menjadi 12)
-        bdHtml = `<tr><td colspan="${dashIsJanJun ? 12 : 8}" class="px-4 py-8 text-center text-gray-400 italic font-medium">No dealership performance data available.</td></tr>`;
+        // Colspan menjadi 14 kolom saat periode S1 aktif
+        bdHtml = `<tr><td colspan="${dashIsJanJun ? 14 : 8}" class="px-4 py-8 text-center text-gray-400 italic font-medium">No dealership performance data available.</td></tr>`;
       }
       setHTML('hoBreakdownBody', bdHtml);
 
@@ -2562,6 +2582,13 @@
       var totalProgressS2 = totalTargetS2 > 0 ? ((totalInS2 / totalTargetS2) * 100).toFixed(1).replace('.', ',') : '0,0';
       var totalGapS2 = Math.max(0, totalTargetS2 - totalInS2);
 
+      // 🔴 Hitung Total Growth Regional S2
+      var totalGrowthS2 = totalInS2LastYear > 0 
+        ? (((totalInS2 - totalInS2LastYear) / totalInS2LastYear) * 100).toFixed(1).replace('.', ',') 
+        : '0,0';
+      var totalGrowthNum = parseFloat(totalGrowthS2.replace(',', '.'));
+      var totalGrowthSign = totalGrowthNum > 0 ? '+' : '';
+
       var footInS2 = dashIsJanJun ? 
         `<!-- Total Target In S2 -->
          <td class="px-2.5 py-3 text-center font-black text-teal-950 bg-teal-100/50">${formatNum(totalTargetS2)}</td>
@@ -2570,7 +2597,11 @@
          <!-- Total Progress % -->
          <td class="px-2.5 py-3 text-center font-black text-teal-950 bg-teal-200/80">${totalProgressS2}%</td>
          <!-- Total Gap S2 -->
-         <td class="px-2.5 py-3 text-center font-black text-rose-800 bg-rose-100/60 font-mono">-${formatNum(totalGapS2)}</td>` : '';
+         <td class="px-2.5 py-3 text-center font-black text-rose-800 bg-rose-100/60 font-mono">-${formatNum(totalGapS2)}</td>
+         <!-- Total In S2 LY (Tahun Lalu) -->
+         <td class="px-2.5 py-3 text-center font-black text-slate-800 bg-slate-200/60">${formatNum(totalInS2LastYear)}</td>
+         <!-- Total Growth S2 -->
+         <td class="px-2.5 py-3 text-center font-black ${totalGrowthNum >= 0 ? 'text-emerald-950 bg-emerald-200/80' : 'text-rose-950 bg-rose-200/80'}">${totalGrowthSign}${totalGrowthS2}%</td>` : '';
       
       setHTML('hoBreakdownFoot', `<tr class="bg-gray-100 text-xs">
         <td colspan="2" class="px-3 py-3 text-center uppercase tracking-wider font-black">TOTAL REGIONAL</td>
