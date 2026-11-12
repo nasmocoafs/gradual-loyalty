@@ -2401,6 +2401,43 @@
       headHtml += '</tr>';
       setHTML('branchBreakdownHead', headHtml);
 
+      // 🔴 KOREKSI OTOMATIS KLASIFIKASI STATUS CABANG (AGAR TABEL, FILTER & PDF AKURAT)
+      rawBranchBreakdownData.forEach(b => {
+        var reg = Number(b.regTarget) || 0;
+        var tgtIss = Number(b.targetIssued) || 0;
+        var red = Number(b.redeemTarget) || 0;
+        var tgtRed = Number(b.targetRedeem) || 0;
+
+        var progIssNum = tgtIss > 0 ? ((reg / tgtIss) * 100) : parseRate(b.progressIssued);
+        var progRedNum = tgtRed > 0 ? ((red / tgtRed) * 100) : parseRate(b.progressRedeem);
+        var relRateNum = reg > 0 ? ((red / reg) * 100) : parseRate(b.realizationRate);
+
+        if (reg === 0 && red === 0) {
+          b.funnelStatus = 'INACTIVE';
+          b.statusLabel = 'Dormant';
+        } else if (red > 0 && reg < red) {
+          b.funnelStatus = 'ANOMALY';
+          b.statusLabel = 'Irregular Inflow';
+        } else if (progRedNum >= 100) {
+          // Hanya Achieved jika Redeem >= 100%
+          b.funnelStatus = 'ACHIEVED';
+          b.statusLabel = 'Target Achieved';
+        } else if (progIssNum >= 50 && (relRateNum < 20.0 || progRedNum < 30.0)) {
+          // Tiket terbit sudah banyak (>=50%), tapi konversi ke kasir rendah (<20%) -> Recall Friction (Contoh: Pemuda)
+          b.funnelStatus = 'RECALL_FRICTION';
+          b.statusLabel = 'Recall Friction';
+        } else if (progIssNum < 40) {
+          b.funnelStatus = 'LEAD_BOTTLENECK';
+          b.statusLabel = 'Issuance Bottleneck';
+        } else if (progIssNum < 50 && progRedNum < 20) {
+          b.funnelStatus = 'CRITICAL_RISK';
+          b.statusLabel = 'Critical Risk';
+        } else {
+          b.funnelStatus = 'HEALTHY';
+          b.statusLabel = 'On Track';
+        }
+      });
+
       var filtered = rawBranchBreakdownData.filter(b => {
         var matchSearch = !branchSearchQuery || (b.cabang || '').toUpperCase().includes(branchSearchQuery);
         var matchFunnel = !branchFunnelFilter || (b.funnelStatus === branchFunnelFilter);
@@ -3619,20 +3656,36 @@
         const growthNum = lyS2 > 0 ? (((actS2 - lyS2) / lyS2) * 100) : (actS2 > 0 ? 100.0 : 0.0);
         const growthRate = growthNum.toFixed(1);
 
+        // 🔴 KLASIFIKASI STATUS CABANG UNTUK TABEL & RINGKASAN PDF A3
+        let pdfSts = 'HEALTHY';
+        if (reg === 0 && red === 0) {
+          pdfSts = 'INACTIVE';
+        } else if (red > 0 && reg < red) {
+          pdfSts = 'ANOMALY';
+        } else if (progRedNum >= 100) {
+          pdfSts = 'ACHIEVED';
+        } else if (progIssNum >= 50 && (relRateNum < 20.0 || progRedNum < 30.0)) {
+          pdfSts = 'RECALL_FRICTION';
+        } else if (progIssNum < 40) {
+          pdfSts = 'LEAD_BOTTLENECK';
+        } else if (progIssNum < 50 && progRedNum < 20) {
+          pdfSts = 'CRITICAL_RISK';
+        }
+
         let stsCol = '#166534', stsBg = '#dcfce7', stsTxt = 'On Track';
-        if (b.funnelStatus === 'ACHIEVED') {
+        if (pdfSts === 'ACHIEVED') {
           stsBg = '#d1fae5'; stsCol = '#065f46'; stsTxt = 'Target Achieved';
           countAchieved++;
-        } else if (b.funnelStatus === 'HEALTHY' || b.funnelStatus === 'ON_TRACK') {
+        } else if (pdfSts === 'HEALTHY') {
           stsBg = '#dcfce7'; stsCol = '#166534'; stsTxt = 'On Track';
           countOnTrack++;
-        } else if (b.funnelStatus === 'LEAD_BOTTLENECK') {
+        } else if (pdfSts === 'LEAD_BOTTLENECK') {
           stsBg = '#fef9c3'; stsCol = '#854d0e'; stsTxt = 'Issuance Bottleneck';
           countNeedAttention++;
-        } else if (b.funnelStatus === 'RECALL_FRICTION') {
+        } else if (pdfSts === 'RECALL_FRICTION') {
           stsBg = '#ffedd5'; stsCol = '#9a3412'; stsTxt = 'Recall Friction';
           countNeedAttention++;
-        } else if (b.funnelStatus === 'CRITICAL_RISK') {
+        } else if (pdfSts === 'CRITICAL_RISK') {
           stsBg = '#ffe4e6'; stsCol = '#9f1239'; stsTxt = 'Critical Risk';
           countNeedAttention++;
         } else {
